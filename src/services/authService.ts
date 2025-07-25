@@ -1,6 +1,4 @@
 
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { AUTH_CONFIG } from "../config/auth";
 import { LoginData, RegisterData, GoogleAuthData } from "../lib/validation";
 
@@ -17,13 +15,57 @@ interface User {
   lockoutUntil?: Date;
 }
 
+// Browser-compatible password hashing using Web Crypto API
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Browser-compatible password verification
+async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  const hash = await hashPassword(password);
+  return hash === hashedPassword;
+}
+
+// Browser-compatible JWT creation (simplified for demo)
+function createToken(payload: any): string {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const tokenPayload = { ...payload, iat: now, exp: now + 3600 }; // 1 hour expiry
+  
+  const headerEncoded = btoa(JSON.stringify(header));
+  const payloadEncoded = btoa(JSON.stringify(tokenPayload));
+  
+  return `${headerEncoded}.${payloadEncoded}.demo-signature`;
+}
+
+// Browser-compatible JWT verification (simplified for demo)
+function verifyToken(token: string): any {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) throw new Error('Invalid token format');
+    
+    const payload = JSON.parse(atob(parts[1]));
+    const now = Math.floor(Date.now() / 1000);
+    
+    if (payload.exp < now) throw new Error('Token expired');
+    
+    return payload;
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+}
+
 // Simulate a secure user store (in production, use a real database)
 const users: User[] = [
   {
     id: "1",
     name: "Rajesh Kumar",
     email: "user@demo.com",
-    hashedPassword: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password123
+    hashedPassword: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f", // password123
     plan: "Professional",
     projectsViewed: 5,
     projectsLimit: 10,
@@ -33,7 +75,7 @@ const users: User[] = [
     id: "2",
     name: "Admin User",
     email: "admin@demo.com",
-    hashedPassword: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // admin123
+    hashedPassword: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // admin123
     plan: "Admin",
     loginAttempts: 0
   }
@@ -56,7 +98,7 @@ export class AuthService {
     }
 
     // Verify password
-    const isValidPassword = await bcrypt.compare(data.password, user.hashedPassword || '');
+    const isValidPassword = await verifyPassword(data.password, user.hashedPassword || '');
     
     if (!isValidPassword) {
       user.loginAttempts = (user.loginAttempts || 0) + 1;
@@ -73,19 +115,15 @@ export class AuthService {
     user.loginAttempts = 0;
     user.lockoutUntil = undefined;
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user.id, 
-        email: user.email, 
-        plan: user.plan 
-      },
-      AUTH_CONFIG.JWT_SECRET,
-      { expiresIn: AUTH_CONFIG.TOKEN_EXPIRY }
-    );
+    // Generate token
+    const token = createToken({
+      id: user.id, 
+      email: user.email, 
+      plan: user.plan 
+    });
 
     // Remove sensitive data
-    const { hashedPassword, ...userWithoutPassword } = user;
+    const { hashedPassword: _, ...userWithoutPassword } = user;
     
     return { user: userWithoutPassword, token };
   }
@@ -98,7 +136,7 @@ export class AuthService {
     }
 
     // Hash password
-    const userHashedPassword = await bcrypt.hash(data.password, 10);
+    const userHashedPassword = await hashPassword(data.password);
 
     const newUser: User = {
       id: Date.now().toString(),
@@ -112,16 +150,12 @@ export class AuthService {
 
     users.push(newUser);
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: newUser.id, 
-        email: newUser.email, 
-        plan: newUser.plan 
-      },
-      AUTH_CONFIG.JWT_SECRET,
-      { expiresIn: AUTH_CONFIG.TOKEN_EXPIRY }
-    );
+    // Generate token
+    const token = createToken({
+      id: newUser.id, 
+      email: newUser.email, 
+      plan: newUser.plan 
+    });
 
     // Remove sensitive data
     const { hashedPassword: _, ...userWithoutPassword } = newUser;
@@ -156,16 +190,12 @@ export class AuthService {
         users.push(user);
       }
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { 
-          id: user.id, 
-          email: user.email, 
-          plan: user.plan 
-        },
-        AUTH_CONFIG.JWT_SECRET,
-        { expiresIn: AUTH_CONFIG.TOKEN_EXPIRY }
-      );
+      // Generate token
+      const token = createToken({
+        id: user.id, 
+        email: user.email, 
+        plan: user.plan 
+      });
 
       // Remove sensitive data
       const { hashedPassword: _, ...userWithoutPassword } = user;
@@ -177,10 +207,6 @@ export class AuthService {
   }
 
   static verifyToken(token: string): any {
-    try {
-      return jwt.verify(token, AUTH_CONFIG.JWT_SECRET);
-    } catch (error) {
-      throw new Error("Invalid token");
-    }
+    return verifyToken(token);
   }
 }
