@@ -19,7 +19,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { user, login, register, logout, isLoading } = useAuth();
+  const { user, login, register, googleSignIn, logout, isLoading } = useAuth();
   const { toast } = useToast();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const location = useLocation();
@@ -52,6 +52,23 @@ const AppContent = () => {
     } catch (error) {
       toast({
         title: "Registration failed",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGoogleSignIn = async (credential: string) => {
+    try {
+      await googleSignIn(credential);
+      setIsAuthModalOpen(false);
+      toast({
+        title: "Welcome!",
+        description: "Successfully signed in with Google.",
+      });
+    } catch (error) {
+      toast({
+        title: "Google Sign-In failed",
         description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
@@ -122,6 +139,7 @@ const AppContent = () => {
         onClose={() => setIsAuthModalOpen(false)}
         onLogin={handleLogin}
         onRegister={handleRegister}
+        onGoogleSignIn={handleGoogleSignIn}
       />
     </div>
   );

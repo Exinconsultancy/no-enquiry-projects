@@ -1,4 +1,7 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { AuthService } from "../services/authService";
+import { loginSchema, registerSchema, LoginData, RegisterData } from "../lib/validation";
 
 interface User {
   id: string;
@@ -13,8 +16,10 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
+  googleSignIn: (credential: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,33 +38,25 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Sample users for demo
-  const sampleUsers = [
-    {
-      id: "1",
-      name: "Rajesh Kumar",
-      email: "user@demo.com",
-      password: "password123",
-      plan: "Professional",
-      projectsViewed: 5,
-      projectsLimit: 10
-    },
-    {
-      id: "2",
-      name: "Admin User",
-      email: "admin@demo.com",
-      password: "admin123",
-      plan: "Admin"
-    }
-  ];
 
   useEffect(() => {
     // Check for existing session
+    const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    
+    if (savedToken && savedUser) {
+      try {
+        // Verify token is still valid
+        AuthService.verifyToken(savedToken);
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        // Token is invalid, clear storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
     }
     setIsLoading(false);
   }, []);
@@ -67,67 +64,87 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = sampleUsers.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      const user: User = {
-        id: foundUser.id,
-        name: foundUser.name,
-        email: foundUser.email,
-        plan: foundUser.plan,
-        projectsViewed: foundUser.projectsViewed,
-        projectsLimit: foundUser.projectsLimit
-      };
+    try {
+      // Validate input
+      const validatedData = loginSchema.parse({ email, password });
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { user, token } = await AuthService.login(validatedData);
       
       setUser(user);
+      setToken(token);
       localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      throw new Error("Invalid credentials");
+      localStorage.setItem("token", token);
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const register = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user already exists
-    const existingUser = sampleUsers.find(u => u.email === email);
-    if (existingUser) {
-      throw new Error("User already exists");
+    try {
+      // Validate input
+      const validatedData = registerSchema.parse({ email, password, name });
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { user, token } = await AuthService.register(validatedData);
+      
+      setUser(user);
+      setToken(token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const googleSignIn = async (credential: string) => {
+    setIsLoading(true);
     
-    const newUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      projectsViewed: 0,
-      projectsLimit: 0
-    };
-    
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
-    
-    setIsLoading(false);
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { user, token } = await AuthService.googleAuth({
+        credential,
+        clientId: "your-google-client-id"
+      });
+      
+      setUser(user);
+      setToken(token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   const value = {
     user,
     login,
     register,
+    googleSignIn,
     logout,
-    isLoading
+    isLoading,
+    token
   };
 
   return (
