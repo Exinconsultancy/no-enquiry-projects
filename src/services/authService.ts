@@ -98,13 +98,13 @@ export class AuthService {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const userHashedPassword = await bcrypt.hash(data.password, 10);
 
     const newUser: User = {
       id: Date.now().toString(),
       name: data.name,
       email: data.email,
-      hashedPassword,
+      hashedPassword: userHashedPassword,
       projectsViewed: 0,
       projectsLimit: 0,
       loginAttempts: 0
@@ -124,7 +124,7 @@ export class AuthService {
     );
 
     // Remove sensitive data
-    const { hashedPassword, ...userWithoutPassword } = newUser;
+    const { hashedPassword: _, ...userWithoutPassword } = newUser;
     
     return { user: userWithoutPassword, token };
   }
@@ -168,7 +168,7 @@ export class AuthService {
       );
 
       // Remove sensitive data
-      const { hashedPassword, ...userWithoutPassword } = user;
+      const { hashedPassword: _, ...userWithoutPassword } = user;
       
       return { user: userWithoutPassword, token };
     } catch (error) {
