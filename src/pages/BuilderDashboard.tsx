@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Building, Plus, Edit, Trash2, Eye, Users } from "lucide-react";
+import { Building, Plus, Edit, Trash2, Eye, Users, Upload, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Project {
@@ -25,6 +25,8 @@ interface Project {
   views: number;
   inquiries: number;
   createdAt: string;
+  brochureUrl?: string;
+  brochureName?: string;
 }
 
 const BuilderDashboard = () => {
@@ -62,6 +64,7 @@ const BuilderDashboard = () => {
     description: "",
     amenities: ""
   });
+  const [brochureFile, setBrochureFile] = useState<File | null>(null);
 
   if (!user || user.plan !== 'Builder') {
     return (
@@ -80,6 +83,29 @@ const BuilderDashboard = () => {
     );
   }
 
+  const handleBrochureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF or image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setBrochureFile(file);
+    }
+  };
+
   const handleSubmitProject = async () => {
     if (!formData.title || !formData.location || !formData.price) {
       toast({
@@ -90,8 +116,16 @@ const BuilderDashboard = () => {
       return;
     }
 
+    // Simulate brochure upload
+    let brochureUrl = "";
+    let brochureName = "";
+    if (brochureFile) {
+      brochureUrl = URL.createObjectURL(brochureFile);
+      brochureName = brochureFile.name;
+    }
+
     const newProject: Project = {
-      id: Date.now().toString(),
+      id: editingProject?.id || Date.now().toString(),
       title: formData.title,
       location: formData.location,
       price: formData.price,
@@ -102,13 +136,15 @@ const BuilderDashboard = () => {
       description: formData.description,
       amenities: formData.amenities.split(',').map(a => a.trim()).filter(Boolean),
       status: "active",
-      views: 0,
-      inquiries: 0,
-      createdAt: new Date().toISOString().split('T')[0]
+      views: editingProject?.views || 0,
+      inquiries: editingProject?.inquiries || 0,
+      createdAt: editingProject?.createdAt || new Date().toISOString().split('T')[0],
+      brochureUrl,
+      brochureName
     };
 
     if (editingProject) {
-      setProjects(prev => prev.map(p => p.id === editingProject.id ? { ...newProject, id: editingProject.id } : p));
+      setProjects(prev => prev.map(p => p.id === editingProject.id ? newProject : p));
       toast({
         title: "Project Updated",
         description: "Your project has been updated successfully.",
@@ -121,6 +157,7 @@ const BuilderDashboard = () => {
       });
     }
 
+    // Reset form
     setFormData({
       title: "",
       location: "",
@@ -132,6 +169,7 @@ const BuilderDashboard = () => {
       description: "",
       amenities: ""
     });
+    setBrochureFile(null);
     setShowAddForm(false);
     setEditingProject(null);
   };
@@ -327,6 +365,7 @@ const BuilderDashboard = () => {
                   />
                 </div>
               </div>
+              
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -337,6 +376,29 @@ const BuilderDashboard = () => {
                   rows={3}
                 />
               </div>
+
+              <div>
+                <Label htmlFor="brochure">Project Brochure (PDF/Image)</Label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    id="brochure"
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={handleBrochureUpload}
+                    className="flex-1"
+                  />
+                  {brochureFile && (
+                    <div className="flex items-center text-sm text-green-600">
+                      <FileText className="h-4 w-4 mr-1" />
+                      {brochureFile.name}
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload a brochure for your project (Max 10MB, PDF or Image)
+                </p>
+              </div>
+
               <div className="flex space-x-2">
                 <Button onClick={handleSubmitProject}>
                   {editingProject ? 'Update Project' : 'Add Project'}
@@ -344,6 +406,7 @@ const BuilderDashboard = () => {
                 <Button variant="outline" onClick={() => {
                   setShowAddForm(false);
                   setEditingProject(null);
+                  setBrochureFile(null);
                   setFormData({
                     title: "",
                     location: "",
@@ -404,6 +467,12 @@ const BuilderDashboard = () => {
                       {amenity}
                     </Badge>
                   ))}
+                  {project.brochureUrl && (
+                    <Badge variant="secondary" className="text-xs">
+                      <FileText className="h-3 w-3 mr-1" />
+                      Brochure Available
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="flex space-x-2">

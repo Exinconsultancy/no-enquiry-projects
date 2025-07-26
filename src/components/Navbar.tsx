@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Building, Search, User, Menu, X } from "lucide-react";
+import { Home, Building, Search, User, Menu, X, Settings } from "lucide-react";
 
 interface NavbarProps {
   user?: { name: string; email: string; plan?: string } | null;
@@ -54,6 +55,17 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
               <Building className="h-4 w-4" />
               <span>Rentals</span>
             </Link>
+            {user?.plan === 'Builder' && (
+              <Link
+                to="/builder-dashboard"
+                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/builder-dashboard") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+            )}
             <Link
               to="/pricing"
               className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -73,10 +85,10 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
                     {user.plan}
                   </span>
                 )}
-                <div className="flex items-center space-x-2">
+                <Link to="/profile" className="flex items-center space-x-2 hover:bg-accent px-3 py-2 rounded-md transition-colors">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{user.name}</span>
-                </div>
+                </Link>
                 <Button variant="outline" size="sm" onClick={onLogout}>
                   Logout
                 </Button>
@@ -129,6 +141,17 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
               >
                 Rentals
               </Link>
+              {user?.plan === 'Builder' && (
+                <Link
+                  to="/builder-dashboard"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive("/builder-dashboard") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              )}
               <Link
                 to="/pricing"
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
@@ -141,7 +164,7 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
               <div className="border-t border-border pt-4 mt-4">
                 {user ? (
                   <div className="space-y-2">
-                    <div className="px-3 py-2">
+                    <Link to="/profile" className="block px-3 py-2" onClick={() => setIsMenuOpen(false)}>
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">{user.name}</span>
@@ -151,7 +174,7 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
                           {user.plan}
                         </span>
                       )}
-                    </div>
+                    </Link>
                     <Button
                       variant="outline"
                       className="w-full mx-3"
