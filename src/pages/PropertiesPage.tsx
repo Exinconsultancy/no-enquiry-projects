@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Grid, List, SlidersHorizontal, X } from "lucide-react";
+import { SubscriptionService } from "@/services/subscriptionService";
+import { useAuth } from "@/contexts/AuthContext";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
 import property3 from "@/assets/property-3.jpg";
@@ -29,20 +31,12 @@ interface Property {
   };
 }
 
-interface User {
-  name: string;
-  email: string;
-  plan?: string;
-  projectsViewed?: number;
-  projectsLimit?: number;
-}
-
 interface PropertiesPageProps {
-  user?: User | null;
   onLogin: () => void;
 }
 
-const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
+const PropertiesPage = ({ onLogin }: PropertiesPageProps) => {
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
@@ -75,7 +69,7 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
       area: "1,450 sq ft",
       type: "apartment",
       amenities: ["Swimming Pool", "Gym", "Parking", "Security", "Garden"],
-      isLocked: !user?.plan,
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
       builderContact: {
         name: "Rajesh Kumar",
         phone: "+91 98765 43210",
@@ -93,7 +87,7 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
       area: "2,200 sq ft",
       type: "villa",
       amenities: ["Swimming Pool", "Club House", "Children's Play Area", "Power Backup"],
-      isLocked: !user?.plan,
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
       builderContact: {
         name: "Priya Sharma",
         phone: "+91 87654 32109",
@@ -111,7 +105,7 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
       area: "1,800 sq ft",
       type: "commercial",
       amenities: ["Elevator", "CCTV", "Fire Safety", "Parking", "Power Backup"],
-      isLocked: !user?.plan,
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
       builderContact: {
         name: "Amit Patel",
         phone: "+91 76543 21098",
@@ -130,7 +124,7 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
       area: "1,100 sq ft",
       type: "apartment",
       amenities: ["Gym", "Parking", "Security", "Intercom"],
-      isLocked: !user?.plan,
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
       builderContact: {
         name: "Sneha Joshi",
         phone: "+91 65432 10987",
@@ -201,7 +195,7 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
       return;
     }
 
-    if (!user.plan) {
+    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
       toast({
         title: "Subscription Required",
         description: "Please subscribe to a plan to view property details.",
@@ -210,13 +204,18 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
       return;
     }
 
-    if (user.projectsViewed && user.projectsLimit && user.projectsViewed >= user.projectsLimit) {
+    if (!SubscriptionService.canViewMoreProjects(user)) {
       toast({
         title: "Plan Limit Reached",
         description: "You've reached your plan's project viewing limit. Please upgrade.",
         variant: "destructive",
       });
       return;
+    }
+
+    // Increment project view count
+    if (user) {
+      SubscriptionService.incrementProjectView(user, updateUser);
     }
 
     setSelectedProperty(property);
@@ -227,6 +226,20 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
   };
 
   const handleDownloadBrochure = (property: Property) => {
+    if (!user) {
+      onLogin();
+      return;
+    }
+
+    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to a plan to download brochures.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Brochure Downloaded",
       description: `Brochure for ${property.title} has been downloaded.`,
@@ -283,13 +296,25 @@ const PropertiesPage = ({ user, onLogin }: PropertiesPageProps) => {
                   <Badge variant="secondary" className="text-sm">
                     {user.plan || "No Plan"}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Projects viewed: {user.projectsViewed || 0}/{user.projectsLimit || 0}
-                  </span>
+                  {user.plan !== "Builder" && (
+                    <span className="text-sm text-muted-foreground">
+                      Projects viewed: {user.projectsViewed || 0}/{user.projectsLimit || 0}
+                    </span>
+                  )}
+                  {user.plan === "Builder" && (
+                    <span className="text-sm text-muted-foreground">
+                      Builder Account - Unlimited Access
+                    </span>
+                  )}
                 </div>
                 {!user.plan && (
-                  <Button size="sm" variant="premium" className="mt-2 sm:mt-0">
+                  <Button size="sm" variant="default" onClick={() => window.location.href = '/pricing'} className="mt-2 sm:mt-0">
                     Subscribe Now
+                  </Button>
+                )}
+                {user.plan === "Builder" && (
+                  <Button size="sm" variant="outline" onClick={() => window.location.href = '/builder-dashboard'} className="mt-2 sm:mt-0">
+                    Manage Projects
                   </Button>
                 )}
               </div>

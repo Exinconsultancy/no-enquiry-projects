@@ -9,18 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Lock, Crown, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface ProfilePageProps {
-  user?: { 
-    id: string;
-    name: string; 
-    email: string; 
-    plan?: string;
-    projectsViewed?: number;
-    projectsLimit?: number;
-  } | null;
-}
-
-const ProfilePage = ({ user }: ProfilePageProps) => {
+const ProfilePage = () => {
+  const { user, updateUserName, changePassword } = useAuth();
   const { toast } = useToast();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -55,8 +45,7 @@ const ProfilePage = ({ user }: ProfilePageProps) => {
 
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateUserName(newName.trim());
       
       toast({
         title: "Name Updated",
@@ -104,8 +93,7 @@ const ProfilePage = ({ user }: ProfilePageProps) => {
 
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await changePassword(currentPassword, newPassword);
       
       toast({
         title: "Password Changed",
@@ -124,6 +112,13 @@ const ProfilePage = ({ user }: ProfilePageProps) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getPlanBadgeVariant = (plan?: string) => {
+    if (!plan) return "secondary";
+    if (plan.toLowerCase() === "premium") return "default";
+    if (plan.toLowerCase() === "professional") return "secondary";
+    return "outline";
   };
 
   return (
@@ -291,26 +286,36 @@ const ProfilePage = ({ user }: ProfilePageProps) => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-4">
                   <Badge 
-                    variant={user.plan ? "default" : "secondary"} 
+                    variant={getPlanBadgeVariant(user.plan)} 
                     className="text-sm px-3 py-1"
                   >
                     {user.plan || "No Plan"}
                   </Badge>
-                  {user.plan && (
+                  {user.plan && user.plan !== "Builder" && (
                     <div className="text-sm text-muted-foreground">
                       Projects: {user.projectsViewed || 0}/{user.projectsLimit || 0}
+                    </div>
+                  )}
+                  {user.plan === "Builder" && (
+                    <div className="text-sm text-muted-foreground">
+                      Builder Account - Unlimited Project Posting
                     </div>
                   )}
                 </div>
                 <div className="flex space-x-2">
                   {!user.plan && (
-                    <Button variant="premium">
+                    <Button variant="default" onClick={() => window.location.href = '/pricing'}>
                       Subscribe Now
                     </Button>
                   )}
-                  {user.plan && (
-                    <Button variant="outline">
-                      Manage Subscription
+                  {user.plan && user.plan !== "Builder" && (
+                    <Button variant="outline" onClick={() => window.location.href = '/pricing'}>
+                      Upgrade Plan
+                    </Button>
+                  )}
+                  {user.plan === "Builder" && (
+                    <Button variant="outline" onClick={() => window.location.href = '/builder-dashboard'}>
+                      Manage Projects
                     </Button>
                   )}
                 </div>
@@ -318,6 +323,11 @@ const ProfilePage = ({ user }: ProfilePageProps) => {
               {!user.plan && (
                 <p className="text-sm text-muted-foreground mt-4">
                   Subscribe to a plan to access premium property details and builder contacts.
+                </p>
+              )}
+              {user.plan === "Builder" && (
+                <p className="text-sm text-muted-foreground mt-4">
+                  As a builder, you can post unlimited projects and manage your listings.
                 </p>
               )}
             </CardContent>

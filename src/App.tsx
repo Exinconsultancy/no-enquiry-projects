@@ -16,6 +16,7 @@ import PricingPage from "./pages/PricingPage";
 import ProfilePage from "./pages/ProfilePage";
 import RentalsPage from "./pages/RentalsPage";
 import AdminPage from "./pages/AdminPage";
+import BuilderDashboard from "./pages/BuilderDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -89,8 +90,9 @@ const AppContent = () => {
     setIsAuthModalOpen(true);
   };
 
-  // Check if current route is admin
+  // Check if current route is admin or builder dashboard
   const isAdminRoute = location.pathname.includes("/admin");
+  const isBuilderDashboard = location.pathname.includes("/builder-dashboard");
   
   // Admin route protection
   if (isAdminRoute && (!user || user.plan !== "Admin")) {
@@ -119,7 +121,7 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isAdminRoute && (
+      {!isAdminRoute && !isBuilderDashboard && (
         <Navbar 
           user={user} 
           onLogin={openAuthModal} 
@@ -129,11 +131,12 @@ const AppContent = () => {
       
       <Routes>
         <Route path="/" element={<HomePage user={user} onLogin={openAuthModal} />} />
-        <Route path="/properties" element={<PropertiesPage user={user} onLogin={openAuthModal} />} />
-        <Route path="/pricing" element={<PricingPage user={user} onLogin={openAuthModal} />} />
-        <Route path="/profile" element={<ProfilePage user={user} />} />
+        <Route path="/properties" element={<PropertiesPage onLogin={openAuthModal} />} />
+        <Route path="/pricing" element={<PricingPage onLogin={openAuthModal} />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/rentals" element={<RentalsPage user={user} />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/builder-dashboard" element={<BuilderDashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 

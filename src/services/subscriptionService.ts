@@ -17,7 +17,7 @@ interface User {
 }
 
 export class SubscriptionService {
-  static async subscribeToPlan(planId: string, user: User): Promise<{ success: boolean; message: string }> {
+  static async subscribeToPlan(planId: string, user: User, updateUser: (updates: Partial<User>) => void): Promise<{ success: boolean; message: string }> {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -34,7 +34,13 @@ export class SubscriptionService {
         throw new Error('Invalid plan selected');
       }
       
-      // In a real app, this would update the database
+      // Update user with new plan
+      updateUser({
+        plan: selectedPlan.name,
+        projectsLimit: selectedPlan.projectsLimit,
+        projectsViewed: user.projectsViewed || 0
+      });
+      
       console.log(`User ${user.email} subscribed to ${selectedPlan.name} plan`);
       
       return {
@@ -57,16 +63,23 @@ export class SubscriptionService {
     };
   }
 
-  static async handleBuilderSubscription(userEmail: string): Promise<{ success: boolean; message: string }> {
+  static async handleBuilderSubscription(userEmail: string, updateUser: (updates: Partial<User>) => void): Promise<{ success: boolean; message: string }> {
     try {
       // Simulate sending builder subscription request
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      console.log(`Builder subscription request sent for ${userEmail}`);
+      // Update user to builder plan
+      updateUser({
+        plan: 'Builder',
+        projectsLimit: 999, // Unlimited for builders
+        projectsViewed: 0
+      });
+      
+      console.log(`Builder subscription activated for ${userEmail}`);
       
       return {
         success: true,
-        message: 'Builder subscription request sent! Our sales team will contact you within 24 hours.'
+        message: 'Builder subscription activated! You can now post unlimited projects.'
       };
     } catch (error) {
       return {
@@ -74,5 +87,24 @@ export class SubscriptionService {
         message: 'Failed to process builder subscription request'
       };
     }
+  }
+
+  static canAccessPremiumFeatures(user: User | null): boolean {
+    if (!user || !user.plan) return false;
+    return user.plan !== 'No Plan';
+  }
+
+  static canViewMoreProjects(user: User | null): boolean {
+    if (!user || !user.plan) return false;
+    if (user.plan === 'Builder') return true; // Builders can view unlimited
+    const viewed = user.projectsViewed || 0;
+    const limit = user.projectsLimit || 0;
+    return viewed < limit;
+  }
+
+  static incrementProjectView(user: User, updateUser: (updates: Partial<User>) => void): void {
+    if (user.plan === 'Builder') return; // Builders have unlimited views
+    const newViewed = (user.projectsViewed || 0) + 1;
+    updateUser({ projectsViewed: newViewed });
   }
 }

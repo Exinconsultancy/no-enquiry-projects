@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import PricingCard from "@/components/PricingCard";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Check, X, Crown, Building, Star, Phone, Mail } from "lucide-react";
 import { SubscriptionService } from "@/services/subscriptionService";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PricingPlan {
   id: string;
@@ -19,16 +21,11 @@ interface PricingPlan {
 }
 
 interface PricingPageProps {
-  user?: { 
-    id: string;
-    name: string; 
-    email: string;
-    plan?: string; 
-  } | null;
   onLogin: () => void;
 }
 
-const PricingPage = ({ user, onLogin }: PricingPageProps) => {
+const PricingPage = ({ onLogin }: PricingPageProps) => {
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -112,7 +109,7 @@ const PricingPage = ({ user, onLogin }: PricingPageProps) => {
     setIsProcessing(true);
 
     try {
-      const result = await SubscriptionService.subscribeToPlan(plan.id, user);
+      const result = await SubscriptionService.subscribeToPlan(plan.id, user, updateUser);
       
       if (result.success) {
         toast({
@@ -147,13 +144,17 @@ const PricingPage = ({ user, onLogin }: PricingPageProps) => {
     setIsProcessing(true);
 
     try {
-      const result = await SubscriptionService.handleBuilderSubscription(user.email);
+      const result = await SubscriptionService.handleBuilderSubscription(user.email, updateUser);
       
       if (result.success) {
         toast({
-          title: "Request Sent!",
+          title: "Builder Subscription Activated!",
           description: result.message,
         });
+        // Redirect to builder dashboard after successful subscription
+        setTimeout(() => {
+          window.location.href = '/builder-dashboard';
+        }, 2000);
       } else {
         toast({
           title: "Request Failed",
@@ -304,12 +305,12 @@ const PricingPage = ({ user, onLogin }: PricingPageProps) => {
 
               <Button
                 size="lg"
-                variant="premium"
+                variant="default"
                 onClick={handleBuilderSubscription}
                 disabled={isProcessing}
                 className="w-full mb-4"
               >
-                {isProcessing ? "Processing..." : "Subscribe as Builder"}
+                {isProcessing ? "Activating..." : "Activate Builder Plan"}
               </Button>
 
               <div className="space-y-2 text-sm text-muted-foreground">
@@ -322,7 +323,7 @@ const PricingPage = ({ user, onLogin }: PricingPageProps) => {
                   <span>builders@nonobroker.com</span>
                 </div>
                 <p className="mt-4">
-                  Contact our sales team for custom pricing and enterprise solutions
+                  Instant activation - Start posting projects immediately!
                 </p>
               </div>
             </CardContent>

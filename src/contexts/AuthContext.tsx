@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthService } from "../services/authService";
 import { loginSchema, registerSchema, LoginData, RegisterData } from "../lib/validation";
@@ -18,6 +17,9 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<void>;
   googleSignIn: (credential: string) => Promise<void>;
   logout: () => void;
+  updateUser: (updates: Partial<User>) => void;
+  updateUserName: (newName: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   isLoading: boolean;
   token: string | null;
 }
@@ -60,6 +62,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     setIsLoading(false);
   }, []);
+
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
+  const updateUserName = async (newName: string) => {
+    if (!user) throw new Error("No user logged in");
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    updateUser({ name: newName });
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!user) throw new Error("No user logged in");
+    
+    // Simulate API call with validation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In real implementation, this would validate current password and update it
+    console.log(`Password changed for user ${user.email}`);
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -143,6 +172,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     register,
     googleSignIn,
     logout,
+    updateUser,
+    updateUserName,
+    changePassword,
     isLoading,
     token
   };
