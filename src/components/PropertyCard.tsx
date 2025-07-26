@@ -33,6 +33,7 @@ interface PropertyCardProps {
 
 const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: PropertyCardProps) => {
   const [showContactDetails, setShowContactDetails] = useState(false);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
   
   const hasSubscription = user && user.plan;
   const hasReachedLimit = user?.projectsViewed && user?.projectsLimit && user.projectsViewed >= user.projectsLimit;
@@ -49,7 +50,7 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
   };
 
   return (
-    <Card className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300 overflow-hidden">
+    <Card className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300 overflow-hidden flex flex-col h-full">
       <div className="relative">
         <img
           src={property.image}
@@ -72,28 +73,8 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
         )}
       </div>
 
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1 flex flex-col">
         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{property.title}</h3>
-        
-        {/* Show contact details for subscribed users who clicked view details */}
-        {canViewDetails && showContactDetails && property.builderContact && (
-          <div className="mb-3 p-3 bg-accent/20 rounded-lg border">
-            <h4 className="font-medium text-sm text-muted-foreground mb-2">Builder Contact</h4>
-            <div className="space-y-1">
-              <div className="flex items-center text-sm">
-                <Phone className="h-3 w-3 mr-2" />
-                <span>{property.builderContact.phone}</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <Mail className="h-3 w-3 mr-2" />
-                <span>{property.builderContact.email}</span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Contact: {property.builderContact.name}
-              </div>
-            </div>
-          </div>
-        )}
         
         <div className="flex items-center text-muted-foreground mb-2">
           <MapPin className="h-4 w-4 mr-1" />
@@ -116,21 +97,60 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1 mb-3">
-          {property.amenities.slice(0, 3).map((amenity, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {amenity}
-            </Badge>
-          ))}
-          {property.amenities.length > 3 && (
-            <Badge variant="outline" className="text-xs">
-              +{property.amenities.length - 3} more
-            </Badge>
+        <div className="flex flex-wrap gap-1 mb-3 relative">
+          {showAllAmenities ? (
+            property.amenities.map((amenity, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {amenity}
+              </Badge>
+            ))
+          ) : (
+            <>
+              {property.amenities.slice(0, 3).map((amenity, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {amenity}
+                </Badge>
+              ))}
+              {property.amenities.length > 3 && (
+                <Badge 
+                  variant="outline" 
+                  className="text-xs cursor-pointer hover:bg-accent"
+                  onClick={() => setShowAllAmenities(true)}
+                  onMouseEnter={() => setShowAllAmenities(true)}
+                  onMouseLeave={() => setShowAllAmenities(false)}
+                >
+                  +{property.amenities.length - 3} more
+                </Badge>
+              )}
+            </>
           )}
         </div>
+
+        {/* Flexible spacer to push contact details and buttons to bottom */}
+        <div className="flex-1"></div>
+        
+        {/* Show contact details for subscribed users who clicked view details */}
+        {canViewDetails && showContactDetails && property.builderContact && (
+          <div className="mb-3 p-3 bg-accent/20 rounded-lg border">
+            <h4 className="font-medium text-sm text-muted-foreground mb-2">Builder Contact</h4>
+            <div className="space-y-1">
+              <div className="flex items-center text-sm">
+                <Phone className="h-3 w-3 mr-2" />
+                <span>{property.builderContact.phone}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <Mail className="h-3 w-3 mr-2" />
+                <span>{property.builderContact.email}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Contact: {property.builderContact.name}
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex flex-col gap-2">
+      <CardFooter className="p-4 pt-0 flex flex-col gap-2 mt-auto">
         <Button
           className="w-full"
           onClick={handleViewDetails}
