@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X, Crown, Building, Star } from "lucide-react";
+import { Check, X, Crown, Building, Star, Phone, Mail } from "lucide-react";
+import { SubscriptionService } from "@/services/subscriptionService";
 
 interface PricingPlan {
   id: string;
@@ -18,7 +19,12 @@ interface PricingPlan {
 }
 
 interface PricingPageProps {
-  user?: { name: string; plan?: string } | null;
+  user?: { 
+    id: string;
+    name: string; 
+    email: string;
+    plan?: string; 
+  } | null;
   onLogin: () => void;
 }
 
@@ -105,27 +111,65 @@ const PricingPage = ({ user, onLogin }: PricingPageProps) => {
     setSelectedPlan(plan);
     setIsProcessing(true);
 
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      const result = await SubscriptionService.subscribeToPlan(plan.id, user);
+      
+      if (result.success) {
+        toast({
+          title: "Subscription Successful!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Subscription Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Payment Successful!",
-        description: `You have successfully subscribed to the ${plan.name} plan.`,
+        title: "Subscription Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
       });
+    } finally {
       setIsProcessing(false);
       setSelectedPlan(null);
-    }, 2000);
+    }
   };
 
-  const handleBuilderSubscription = () => {
+  const handleBuilderSubscription = async () => {
     if (!user) {
       onLogin();
       return;
     }
 
-    toast({
-      title: "Builder Subscription",
-      description: "Please contact our sales team for builder subscription details.",
-    });
+    setIsProcessing(true);
+
+    try {
+      const result = await SubscriptionService.handleBuilderSubscription(user.email);
+      
+      if (result.success) {
+        toast({
+          title: "Request Sent!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Request Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process builder subscription request.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -262,14 +306,25 @@ const PricingPage = ({ user, onLogin }: PricingPageProps) => {
                 size="lg"
                 variant="premium"
                 onClick={handleBuilderSubscription}
-                className="w-full"
+                disabled={isProcessing}
+                className="w-full mb-4"
               >
-                Subscribe as Builder
+                {isProcessing ? "Processing..." : "Subscribe as Builder"}
               </Button>
 
-              <p className="text-sm text-muted-foreground mt-4">
-                Contact our sales team for custom pricing and enterprise solutions
-              </p>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center space-x-2">
+                  <Phone className="h-4 w-4" />
+                  <span>+91 98765 43210</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <Mail className="h-4 w-4" />
+                  <span>builders@nonobroker.com</span>
+                </div>
+                <p className="mt-4">
+                  Contact our sales team for custom pricing and enterprise solutions
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>

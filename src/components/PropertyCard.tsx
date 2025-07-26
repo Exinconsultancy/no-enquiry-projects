@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,11 @@ interface Property {
   type: "apartment" | "villa" | "commercial";
   amenities: string[];
   isLocked?: boolean;
+  builderContact?: {
+    name: string;
+    phone: string;
+    email: string;
+  };
 }
 
 interface PropertyCardProps {
@@ -25,8 +31,10 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: PropertyCardProps) => {
-  const canViewDetails = user && user.plan && property.isLocked !== true;
+  const hasSubscription = user && user.plan;
   const hasReachedLimit = user?.projectsViewed && user?.projectsLimit && user.projectsViewed >= user.projectsLimit;
+  const canViewDetails = hasSubscription && !hasReachedLimit;
+  const canDownloadBrochure = hasSubscription; // Brochure download now requires subscription
 
   return (
     <Card className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300 overflow-hidden">
@@ -42,7 +50,7 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
         >
           {property.type.charAt(0).toUpperCase() + property.type.slice(1)}
         </Badge>
-        {property.isLocked && (
+        {!hasSubscription && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <div className="text-center text-white">
               <Lock className="h-8 w-8 mx-auto mb-2" />
@@ -93,12 +101,12 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
         <Button
           className="w-full"
           onClick={() => onViewDetails(property)}
-          disabled={!canViewDetails || hasReachedLimit}
-          variant={canViewDetails && !hasReachedLimit ? "default" : "outline"}
+          disabled={!canViewDetails}
+          variant={canViewDetails ? "default" : "outline"}
         >
           {!user ? "Login to View Details" : 
+           !hasSubscription ? "Subscribe to View Details" :
            hasReachedLimit ? "Upgrade Plan" :
-           !canViewDetails ? "Subscription Required" : 
            "View Details"}
         </Button>
         <Button
@@ -106,9 +114,10 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
           size="sm"
           className="w-full"
           onClick={() => onDownloadBrochure(property)}
+          disabled={!canDownloadBrochure}
         >
           <Download className="h-4 w-4 mr-2" />
-          Download Brochure
+          {canDownloadBrochure ? "Download Brochure" : "Subscribe to Download"}
         </Button>
       </CardFooter>
     </Card>

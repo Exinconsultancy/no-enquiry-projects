@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,6 +13,7 @@ import AuthModal from "./components/AuthModal";
 import HomePage from "./pages/HomePage";
 import PropertiesPage from "./pages/PropertiesPage";
 import PricingPage from "./pages/PricingPage";
+import ProfilePage from "./pages/ProfilePage";
 import RentalsPage from "./pages/RentalsPage";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
@@ -129,6 +131,7 @@ const AppContent = () => {
         <Route path="/" element={<HomePage user={user} onLogin={openAuthModal} />} />
         <Route path="/properties" element={<PropertiesPage user={user} onLogin={openAuthModal} />} />
         <Route path="/pricing" element={<PricingPage user={user} onLogin={openAuthModal} />} />
+        <Route path="/profile" element={<ProfilePage user={user} />} />
         <Route path="/rentals" element={<RentalsPage user={user} />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<NotFound />} />

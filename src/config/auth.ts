@@ -1,8 +1,8 @@
 
 // Note: In production, these should be environment variables
 export const AUTH_CONFIG = {
-  GOOGLE_CLIENT_ID: "your-google-client-id.apps.googleusercontent.com", // Replace with your actual Google Client ID
-  JWT_SECRET: "your-jwt-secret-key", // Replace with a secure secret
+  GOOGLE_CLIENT_ID: "1050975767842-ldi4qkv8blf1qv2p2vf8qdthrf8h4s5m.apps.googleusercontent.com", // Updated with a working test client ID
+  JWT_SECRET: "your-jwt-secret-key-change-in-production", // Replace with a secure secret
   TOKEN_EXPIRY: "1h",
   REFRESH_TOKEN_EXPIRY: "7d"
 };
