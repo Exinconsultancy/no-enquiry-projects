@@ -219,10 +219,6 @@ const PropertiesPage = ({ onLogin }: PropertiesPageProps) => {
     }
 
     setSelectedProperty(property);
-    toast({
-      title: "Property Details",
-      description: `Contact: ${property.builderContact?.name} - ${property.builderContact?.phone}`,
-    });
   };
 
   const handleDownloadBrochure = (property: Property) => {

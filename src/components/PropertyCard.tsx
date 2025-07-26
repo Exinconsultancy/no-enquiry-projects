@@ -2,7 +2,8 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bed, Bath, Square, Download, Lock } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Download, Lock, Phone, Mail } from "lucide-react";
+import { useState } from "react";
 
 interface Property {
   id: string;
@@ -31,10 +32,21 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: PropertyCardProps) => {
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  
   const hasSubscription = user && user.plan;
   const hasReachedLimit = user?.projectsViewed && user?.projectsLimit && user.projectsViewed >= user.projectsLimit;
   const canViewDetails = hasSubscription && !hasReachedLimit;
-  const canDownloadBrochure = hasSubscription; // Brochure download now requires subscription
+  const canDownloadBrochure = hasSubscription;
+
+  const handleViewDetails = () => {
+    if (canViewDetails) {
+      setShowContactDetails(true);
+      onViewDetails(property);
+    } else {
+      onViewDetails(property);
+    }
+  };
 
   return (
     <Card className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300 overflow-hidden">
@@ -62,6 +74,27 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
 
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{property.title}</h3>
+        
+        {/* Show contact details for subscribed users who clicked view details */}
+        {canViewDetails && showContactDetails && property.builderContact && (
+          <div className="mb-3 p-3 bg-accent/20 rounded-lg border">
+            <h4 className="font-medium text-sm text-muted-foreground mb-2">Builder Contact</h4>
+            <div className="space-y-1">
+              <div className="flex items-center text-sm">
+                <Phone className="h-3 w-3 mr-2" />
+                <span>{property.builderContact.phone}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <Mail className="h-3 w-3 mr-2" />
+                <span>{property.builderContact.email}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Contact: {property.builderContact.name}
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="flex items-center text-muted-foreground mb-2">
           <MapPin className="h-4 w-4 mr-1" />
           <span className="text-sm">{property.location}</span>
@@ -100,13 +133,14 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
         <Button
           className="w-full"
-          onClick={() => onViewDetails(property)}
+          onClick={handleViewDetails}
           disabled={!canViewDetails}
           variant={canViewDetails ? "default" : "outline"}
         >
           {!user ? "Login to View Details" : 
            !hasSubscription ? "Subscribe to View Details" :
            hasReachedLimit ? "Upgrade Plan" :
+           showContactDetails ? "Contact Details Shown" :
            "View Details"}
         </Button>
         <Button
