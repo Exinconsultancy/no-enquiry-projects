@@ -9,6 +9,7 @@ interface User {
   plan?: string;
   projectsViewed?: number;
   projectsLimit?: number;
+  subscriptionExpiry?: string;
 }
 
 interface AuthContextType {

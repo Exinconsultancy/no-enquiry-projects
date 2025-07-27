@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -130,7 +129,7 @@ const AppContent = () => {
       )}
       
       <Routes>
-        <Route path="/" element={<HomePage user={user} onLogin={openAuthModal} />} />
+        <Route path="/" element={<HomePage onLogin={openAuthModal} />} />
         <Route path="/properties" element={<PropertiesPage onLogin={openAuthModal} />} />
         <Route path="/pricing" element={<PricingPage onLogin={openAuthModal} />} />
         <Route path="/profile" element={<ProfilePage />} />
