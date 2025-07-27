@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +6,11 @@ import { Search, MapPin, Shield, Users, TrendingUp, Star, CheckCircle } from "lu
 import { useNavigate } from "react-router-dom";
 import FeaturedProperties from "@/components/FeaturedProperties";
 
-const HomePage = () => {
+interface HomePageProps {
+  onLogin: () => void;
+}
+
+const HomePage = ({ onLogin }: HomePageProps) => {
   const navigate = useNavigate();
 
   const stats = [
