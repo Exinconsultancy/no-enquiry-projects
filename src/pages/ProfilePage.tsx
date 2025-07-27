@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Lock, Crown, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SubscriptionService } from "@/services/subscriptionService";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 const ProfilePage = () => {
   const { user, updateUserName, changePassword, updateUser } = useAuth();
@@ -372,13 +373,22 @@ const ProfilePage = () => {
                         <Button variant="outline" onClick={() => window.location.href = '/builder-dashboard'}>
                           Manage Projects
                         </Button>
-                        <Button 
-                          variant="destructive" 
-                          onClick={handleCancelBuilderSubscription}
-                          disabled={isLoading}
-                        >
-                          {isLoading ? "Cancelling..." : "Cancel Subscription"}
-                        </Button>
+                        <ConfirmationDialog
+                          trigger={
+                            <Button 
+                              variant="destructive" 
+                              disabled={isLoading}
+                            >
+                              {isLoading ? "Cancelling..." : "Cancel Subscription"}
+                            </Button>
+                          }
+                          title="Cancel Builder Subscription"
+                          description="Are you sure you want to cancel your builder subscription? This will immediately remove your access to post projects and manage listings. This action cannot be undone."
+                          confirmText="Yes, Cancel Subscription"
+                          cancelText="Keep Subscription"
+                          onConfirm={handleCancelBuilderSubscription}
+                          variant="destructive"
+                        />
                       </>
                     )}
                   </div>
