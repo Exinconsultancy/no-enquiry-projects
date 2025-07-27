@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { User, Lock, Crown, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { SubscriptionService } from "@/services/subscriptionService";
 
 const ProfilePage = () => {
   const { user, updateUserName, changePassword } = useAuth();
@@ -32,6 +32,8 @@ const ProfilePage = () => {
       </div>
     );
   }
+
+  const subscriptionStatus = SubscriptionService.getSubscriptionStatus(user);
 
   const handleNameUpdate = async () => {
     if (!newName.trim()) {
@@ -283,53 +285,76 @@ const ProfilePage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-                <div className="flex items-center space-x-4">
-                  <Badge 
-                    variant={getPlanBadgeVariant(user.plan)} 
-                    className="text-sm px-3 py-1"
-                  >
-                    {user.plan || "No Plan"}
-                  </Badge>
-                  {user.plan && user.plan !== "Builder" && (
-                    <div className="text-sm text-muted-foreground">
-                      Projects: {user.projectsViewed || 0}/{user.projectsLimit || 0}
+              <div className="space-y-4">
+                {/* Subscription Status */}
+                {user.plan && user.plan !== "No Plan" && (
+                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <Badge variant={subscriptionStatus.isActive ? "default" : "destructive"}>
+                        {subscriptionStatus.isActive ? "Active" : "Expired"}
+                      </Badge>
+                      {subscriptionStatus.isActive && (
+                        <span className="text-sm text-muted-foreground">
+                          {subscriptionStatus.daysRemaining} days left
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {user.plan === "Builder" && (
-                    <div className="text-sm text-muted-foreground">
-                      Builder Account - Unlimited Project Posting
-                    </div>
-                  )}
+                    {subscriptionStatus.expiryDate && (
+                      <div className="text-sm text-muted-foreground">
+                        Expires: {subscriptionStatus.expiryDate}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                  <div className="flex items-center space-x-4">
+                    <Badge 
+                      variant={getPlanBadgeVariant(user.plan)} 
+                      className="text-sm px-3 py-1"
+                    >
+                      {user.plan || "No Plan"}
+                    </Badge>
+                    {user.plan && user.plan !== "Builder" && (
+                      <div className="text-sm text-muted-foreground">
+                        Projects: {user.projectsViewed || 0}/{user.projectsLimit || 0}
+                      </div>
+                    )}
+                    {user.plan === "Builder" && (
+                      <div className="text-sm text-muted-foreground">
+                        Builder Account - Unlimited Project Posting
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex space-x-2">
+                    {!user.plan && (
+                      <Button variant="default" onClick={() => window.location.href = '/pricing'}>
+                        Subscribe Now
+                      </Button>
+                    )}
+                    {user.plan && user.plan !== "Builder" && (
+                      <Button variant="outline" onClick={() => window.location.href = '/pricing'}>
+                        Upgrade Plan
+                      </Button>
+                    )}
+                    {user.plan === "Builder" && (
+                      <Button variant="outline" onClick={() => window.location.href = '/builder-dashboard'}>
+                        Manage Projects
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex space-x-2">
-                  {!user.plan && (
-                    <Button variant="default" onClick={() => window.location.href = '/pricing'}>
-                      Subscribe Now
-                    </Button>
-                  )}
-                  {user.plan && user.plan !== "Builder" && (
-                    <Button variant="outline" onClick={() => window.location.href = '/pricing'}>
-                      Upgrade Plan
-                    </Button>
-                  )}
-                  {user.plan === "Builder" && (
-                    <Button variant="outline" onClick={() => window.location.href = '/builder-dashboard'}>
-                      Manage Projects
-                    </Button>
-                  )}
-                </div>
+                {!user.plan && (
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Subscribe to a plan to access premium property details and builder contacts.
+                  </p>
+                )}
+                {user.plan === "Builder" && (
+                  <p className="text-sm text-muted-foreground mt-4">
+                    As a builder, you can post unlimited projects and manage your listings.
+                  </p>
+                )}
               </div>
-              {!user.plan && (
-                <p className="text-sm text-muted-foreground mt-4">
-                  Subscribe to a plan to access premium property details and builder contacts.
-                </p>
-              )}
-              {user.plan === "Builder" && (
-                <p className="text-sm text-muted-foreground mt-4">
-                  As a builder, you can post unlimited projects and manage your listings.
-                </p>
-              )}
             </CardContent>
           </Card>
         </div>
