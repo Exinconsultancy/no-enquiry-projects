@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SubscriptionService } from "@/services/subscriptionService";
 
 const ProfilePage = () => {
-  const { user, updateUserName, changePassword } = useAuth();
+  const { user, updateUserName, changePassword, updateUser } = useAuth();
   const { toast } = useToast();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -34,6 +34,36 @@ const ProfilePage = () => {
   }
 
   const subscriptionStatus = SubscriptionService.getSubscriptionStatus(user);
+
+  const handleCancelBuilderSubscription = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const result = await SubscriptionService.cancelBuilderSubscription(user, updateUser);
+      
+      if (result.success) {
+        toast({
+          title: "Subscription Cancelled",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Cancellation Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleNameUpdate = async () => {
     if (!newName.trim()) {
@@ -338,9 +368,18 @@ const ProfilePage = () => {
                       </Button>
                     )}
                     {user.plan === "Builder" && (
-                      <Button variant="outline" onClick={() => window.location.href = '/builder-dashboard'}>
-                        Manage Projects
-                      </Button>
+                      <>
+                        <Button variant="outline" onClick={() => window.location.href = '/builder-dashboard'}>
+                          Manage Projects
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          onClick={handleCancelBuilderSubscription}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Cancelling..." : "Cancel Subscription"}
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
