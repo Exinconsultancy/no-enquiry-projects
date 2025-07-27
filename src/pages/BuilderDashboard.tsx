@@ -44,14 +44,29 @@ const BuilderDashboard = () => {
     navigate('/profile');
   };
 
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Builder Dashboard</h1>
-            <p className="text-muted-foreground">Manage your property listings and projects</p>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleGoHome}
+              className="flex items-center space-x-2"
+            >
+              <Building2 className="h-6 w-6 text-primary" />
+              <span className="font-bold text-lg">NoNo Broker</span>
+            </Button>
+            <div className="border-l border-border pl-4">
+              <h1 className="text-3xl font-bold mb-2">Builder Dashboard</h1>
+              <p className="text-muted-foreground">Manage your property listings and projects</p>
+            </div>
           </div>
           <Button onClick={handleGoToProfile} variant="outline" className="flex items-center space-x-2">
             <User className="h-4 w-4" />

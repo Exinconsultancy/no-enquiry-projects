@@ -47,6 +47,15 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
               <span>Properties</span>
             </Link>
             <Link
+              to="/hostels"
+              className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/hostels") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+              }`}
+            >
+              <Building className="h-4 w-4" />
+              <span>Hostels/PG</span>
+            </Link>
+            <Link
               to="/rentals"
               className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive("/rentals") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
@@ -131,6 +140,15 @@ const Navbar = ({ user, onLogin, onLogout }: NavbarProps) => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Properties
+              </Link>
+              <Link
+                to="/hostels"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive("/hostels") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Hostels/PG
               </Link>
               <Link
                 to="/rentals"
