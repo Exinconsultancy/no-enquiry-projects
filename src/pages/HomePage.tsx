@@ -1,255 +1,169 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Building, Users, Shield, Star, ArrowRight, Play } from "lucide-react";
-import heroImage from "@/assets/hero-real-estate.jpg";
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
+import { Search, MapPin, Shield, Users, TrendingUp, Star, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import FeaturedProperties from "@/components/FeaturedProperties";
 
-interface HomePageProps {
-  user?: { name: string; plan?: string } | null;
-  onLogin: () => void;
-}
-
-const HomePage = ({ user, onLogin }: HomePageProps) => {
-  const [playingVideo, setPlayingVideo] = useState(false);
+const HomePage = () => {
+  const navigate = useNavigate();
 
   const stats = [
-    { label: "Active Properties", value: "2,500+", icon: Building },
-    { label: "Happy Customers", value: "10,000+", icon: Users },
-    { label: "Builder Partners", value: "500+", icon: Star },
-    { label: "Secure Transactions", value: "100%", icon: Shield },
+    { label: "Properties Listed", value: "4,500+", icon: MapPin },
+    { label: "Happy Clients", value: "2,800+", icon: Users },
+    { label: "Deals Closed", value: "1,200+", icon: Shield },
+    { label: "Monthly Visitors", value: "15,000+", icon: TrendingUp },
   ];
 
-  const featuredProperties = [
+  const features = [
     {
-      id: "1",
-      title: "Luxury Residences at Marina Bay",
-      location: "Mumbai, Maharashtra",
-      price: "₹2.5 Cr onwards",
-      image: property1,
-      type: "Apartment",
-      badge: "New Launch"
+      title: "Extensive Property Listings",
+      description: "Browse through thousands of verified property listings across India.",
+      icon: Search,
     },
     {
-      id: "2",
-      title: "Premium Villas in Green Valley",
-      location: "Bangalore, Karnataka",
-      price: "₹1.8 Cr onwards",
-      image: property2,
-      type: "Villa",
-      badge: "Ready to Move"
+      title: "Direct Builder Contacts",
+      description: "Connect directly with builders and sourcing teams for exclusive deals.",
+      icon: Users,
     },
     {
-      id: "3",
-      title: "Commercial Spaces Tech Park",
-      location: "Gurgaon, Haryana",
-      price: "₹3.2 Cr onwards",
-      image: property3,
-      type: "Commercial",
-      badge: "Premium"
-    }
+      title: "Secure Transactions",
+      description: "Ensure safe and secure property transactions with our verified process.",
+      icon: Shield,
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "Priya Sharma",
+      text: "I found my dream home through NoBroker! The direct builder contacts made the process so much easier.",
+      rating: 5,
+    },
+    {
+      name: "Rahul Verma",
+      text: "The extensive listings and secure transaction process gave me the confidence to invest in a new property.",
+      rating: 4,
+    },
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section 
-        className="relative h-[80vh] flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: `linear-gradient(var(--gradient-hero)), url(${heroImage})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-foreground/20" />
-        <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Find Your
-            <span className="block bg-gradient-to-r from-secondary to-primary-glow bg-clip-text text-transparent">
-              Dream Property
-            </span>
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="/src/assets/hero-bg.jpg"
+            alt="Hero Background"
+            className="w-full h-full object-cover animate-fade-in"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background to-background/80 backdrop-blur-sm z-10" />
+        </div>
+
+        <div className="container relative z-20 text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6">
+            Find Your Perfect Property
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-white/90 leading-relaxed">
-            Direct access to premium properties and builder contacts. No broker fees, just results.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Browse verified listings, connect with builders directly, and secure your dream property with confidence.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            {user ? (
-              <Link to="/properties">
-                <Button size="lg" variant="hero" className="text-lg px-8 py-6">
-                  Explore Properties
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            ) : (
-              <Button size="lg" variant="hero" className="text-lg px-8 py-6" onClick={onLogin}>
-                Start Your Journey
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            )}
-            
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
-              onClick={() => setPlayingVideo(true)}
-            >
-              <Play className="mr-2 h-5 w-5" />
-              Watch Demo
+          <div className="space-x-4">
+            <Button size="lg" onClick={() => navigate('/properties')}>
+              <Search className="h-5 w-5 mr-2" />
+              Explore Properties
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => navigate('/pricing')}>
+              View Subscription Plans
             </Button>
           </div>
         </div>
       </section>
 
+      {/* Featured Properties Section */}
+      <FeaturedProperties />
+
       {/* Stats Section */}
-      <section className="py-16 bg-muted/50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="py-16 bg-accent/20">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-                  <stat.icon className="h-8 w-8 text-primary" />
-                </div>
-                <div className="text-3xl font-bold text-foreground mb-2">{stat.value}</div>
-                <div className="text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Properties */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Featured Properties</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover handpicked premium properties from trusted builders across India
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {featuredProperties.map((property) => (
-              <Card key={property.id} className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300 overflow-hidden">
-                <div className="relative">
-                  <img 
-                    src={property.image} 
-                    alt={property.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <Badge className="absolute top-3 left-3 bg-secondary text-secondary-foreground">
-                    {property.badge}
-                  </Badge>
-                  <Badge variant="outline" className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm">
-                    {property.type}
-                  </Badge>
-                </div>
+              <Card key={index}>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-2">{property.title}</h3>
-                  <p className="text-muted-foreground mb-3">{property.location}</p>
-                  <div className="text-2xl font-bold text-primary">{property.price}</div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="text-2xl font-bold">{stat.value}</p>
+                    </div>
+                    <stat.icon className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center">
-            <Link to="/properties">
-              <Button size="lg" variant="premium">
-                View All Properties
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+      {/* Features Section */}
+      <section className="py-16 bg-background">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
+            <p className="text-muted-foreground text-lg">
+              Explore the features that make NoBroker the best platform for your property needs
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index} className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300">
+                <CardContent className="p-6">
+                  <feature.icon className="h-8 w-8 text-primary mb-4" />
+                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4">
+      {/* Testimonials Section */}
+      <section className="py-16 bg-accent/20">
+        <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">How NoNo Broker Works</h2>
-            <p className="text-xl text-muted-foreground">
-              Simple, transparent, and direct access to properties
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
+            <p className="text-muted-foreground text-lg">
+              Read testimonials from satisfied clients who found their dream properties with us
             </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center p-8 border-none shadow-lg">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
-                <Search className="h-8 w-8 text-primary" />
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl">Choose Your Plan</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <CardDescription className="text-base">
-                  Select from our affordable subscription plans based on your property viewing needs
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-8 border-none shadow-lg">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
-                <Building className="h-8 w-8 text-primary" />
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl">Browse Properties</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <CardDescription className="text-base">
-                  Access verified property listings with detailed information and high-quality images
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-8 border-none shadow-lg">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl">Connect Directly</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <CardDescription className="text-base">
-                  Get direct contact details of builder sourcing teams. No middleman, no extra fees
-                </CardDescription>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-3">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 text-yellow-500" />
+                    ))}
+                  </div>
+                  <p className="text-sm italic mb-3">"{testimonial.text}"</p>
+                  <p className="font-semibold text-sm">{testimonial.name}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-primary to-primary-glow">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Find Your Perfect Property?
+      <section className="py-16 bg-primary text-primary-foreground">
+        <div className="container text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Find Your Dream Property?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
-            Join thousands of satisfied customers who found their dream homes through NoNo Broker
+          <p className="text-lg max-w-3xl mx-auto mb-8">
+            Join thousands of satisfied clients and start your property search today.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {user ? (
-              <Link to="/pricing">
-                <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-                  Upgrade Your Plan
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Button size="lg" variant="secondary" className="text-lg px-8 py-6" onClick={onLogin}>
-                  Get Started Today
-                </Button>
-                <Link to="/pricing">
-                  <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20">
-                    View Pricing
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
+          <Button size="lg" onClick={() => navigate('/properties')}>
+            Explore Properties Now
+          </Button>
         </div>
       </section>
     </div>

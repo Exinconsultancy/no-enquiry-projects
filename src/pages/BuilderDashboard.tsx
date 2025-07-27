@@ -1,81 +1,181 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Building, Plus, Edit, Trash2, Eye, Users, Upload, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { SubscriptionService } from "@/services/subscriptionService";
+import { Building, Plus, Upload, Calendar, AlertTriangle, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Project {
   id: string;
   title: string;
   location: string;
   price: string;
+  type: "apartment" | "villa" | "commercial";
   bedrooms: number;
   bathrooms: number;
   area: string;
-  type: "apartment" | "villa" | "commercial";
   description: string;
   amenities: string[];
-  status: "active" | "inactive";
-  views: number;
-  inquiries: number;
+  images: string[];
+  brochure?: string;
+  status: "active" | "pending" | "sold";
   createdAt: string;
-  brochureUrl?: string;
-  brochureName?: string;
 }
 
 const BuilderDashboard = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: "1",
-      title: "Luxury Residences at Marina Bay",
-      location: "Mumbai, Maharashtra",
-      price: "₹2.5 Cr onwards",
-      bedrooms: 3,
-      bathrooms: 2,
-      area: "1,450 sq ft",
-      type: "apartment",
-      description: "Premium residential complex with modern amenities",
-      amenities: ["Swimming Pool", "Gym", "Parking", "Security", "Garden"],
-      status: "active",
-      views: 245,
-      inquiries: 12,
-      createdAt: "2024-01-15"
-    }
-  ]);
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{
+    isActive: boolean;
+    daysRemaining: number;
+    expiryDate: string | null;
+  }>({ isActive: false, daysRemaining: 0, expiryDate: null });
 
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [formData, setFormData] = useState({
+  const [newProject, setNewProject] = useState({
     title: "",
     location: "",
     price: "",
-    bedrooms: "",
-    bathrooms: "",
+    type: "apartment" as const,
+    bedrooms: 1,
+    bathrooms: 1,
     area: "",
-    type: "apartment" as "apartment" | "villa" | "commercial",
     description: "",
-    amenities: ""
+    amenities: "",
+    brochure: null as File | null
   });
-  const [brochureFile, setBrochureFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      const status = SubscriptionService.getSubscriptionStatus(user);
+      setSubscriptionStatus(status);
+      
+      // Auto-cancel expired subscriptions
+      if (user.plan === 'Builder' && !status.isActive) {
+        updateUser({
+          plan: 'No Plan',
+          projectsLimit: 0,
+          subscriptionExpiry: undefined
+        });
+      }
+    }
+  }, [user, updateUser]);
+
+  const handleAddProject = async () => {
+    if (!user || user.plan !== 'Builder') {
+      toast({
+        title: "Access Denied",
+        description: "You need an active Builder subscription to add projects.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!subscriptionStatus.isActive) {
+      toast({
+        title: "Subscription Expired",
+        description: "Your Builder subscription has expired. Please renew to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const project: Project = {
+        id: Date.now().toString(),
+        ...newProject,
+        amenities: newProject.amenities.split(',').map(a => a.trim()),
+        images: ["/src/assets/property-1.jpg"],
+        brochure: newProject.brochure ? `brochure_${Date.now()}.pdf` : undefined,
+        status: "active",
+        createdAt: new Date().toISOString()
+      };
+
+      setProjects([...projects, project]);
+      setNewProject({
+        title: "",
+        location: "",
+        price: "",
+        type: "apartment",
+        bedrooms: 1,
+        bathrooms: 1,
+        area: "",
+        description: "",
+        amenities: "",
+        brochure: null
+      });
+      setShowAddProject(false);
+
+      toast({
+        title: "Project Added Successfully!",
+        description: "Your property has been listed and is now live.",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload Failed",
+        description: "Failed to add project. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!user) return;
+
+    try {
+      const result = await SubscriptionService.cancelBuilderSubscription(user, updateUser);
+      
+      if (result.success) {
+        toast({
+          title: "Subscription Cancelled",
+          description: result.message,
+        });
+        navigate('/');
+      } else {
+        toast({
+          title: "Cancellation Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!user || user.plan !== 'Builder') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-96">
           <CardContent className="p-8 text-center">
-            <Building className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">Builder Access Required</h2>
-            <p className="text-muted-foreground">You need a builder subscription to access this dashboard.</p>
-            <Button className="mt-4" onClick={() => window.location.href = '/pricing'}>
-              Get Builder Access
+            <Building className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Builder Access Required</h2>
+            <p className="text-muted-foreground mb-4">
+              You need an active Builder subscription to access this dashboard.
+            </p>
+            <Button onClick={() => navigate('/pricing')}>
+              Get Builder Subscription
             </Button>
           </CardContent>
         </Card>
@@ -83,257 +183,214 @@ const BuilderDashboard = () => {
     );
   }
 
-  const handleBrochureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a PDF or image file.",
-          variant: "destructive",
-        });
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast({
-          title: "File Too Large",
-          description: "Please upload a file smaller than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setBrochureFile(file);
-    }
-  };
-
-  const handleSubmitProject = async () => {
-    if (!formData.title || !formData.location || !formData.price) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Simulate brochure upload
-    let brochureUrl = "";
-    let brochureName = "";
-    if (brochureFile) {
-      brochureUrl = URL.createObjectURL(brochureFile);
-      brochureName = brochureFile.name;
-    }
-
-    const newProject: Project = {
-      id: editingProject?.id || Date.now().toString(),
-      title: formData.title,
-      location: formData.location,
-      price: formData.price,
-      bedrooms: parseInt(formData.bedrooms) || 0,
-      bathrooms: parseInt(formData.bathrooms) || 0,
-      area: formData.area,
-      type: formData.type,
-      description: formData.description,
-      amenities: formData.amenities.split(',').map(a => a.trim()).filter(Boolean),
-      status: "active",
-      views: editingProject?.views || 0,
-      inquiries: editingProject?.inquiries || 0,
-      createdAt: editingProject?.createdAt || new Date().toISOString().split('T')[0],
-      brochureUrl,
-      brochureName
-    };
-
-    if (editingProject) {
-      setProjects(prev => prev.map(p => p.id === editingProject.id ? newProject : p));
-      toast({
-        title: "Project Updated",
-        description: "Your project has been updated successfully.",
-      });
-    } else {
-      setProjects(prev => [...prev, newProject]);
-      toast({
-        title: "Project Added",
-        description: "Your project has been posted successfully.",
-      });
-    }
-
-    // Reset form
-    setFormData({
-      title: "",
-      location: "",
-      price: "",
-      bedrooms: "",
-      bathrooms: "",
-      area: "",
-      type: "apartment",
-      description: "",
-      amenities: ""
-    });
-    setBrochureFile(null);
-    setShowAddForm(false);
-    setEditingProject(null);
-  };
-
-  const handleEditProject = (project: Project) => {
-    setFormData({
-      title: project.title,
-      location: project.location,
-      price: project.price,
-      bedrooms: project.bedrooms.toString(),
-      bathrooms: project.bathrooms.toString(),
-      area: project.area,
-      type: project.type,
-      description: project.description,
-      amenities: project.amenities.join(', ')
-    });
-    setEditingProject(project);
-    setShowAddForm(true);
-  };
-
-  const handleDeleteProject = (projectId: string) => {
-    setProjects(prev => prev.filter(p => p.id !== projectId));
-    toast({
-      title: "Project Deleted",
-      description: "Project has been removed successfully.",
-    });
-  };
-
-  const toggleProjectStatus = (projectId: string) => {
-    setProjects(prev => prev.map(p => 
-      p.id === projectId ? { ...p, status: p.status === 'active' ? 'inactive' : 'active' } : p
-    ));
-    toast({
-      title: "Status Updated",
-      description: "Project status has been updated.",
-    });
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <Building className="h-8 w-8 mr-3" />
-            Builder Dashboard
-          </h1>
-          <p className="text-muted-foreground">Manage your property listings and track performance.</p>
+      {/* Header with Logo */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2"
+              >
+                <Home className="h-5 w-5" />
+                <span className="font-bold text-lg">NoBroker</span>
+              </Button>
+              <div className="h-6 w-px bg-border"></div>
+              <h1 className="text-2xl font-bold">Builder Dashboard</h1>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Subscription Status</p>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={subscriptionStatus.isActive ? "default" : "destructive"}>
+                    {subscriptionStatus.isActive ? "Active" : "Expired"}
+                  </Badge>
+                  {subscriptionStatus.isActive && (
+                    <span className="text-sm text-muted-foreground">
+                      {subscriptionStatus.daysRemaining} days left
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Cancel Subscription
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancel Builder Subscription</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to cancel your Builder subscription? This will:
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li>Remove access to the Builder Dashboard</li>
+                        <li>Hide all your active property listings</li>
+                        <li>Cancel all pending inquiries</li>
+                        <li>This action cannot be undone</li>
+                      </ul>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Cancel Subscription
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Subscription Warning */}
+        {subscriptionStatus.isActive && subscriptionStatus.daysRemaining <= 7 && (
+          <Card className="mb-6 border-yellow-500 bg-yellow-50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                <div>
+                  <p className="font-medium text-yellow-800">Subscription Expiring Soon</p>
+                  <p className="text-sm text-yellow-700">
+                    Your Builder subscription expires in {subscriptionStatus.daysRemaining} days on {subscriptionStatus.expiryDate}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Dashboard Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Building className="h-8 w-8 text-primary" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Total Projects</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Projects</p>
                   <p className="text-2xl font-bold">{projects.length}</p>
                 </div>
+                <Building className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Eye className="h-8 w-8 text-blue-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Total Views</p>
-                  <p className="text-2xl font-bold">{projects.reduce((sum, p) => sum + p.views, 0)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Total Inquiries</p>
-                  <p className="text-2xl font-bold">{projects.reduce((sum, p) => sum + p.inquiries, 0)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Building className="h-8 w-8 text-orange-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Active Projects</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Listings</p>
                   <p className="text-2xl font-bold">{projects.filter(p => p.status === 'active').length}</p>
                 </div>
+                <Calendar className="h-8 w-8 text-success" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Days Remaining</p>
+                  <p className="text-2xl font-bold">{subscriptionStatus.daysRemaining}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-warning" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Add Project Button */}
-        <div className="mb-6">
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center">
+        <div className="mb-8">
+          <Button
+            onClick={() => setShowAddProject(true)}
+            disabled={!subscriptionStatus.isActive}
+            className="w-full md:w-auto"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add New Project
           </Button>
         </div>
 
-        {/* Add/Edit Project Form */}
-        {showAddForm && (
+        {/* Add Project Form */}
+        {showAddProject && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>{editingProject ? 'Edit Project' : 'Add New Project'}</CardTitle>
+              <CardTitle>Add New Project</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Project Title*</Label>
+                  <Label htmlFor="title">Project Title</Label>
                   <Input
                     id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    value={newProject.title}
+                    onChange={(e) => setNewProject({...newProject, title: e.target.value})}
                     placeholder="Enter project title"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="location">Location*</Label>
+                  <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
-                    value={formData.location}
-                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="City, State"
+                    value={newProject.location}
+                    onChange={(e) => setNewProject({...newProject, location: e.target.value})}
+                    placeholder="Enter location"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="price">Price*</Label>
+                  <Label htmlFor="price">Price</Label>
                   <Input
                     id="price"
-                    value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="₹2.5 Cr onwards"
+                    value={newProject.price}
+                    onChange={(e) => setNewProject({...newProject, price: e.target.value})}
+                    placeholder="₹1.5 Cr"
                   />
                 </div>
                 <div>
                   <Label htmlFor="type">Property Type</Label>
-                  <select
-                    id="type"
-                    value={formData.type}
-                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
-                    className="w-full p-2 border rounded-md"
-                  >
-                    <option value="apartment">Apartment</option>
-                    <option value="villa">Villa</option>
-                    <option value="commercial">Commercial</option>
-                  </select>
+                  <Select value={newProject.type} onValueChange={(value: any) => setNewProject({...newProject, type: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="apartment">Apartment</SelectItem>
+                      <SelectItem value="villa">Villa</SelectItem>
+                      <SelectItem value="commercial">Commercial</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div>
+                  <Label htmlFor="area">Area</Label>
+                  <Input
+                    id="area"
+                    value={newProject.area}
+                    onChange={(e) => setNewProject({...newProject, area: e.target.value})}
+                    placeholder="2500 sq ft"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="bedrooms">Bedrooms</Label>
                   <Input
                     id="bedrooms"
                     type="number"
-                    value={formData.bedrooms}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bedrooms: e.target.value }))}
-                    placeholder="3"
+                    value={newProject.bedrooms}
+                    onChange={(e) => setNewProject({...newProject, bedrooms: parseInt(e.target.value)})}
+                    min="0"
                   />
                 </div>
                 <div>
@@ -341,84 +398,65 @@ const BuilderDashboard = () => {
                   <Input
                     id="bathrooms"
                     type="number"
-                    value={formData.bathrooms}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bathrooms: e.target.value }))}
-                    placeholder="2"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="area">Area</Label>
-                  <Input
-                    id="area"
-                    value={formData.area}
-                    onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
-                    placeholder="1,450 sq ft"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="amenities">Amenities (comma separated)</Label>
-                  <Input
-                    id="amenities"
-                    value={formData.amenities}
-                    onChange={(e) => setFormData(prev => ({ ...prev, amenities: e.target.value }))}
-                    placeholder="Swimming Pool, Gym, Parking"
+                    value={newProject.bathrooms}
+                    onChange={(e) => setNewProject({...newProject, bathrooms: parseInt(e.target.value)})}
+                    min="0"
                   />
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({...newProject, description: e.target.value})}
                   placeholder="Describe your project..."
                   rows={3}
                 />
               </div>
 
               <div>
-                <Label htmlFor="brochure">Project Brochure (PDF/Image)</Label>
-                <div className="flex items-center space-x-2">
-                  <Input
-                    id="brochure"
-                    type="file"
-                    accept=".pdf,image/*"
-                    onChange={handleBrochureUpload}
-                    className="flex-1"
-                  />
-                  {brochureFile && (
-                    <div className="flex items-center text-sm text-green-600">
-                      <FileText className="h-4 w-4 mr-1" />
-                      {brochureFile.name}
-                    </div>
-                  )}
-                </div>
+                <Label htmlFor="amenities">Amenities (comma separated)</Label>
+                <Input
+                  id="amenities"
+                  value={newProject.amenities}
+                  onChange={(e) => setNewProject({...newProject, amenities: e.target.value})}
+                  placeholder="Swimming Pool, Gym, Parking, Security"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="brochure">Project Brochure (PDF)</Label>
+                <Input
+                  id="brochure"
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setNewProject({...newProject, brochure: e.target.files?.[0] || null})}
+                />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upload a brochure for your project (Max 10MB, PDF or Image)
+                  Upload a PDF brochure for your project (optional)
                 </p>
               </div>
 
-              <div className="flex space-x-2">
-                <Button onClick={handleSubmitProject}>
-                  {editingProject ? 'Update Project' : 'Add Project'}
+              <div className="flex space-x-4">
+                <Button
+                  onClick={handleAddProject}
+                  disabled={isUploading || !newProject.title || !newProject.location}
+                >
+                  {isUploading ? (
+                    <>
+                      <Upload className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Project
+                    </>
+                  )}
                 </Button>
-                <Button variant="outline" onClick={() => {
-                  setShowAddForm(false);
-                  setEditingProject(null);
-                  setBrochureFile(null);
-                  setFormData({
-                    title: "",
-                    location: "",
-                    price: "",
-                    bedrooms: "",
-                    bathrooms: "",
-                    area: "",
-                    type: "apartment",
-                    description: "",
-                    amenities: ""
-                  });
-                }}>
+                <Button variant="outline" onClick={() => setShowAddProject(false)}>
                   Cancel
                 </Button>
               </div>
@@ -427,70 +465,57 @@ const BuilderDashboard = () => {
         )}
 
         {/* Projects List */}
-        <div className="grid grid-cols-1 gap-6">
-          {projects.map((project) => (
-            <Card key={project.id}>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    <p className="text-muted-foreground mb-2">{project.location}</p>
-                    <p className="text-lg font-semibold text-primary">{project.price}</p>
-                  </div>
-                  <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                    {project.status}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-500">{project.views}</p>
-                    <p className="text-sm text-muted-foreground">Views</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-500">{project.inquiries}</p>
-                    <p className="text-sm text-muted-foreground">Inquiries</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{project.bedrooms}</p>
-                    <p className="text-sm text-muted-foreground">Bedrooms</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{project.area}</p>
-                    <p className="text-sm text-muted-foreground">Area</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.amenities.slice(0, 5).map((amenity, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {amenity}
-                    </Badge>
-                  ))}
-                  {project.brochureUrl && (
-                    <Badge variant="secondary" className="text-xs">
-                      <FileText className="h-3 w-3 mr-1" />
-                      Brochure Available
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEditProject(project)}>
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => toggleProjectStatus(project.id)}>
-                    {project.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDeleteProject(project.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Your Projects</h2>
+          
+          {projects.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Building className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
+                <p className="text-muted-foreground">
+                  Start by adding your first project to showcase your properties.
+                </p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project) => (
+                <Card key={project.id} className="hover:shadow-lg transition-shadow">
+                  <div className="relative">
+                    <img
+                      src={project.images[0]}
+                      alt={project.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <Badge
+                      variant={project.status === 'active' ? 'default' : 'secondary'}
+                      className="absolute top-3 right-3"
+                    >
+                      {project.status}
+                    </Badge>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{project.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">{project.location}</p>
+                    <p className="text-xl font-bold text-primary mb-2">{project.price}</p>
+                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <span>{project.bedrooms} bed</span>
+                      <span>{project.bathrooms} bath</span>
+                      <span>{project.area}</span>
+                    </div>
+                    {project.brochure && (
+                      <div className="mt-2">
+                        <Badge variant="outline" className="text-xs">
+                          Brochure Available
+                        </Badge>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
