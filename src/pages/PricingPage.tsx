@@ -21,7 +21,7 @@ interface PricingPlan {
 }
 
 const PricingPage = () => {
-  const { user, isAdmin } = useSecureAuth();
+  const { user, isAdmin, updateUser } = useSecureAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -103,10 +103,7 @@ const PricingPage = () => {
       const result = await SubscriptionService.subscribeToPlan(
         plan.id, 
         user, 
-        (updates) => {
-          // This would update the user context - for now we'll just show success
-          console.log("User updates:", updates);
-        }
+        updateUser
       );
       
       if (result.success) {
