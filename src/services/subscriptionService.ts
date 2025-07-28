@@ -11,6 +11,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  role?: string;
   plan?: string;
   projectsViewed?: number;
   projectsLimit?: number;
@@ -69,6 +70,7 @@ export class SubscriptionService {
       expiryDate.setDate(expiryDate.getDate() + 30);
       
       updateUser({
+        role: 'builder',
         plan: 'Builder',
         projectsLimit: 999,
         projectsViewed: 0,
