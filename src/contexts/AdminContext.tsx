@@ -40,17 +40,6 @@ interface AdminProviderProps {
 }
 
 export const AdminProvider = ({ children }: AdminProviderProps) => {
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  
-  // Wait for auth context to be available
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAuthReady(true);
-    }, 0);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
   const [properties, setProperties] = useState<Property[]>([
     // Properties
     {
@@ -167,71 +156,70 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     }
   ]);
 
-  const AdminProviderContent = () => {
-    const { isAdmin } = useSecureAuth();
+  // Get auth context safely
+  let isAdmin = false;
+  try {
+    const { isAdmin: authIsAdmin } = useSecureAuth();
+    isAdmin = authIsAdmin;
+  } catch (error) {
+    // SecureAuth not available yet, default to false
+    isAdmin = false;
+  }
+
+  const addProperty = (property: Omit<Property, 'id' | 'createdDate'>) => {
+    if (!isAdmin) {
+      throw new Error("Only admins can add properties");
+    }
     
-    const addProperty = (property: Omit<Property, 'id' | 'createdDate'>) => {
-      if (!isAdmin) {
-        throw new Error("Only admins can add properties");
-      }
-      
-      const newProperty: Property = {
-        ...property,
-        id: Date.now().toString(),
-        createdDate: new Date().toISOString().split('T')[0]
-      };
-      
-      setProperties(prev => [...prev, newProperty]);
+    const newProperty: Property = {
+      ...property,
+      id: Date.now().toString(),
+      createdDate: new Date().toISOString().split('T')[0]
     };
+    
+    setProperties(prev => [...prev, newProperty]);
+  };
 
-    const updateProperty = (id: string, updates: Partial<Property>) => {
-      if (!isAdmin) {
-        throw new Error("Only admins can update properties");
-      }
-      
-      setProperties(prev => 
-        prev.map(property => 
-          property.id === id ? { ...property, ...updates } : property
-        )
-      );
-    };
-
-    const deleteProperty = (id: string) => {
-      if (!isAdmin) {
-        throw new Error("Only admins can delete properties");
-      }
-      
-      setProperties(prev => prev.filter(property => property.id !== id));
-    };
-
-    const getPropertiesByCategory = (category: Property['category']) => {
-      return properties.filter(property => property.category === category);
-    };
-
-    const getPropertyById = (id: string) => {
-      return properties.find(property => property.id === id);
-    };
-
-    const value = {
-      properties,
-      addProperty,
-      updateProperty,
-      deleteProperty,
-      getPropertiesByCategory,
-      getPropertyById
-    };
-
-    return (
-      <AdminContext.Provider value={value}>
-        {children}
-      </AdminContext.Provider>
+  const updateProperty = (id: string, updates: Partial<Property>) => {
+    if (!isAdmin) {
+      throw new Error("Only admins can update properties");
+    }
+    
+    setProperties(prev => 
+      prev.map(property => 
+        property.id === id ? { ...property, ...updates } : property
+      )
     );
   };
 
-  // Render AdminProviderContent only when auth is ready
-  if (!isAuthReady) {
-    return <>{children}</>;
-  }
+  const deleteProperty = (id: string) => {
+    if (!isAdmin) {
+      throw new Error("Only admins can delete properties");
+    }
+    
+    setProperties(prev => prev.filter(property => property.id !== id));
+  };
 
-  return <AdminProviderContent />;
+  const getPropertiesByCategory = (category: Property['category']) => {
+    return properties.filter(property => property.category === category);
+  };
+
+  const getPropertyById = (id: string) => {
+    return properties.find(property => property.id === id);
+  };
+
+  const value = {
+    properties,
+    addProperty,
+    updateProperty,
+    deleteProperty,
+    getPropertiesByCategory,
+    getPropertyById
+  };
+
+  return (
+    <AdminContext.Provider value={value}>
+      {children}
+    </AdminContext.Provider>
+  );
 };
