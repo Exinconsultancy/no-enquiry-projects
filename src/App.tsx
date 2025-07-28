@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import AdminRouteGuard from "./components/AdminRouteGuard";
+import BuilderRouteGuard from "./components/BuilderRouteGuard";
 
 function App() {
   return (
@@ -39,7 +40,11 @@ function App() {
                       <AdminPage />
                     </AdminRouteGuard>
                   } />
-                  <Route path="/builder-dashboard" element={<BuilderDashboard />} />
+                  <Route path="/builder-dashboard" element={
+                    <BuilderRouteGuard>
+                      <BuilderDashboard />
+                    </BuilderRouteGuard>
+                  } />
                   <Route path="/property/:id" element={<PropertyDetailPage />} />
                   <Route path="/rental/:id" element={<PropertyDetailPage />} />
                   <Route path="/hostel/:id" element={<PropertyDetailPage />} />
