@@ -16,9 +16,9 @@ const PropertiesPage = () => {
 
   const stats = [
     { title: "Total Properties", value: filteredProperties.length },
-    { title: "Active Listings", value: filteredProperties.filter(p => p.status === "active").length },
+    { title: "Available Now", value: filteredProperties.filter(p => p.status === "active").length },
     { title: "Cities Covered", value: new Set(filteredProperties.map(p => p.location.split(",")[1]?.trim())).size },
-    { title: "Builders", value: new Set(filteredProperties.map(p => p.builder)).size }
+    { title: "Property Types", value: new Set(filteredProperties.map(p => p.type)).size }
   ];
 
   const handleViewDetails = (property: any) => {
@@ -92,10 +92,10 @@ const PropertiesPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Premium Properties
+            Properties for Sale
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Discover your dream home from our exclusive collection of premium properties
+            Discover your dream property from our curated collection of premium residential and commercial spaces
           </p>
         </div>
 
@@ -134,16 +134,19 @@ const PropertiesPage = () => {
                   location: property.location,
                   price: property.price,
                   image: property.image || "/placeholder.svg",
-                  bedrooms: 2,
-                  bathrooms: 2,
-                  area: "1200 sq ft",
-                  type: property.type as "apartment" | "villa" | "commercial",
-                  amenities: ["Parking", "Security", "Gym"],
+                  bedrooms: property.type === "Villa" ? 4 : 3,
+                  bathrooms: property.type === "Villa" ? 3 : 2,
+                  area: property.type === "Villa" ? "2500 sq ft" : "1800 sq ft",
+                  type: property.type.toLowerCase() as "apartment" | "villa" | "commercial",
+                  amenities: ["Swimming Pool", "Gym", "24/7 Security", "Parking", "Garden", "Club House"],
                   builderContact: {
                     name: property.builder,
                     phone: "+91 9876543210",
                     email: "contact@builder.com"
-                  }
+                  },
+                  category: property.category,
+                  status: property.status,
+                  builder: property.builder
                 };
 
                 return (

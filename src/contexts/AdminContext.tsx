@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 
@@ -22,6 +21,7 @@ interface AdminContextType {
   updateProperty: (id: string, updates: Partial<Property>) => void;
   deleteProperty: (id: string) => void;
   getPropertiesByCategory: (category: Property['category']) => Property[];
+  getPropertyById: (id: string) => Property | undefined;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -195,12 +195,17 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     return properties.filter(property => property.category === category);
   };
 
+  const getPropertyById = (id: string) => {
+    return properties.find(property => property.id === id);
+  };
+
   const value = {
     properties,
     addProperty,
     updateProperty,
     deleteProperty,
-    getPropertiesByCategory
+    getPropertiesByCategory,
+    getPropertyById
   };
 
   return (

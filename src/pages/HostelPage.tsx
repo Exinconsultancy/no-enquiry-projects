@@ -137,13 +137,16 @@ const HostelPage = () => {
                   bedrooms: 1,
                   bathrooms: 1,
                   area: "200 sq ft",
-                  type: property.type as "apartment" | "villa" | "commercial",
-                  amenities: ["WiFi", "Mess", "Security"],
+                  type: property.type.toLowerCase() as "apartment" | "villa" | "commercial",
+                  amenities: ["WiFi", "Mess", "Security", "Laundry", "AC", "Study Room"],
                   builderContact: {
                     name: property.builder,
                     phone: "+91 9876543210",
                     email: "contact@hostel.com"
-                  }
+                  },
+                  category: property.category,
+                  status: property.status,
+                  builder: property.builder
                 };
 
                 return (

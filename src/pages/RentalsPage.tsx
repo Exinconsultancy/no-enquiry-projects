@@ -92,10 +92,10 @@ const RentalsPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Premium Rentals
+            Rental Properties
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find your perfect rental home with our curated selection of premium properties
+            Find your perfect rental home from our extensive collection of furnished and unfurnished properties
           </p>
         </div>
 
@@ -137,13 +137,16 @@ const RentalsPage = () => {
                   bedrooms: 2,
                   bathrooms: 2,
                   area: "1200 sq ft",
-                  type: property.type as "apartment" | "villa" | "commercial",
-                  amenities: ["Parking", "Security", "Gym"],
+                  type: property.type.toLowerCase() as "apartment" | "villa" | "commercial",
+                  amenities: ["Fully Furnished", "WiFi", "Parking", "Security", "Maintenance", "Power Backup"],
                   builderContact: {
                     name: property.builder,
                     phone: "+91 9876543210",
-                    email: "contact@builder.com"
-                  }
+                    email: "contact@rental.com"
+                  },
+                  category: property.category,
+                  status: property.status,
+                  builder: property.builder
                 };
 
                 return (
