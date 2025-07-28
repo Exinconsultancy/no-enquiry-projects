@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +10,30 @@ import FeaturedProperties from "@/components/FeaturedProperties";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user } = useSecureAuth();
+  const { user, login, register } = useSecureAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleLogin = () => {
-    setShowAuthModal(true);
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  const handleRegister = async (email: string, password: string, name: string) => {
+    try {
+      await register(email, password, name);
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
+  };
+
+  const handleGoogleSignIn = (credential: string) => {
+    // Google sign-in implementation would go here
+    console.log("Google sign-in:", credential);
   };
 
   const stats = [
@@ -109,7 +127,6 @@ const HomePage = () => {
   return (
     <>
       <div className="min-h-screen bg-background">
-        {/* Hero Section */}
         <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/10">
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           
@@ -137,7 +154,6 @@ const HomePage = () => {
                 </Button>
               </div>
 
-              {/* Service Cards */}
               <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                 {services.map((service, index) => (
                   <Card key={index} className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/20" onClick={() => navigate(service.link)}>
@@ -155,10 +171,8 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Featured Properties Section */}
         <FeaturedProperties />
 
-        {/* Stats Section */}
         <section className="py-20 bg-gradient-to-r from-primary/5 to-accent/5">
           <div className="container">
             <div className="text-center mb-16">
@@ -185,7 +199,6 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
@@ -210,7 +223,6 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Testimonials Section */}
         <section className="py-20 bg-gradient-to-r from-accent/5 to-primary/5">
           <div className="container">
             <div className="text-center mb-16">
@@ -245,7 +257,6 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-20 bg-primary text-primary-foreground">
           <div className="container text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -258,7 +269,7 @@ const HomePage = () => {
               <Button size="lg" variant="secondary" className="text-lg px-8 py-6" onClick={() => navigate('/properties')}>
                 Explore Properties Now
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={handleLogin}>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => setShowAuthModal(true)}>
                 Get Started Free
               </Button>
             </div>
@@ -269,6 +280,9 @@ const HomePage = () => {
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onGoogleSignIn={handleGoogleSignIn}
       />
     </>
   );

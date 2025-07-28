@@ -4,9 +4,9 @@
 // Please use the new SecureAuthService and environment variables for production
 
 export const AUTH_CONFIG = {
-  // Remove hardcoded Google Client ID - should be environment variable
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "your-google-client-id",
-  // Remove other hardcoded secrets
+  // Note: Google Client ID would need to be configured separately for production
+  // This is a placeholder - in production, use proper environment configuration
+  GOOGLE_CLIENT_ID: "your-google-client-id", // Remove process.env to fix browser compatibility
   SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
   MAX_LOGIN_ATTEMPTS: 5,
   LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes

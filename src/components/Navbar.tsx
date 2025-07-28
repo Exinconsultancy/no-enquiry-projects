@@ -9,35 +9,47 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
-  const { user, logout } = useSecureAuth();
+  const { user, login, register, logout } = useSecureAuth();
 
-  const isActive = (path: string) => location.pathname === path;
-
-  const handleLogin = () => {
-    setShowAuthModal(true);
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleRegister = async (email: string, password: string, name: string) => {
+    try {
+      await register(email, password, name);
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
+  };
+
+  const handleGoogleSignIn = (credential: string) => {
+    // Google sign-in implementation would go here
+    console.log("Google sign-in:", credential);
   };
 
   return (
     <>
-      <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="bg-background border-b sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <Building className="h-8 w-8 text-primary" />
-              <span className="font-bold text-xl text-foreground">NoNo Broker</span>
-            </Link>
+            <div className="flex items-center">
+              <Link to="/" className="text-2xl font-bold text-primary">
+                NoNo Broker
+              </Link>
+            </div>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <Link
                 to="/"
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === "/" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <Home className="h-4 w-4" />
@@ -45,75 +57,71 @@ const Navbar = () => {
               </Link>
               <Link
                 to="/properties"
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/properties") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === "/properties" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                <Search className="h-4 w-4" />
+                <Building className="h-4 w-4" />
                 <span>Properties</span>
               </Link>
               <Link
-                to="/hostels"
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/hostels") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                }`}
-              >
-                <Building className="h-4 w-4" />
-                <span>Hostels/PG</span>
-              </Link>
-              <Link
                 to="/rentals"
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/rentals") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === "/rentals" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                <Building className="h-4 w-4" />
+                <Search className="h-4 w-4" />
                 <span>Rentals</span>
               </Link>
-              {user?.plan === 'Builder' && (
-                <Link
-                  to="/builder-dashboard"
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive("/builder-dashboard") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                  }`}
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Dashboard</span>
-                </Link>
-              )}
               <Link
-                to="/pricing"
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/pricing") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
+                to="/hostels"
+                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === "/hostels" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                <span>Plans</span>
+                <Building className="h-4 w-4" />
+                <span>Hostels</span>
+              </Link>
+              <Link
+                to="/pricing"
+                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === "/pricing" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <span>Pricing</span>
               </Link>
             </div>
 
-            {/* User Section */}
             <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <div className="flex items-center space-x-4">
-                  {user.plan && (
-                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                      {user.plan}
-                    </span>
-                  )}
-                  <Link to="/profile" className="flex items-center space-x-2 hover:bg-accent px-3 py-2 rounded-md transition-colors">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{user.name}</span>
+                  <Link
+                    to="/profile"
+                    className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{user.name || user.email}</span>
                   </Link>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Admin</span>
+                    </Link>
+                  )}
+                  <Button variant="outline" onClick={logout}>
                     Logout
                   </Button>
                 </div>
               ) : (
-                <Button onClick={handleLogin}>Login</Button>
+                <Button onClick={() => setShowAuthModal(true)}>
+                  Login
+                </Button>
               )}
             </div>
 
-            {/* Mobile menu button */}
             <div className="md:hidden">
               <Button
                 variant="ghost"
@@ -124,113 +132,116 @@ const Navbar = () => {
               </Button>
             </div>
           </div>
+        </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden border-t border-border">
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                <Link
-                  to="/"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive("/") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link
-                  to="/properties"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive("/properties") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Properties
-                </Link>
-                <Link
-                  to="/hostels"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive("/hostels") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Hostels/PG
-                </Link>
-                <Link
-                  to="/rentals"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive("/rentals") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Rentals
-                </Link>
-                {user?.plan === 'Builder' && (
-                  <Link
-                    to="/builder-dashboard"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      isActive("/builder-dashboard") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                )}
-                <Link
-                  to="/pricing"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive("/pricing") ? "text-primary bg-accent" : "text-foreground hover:text-primary"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Plans
-                </Link>
-                <div className="border-t border-border pt-4 mt-4">
-                  {user ? (
-                    <div className="space-y-2">
-                      <Link to="/profile" className="block px-3 py-2" onClick={() => setIsMenuOpen(false)}>
-                        <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{user.name}</span>
-                        </div>
-                        {user.plan && (
-                          <span className="inline-block mt-1 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                            {user.plan}
-                          </span>
-                        )}
-                      </Link>
-                      <Button
-                        variant="outline"
-                        className="w-full mx-3"
-                        onClick={() => {
-                          handleLogout();
-                          setIsMenuOpen(false);
-                        }}
+        {isMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-background border-t">
+              <Link
+                to="/"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent ${
+                  location.pathname === "/" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+              <Link
+                to="/properties"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent ${
+                  location.pathname === "/properties" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Building className="h-4 w-4" />
+                <span>Properties</span>
+              </Link>
+              <Link
+                to="/rentals"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent ${
+                  location.pathname === "/rentals" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Search className="h-4 w-4" />
+                <span>Rentals</span>
+              </Link>
+              <Link
+                to="/hostels"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent ${
+                  location.pathname === "/hostels" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Building className="h-4 w-4" />
+                <span>Hostels</span>
+              </Link>
+              <Link
+                to="/pricing"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent ${
+                  location.pathname === "/pricing" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span>Pricing</span>
+              </Link>
+              
+              <div className="border-t pt-4">
+                {user ? (
+                  <div className="space-y-1">
+                    <Link
+                      to="/profile"
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>{user.name || user.email}</span>
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent"
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        Logout
-                      </Button>
-                    </div>
-                  ) : (
+                        <Settings className="h-4 w-4" />
+                        <span>Admin</span>
+                      </Link>
+                    )}
                     <Button
-                      className="w-full mx-3"
+                      variant="outline"
+                      className="w-full justify-start"
                       onClick={() => {
-                        handleLogin();
+                        logout();
                         setIsMenuOpen(false);
                       }}
                     >
-                      Login
+                      Logout
                     </Button>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowAuthModal(true);
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    Login
+                  </Button>
+                )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </nav>
 
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onGoogleSignIn={handleGoogleSignIn}
       />
     </>
   );
