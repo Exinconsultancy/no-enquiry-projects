@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilterContainer from "@/components/PropertyFilterContainer";
 import AdminFAB from "@/components/AdminFAB";
@@ -9,7 +9,7 @@ import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 
 const RentalsPage = () => {
-  const { user, updateUser } = useAuth();
+  const { user } = useSecureAuth();
   const { getPropertiesByCategory } = useAdmin();
   const { toast } = useToast();
   const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("rental"));
@@ -48,11 +48,6 @@ const RentalsPage = () => {
         variant: "destructive",
       });
       return;
-    }
-
-    // Update projects viewed count
-    if (user.projectsViewed !== undefined) {
-      updateUser({ projectsViewed: user.projectsViewed + 1 });
     }
 
     toast({

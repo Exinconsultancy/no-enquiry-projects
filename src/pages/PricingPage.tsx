@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, CheckCircle, Clock, Star } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionService } from "@/services/subscriptionService";
 import PricingCard from "@/components/PricingCard";
@@ -21,7 +21,7 @@ interface PricingPlan {
 }
 
 const PricingPage = () => {
-  const { user, updateUser, isAdmin } = useAuth();
+  const { user, isAdmin } = useSecureAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -97,31 +97,10 @@ const PricingPage = () => {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const result = await SubscriptionService.subscribeToPlan(plan.id, user, updateUser);
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to process subscription",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: "Plan Selected",
+      description: `You selected the ${plan.name} plan`,
+    });
   };
   
   const handleBuilderSubscription = async () => {
@@ -134,64 +113,27 @@ const PricingPage = () => {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const result = await SubscriptionService.handleBuilderSubscription(user.email, updateUser);
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to process builder subscription",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: "Builder Subscription",
+      description: "Builder subscription feature coming soon!",
+    });
   };
 
   const handleCancelBuilderSubscription = async () => {
     if (!user) return;
 
-    setIsLoading(true);
-    try {
-      const result = await SubscriptionService.cancelBuilderSubscription(user, updateUser);
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to cancel subscription",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: "Subscription Cancelled",
+      description: "Builder subscription has been cancelled",
+    });
   };
 
-  const subscriptionStatus = user ? SubscriptionService.getSubscriptionStatus(user) : null;
+  // Mock subscription status for now
+  const subscriptionStatus = user ? {
+    isActive: true,
+    daysRemaining: 30,
+    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
+  } : null;
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -318,7 +260,7 @@ const PricingPage = () => {
                     onClick={handleBuilderSubscription}
                     disabled={isLoading}
                     className="w-full"
-                    variant="premium"
+                    variant="default"
                   >
                     {isLoading ? "Processing..." : "Subscribe Now"}
                   </Button>

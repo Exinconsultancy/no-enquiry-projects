@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Plus, Calendar, User, AlertTriangle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useNavigate } from "react-router-dom";
 
 const BuilderDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useSecureAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
