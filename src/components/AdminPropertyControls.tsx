@@ -33,7 +33,7 @@ interface AdminPropertyControlsProps {
 }
 
 const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyControlsProps) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { updateProperty, deleteProperty } = useAdmin();
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -47,16 +47,18 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     status: property.status
   });
 
-  console.log("AdminPropertyControls rendered for property:", property.id, "isAdmin:", isAdmin);
+  console.log("AdminPropertyControls - Current user:", user);
+  console.log("AdminPropertyControls - isAdmin:", isAdmin);
+  console.log("AdminPropertyControls - Property:", property.id);
 
   if (!isAdmin) {
-    console.log("User is not admin, hiding controls");
+    console.log("AdminPropertyControls - User is not admin, hiding controls");
     return null;
   }
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Updating property:", property.id, "with data:", editForm);
+    console.log("AdminPropertyControls - Updating property:", property.id, "with data:", editForm);
     
     if (!editForm.title || !editForm.location || !editForm.price) {
       toast({
@@ -77,7 +79,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property updated successfully!",
       });
     } catch (error) {
-      console.error("Error updating property:", error);
+      console.error("AdminPropertyControls - Error updating property:", error);
       toast({
         title: "Error",
         description: "Failed to update property.",
@@ -87,7 +89,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
   };
 
   const handleDelete = () => {
-    console.log("Deleting property:", property.id);
+    console.log("AdminPropertyControls - Deleting property:", property.id);
     try {
       deleteProperty(property.id);
       onDelete?.();
@@ -97,7 +99,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property deleted successfully!",
       });
     } catch (error) {
-      console.error("Error deleting property:", error);
+      console.error("AdminPropertyControls - Error deleting property:", error);
       toast({
         title: "Error",
         description: "Failed to delete property.",
@@ -119,11 +121,13 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     }
   };
 
+  console.log("AdminPropertyControls - Rendering controls for property:", property.id);
+
   return (
-    <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+    <div className="flex space-x-2 opacity-100 z-10" onClick={(e) => e.stopPropagation()}>
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogTrigger asChild>
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-white hover:bg-gray-100">
             <Edit className="h-4 w-4" />
           </Button>
         </DialogTrigger>
@@ -227,7 +231,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
 
       <ConfirmationDialog
         trigger={
-          <Button size="sm" variant="destructive" className="h-8 w-8 p-0">
+          <Button size="sm" variant="destructive" className="h-8 w-8 p-0 bg-red-500 hover:bg-red-600">
             <Trash2 className="h-4 w-4" />
           </Button>
         }

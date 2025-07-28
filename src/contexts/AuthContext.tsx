@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthService } from "../services/authService";
 import { loginSchema, registerSchema, LoginData, RegisterData } from "../lib/validation";
@@ -49,18 +48,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const isAdmin = user?.role === 'admin';
 
+  console.log("AuthProvider - Current user:", user);
+  console.log("AuthProvider - isAdmin:", isAdmin);
+
   useEffect(() => {
     // Check for existing session
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
+    
+    console.log("AuthProvider - Loading saved session:", { savedToken: !!savedToken, savedUser: !!savedUser });
     
     if (savedToken && savedUser) {
       try {
         // Verify token is still valid
         AuthService.verifyToken(savedToken);
         setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        console.log("AuthProvider - Restored user session:", parsedUser);
       } catch (error) {
+        console.log("AuthProvider - Invalid token, clearing storage");
         // Token is invalid, clear storage
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -100,19 +107,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsLoading(true);
     
     try {
+      console.log("AuthProvider - Attempting login with:", { email, password });
+      
       // Validate input
       const validatedData = loginSchema.parse({ email, password });
       
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const { user, token } = await AuthService.login(validatedData);
+      const { user: loggedInUser, token: authToken } = await AuthService.login(validatedData);
       
-      setUser(user);
-      setToken(token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
+      console.log("AuthProvider - Login successful:", loggedInUser);
+      
+      setUser(loggedInUser);
+      setToken(authToken);
+      localStorage.setItem("user", JSON.stringify(loggedInUser));
+      localStorage.setItem("token", authToken);
     } catch (error) {
+      console.error("AuthProvider - Login failed:", error);
       throw error;
     } finally {
       setIsLoading(false);

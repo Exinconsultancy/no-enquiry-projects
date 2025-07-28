@@ -37,6 +37,8 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
+  console.log("PropertyCard - isAdmin:", isAdmin, "propertyId:", property.id);
+
   const handleCardClick = () => {
     navigate(`/property/${property.id}`);
   };
@@ -66,7 +68,7 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={handleCardClick}>
+    <Card className="hover:shadow-lg transition-shadow cursor-pointer relative" onClick={handleCardClick}>
       <div className="relative">
         <img
           src={property.image}
@@ -74,9 +76,18 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
           className="w-full h-48 object-cover rounded-t-lg"
         />
         {property.status && (
-          <Badge className="absolute top-2 right-2" variant={property.status === "active" ? "default" : "secondary"}>
+          <Badge className="absolute top-2 left-2" variant={property.status === "active" ? "default" : "secondary"}>
             {property.status}
           </Badge>
+        )}
+        {isAdmin && (
+          <div className="absolute top-2 right-2">
+            <AdminPropertyControls 
+              property={adminProperty} 
+              onUpdate={() => window.location.reload()} 
+              onDelete={() => window.location.reload()} 
+            />
+          </div>
         )}
       </div>
       
@@ -85,13 +96,6 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
           <CardTitle className="text-lg font-semibold line-clamp-1">
             {property.title}
           </CardTitle>
-          {isAdmin && (
-            <AdminPropertyControls 
-              property={adminProperty} 
-              onUpdate={() => window.location.reload()} 
-              onDelete={() => window.location.reload()} 
-            />
-          )}
         </div>
         <div className="flex items-center text-muted-foreground text-sm">
           <MapPin className="h-4 w-4 mr-1" />
