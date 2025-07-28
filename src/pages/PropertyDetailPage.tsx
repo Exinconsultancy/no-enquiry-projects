@@ -9,6 +9,7 @@ import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { SubscriptionService } from "@/services/subscriptionService";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
+import AdminPropertyMediaControls from "@/components/AdminPropertyMediaControls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -144,26 +145,35 @@ const PropertyDetailPage = () => {
             {/* Property Images */}
             <Card>
               <CardContent className="p-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <img
-                    src={property.image || "/placeholder.svg"}
-                    alt={property.title}
-                    className="w-full h-96 md:h-80 object-cover rounded-lg"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <img src="/placeholder.svg" alt="Interior" className="w-full h-39 object-cover rounded-lg" />
-                    <img src="/placeholder.svg" alt="Bedroom" className="w-full h-39 object-cover rounded-lg" />
-                    <img src="/placeholder.svg" alt="Kitchen" className="w-full h-39 object-cover rounded-lg" />
-                    <div className="relative">
-                      <img src="/placeholder.svg" alt="Bathroom" className="w-full h-39 object-cover rounded-lg" />
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
-                        <div className="text-white text-center">
-                          <Camera className="h-6 w-6 mx-auto mb-1" />
-                          <span className="text-sm">+12 Photos</span>
+                <div className="relative">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <img
+                      src={property.image || "/placeholder.svg"}
+                      alt={property.title}
+                      className="w-full h-96 md:h-80 object-cover rounded-lg"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <img src="/placeholder.svg" alt="Interior" className="w-full h-39 object-cover rounded-lg" />
+                      <img src="/placeholder.svg" alt="Bedroom" className="w-full h-39 object-cover rounded-lg" />
+                      <img src="/placeholder.svg" alt="Kitchen" className="w-full h-39 object-cover rounded-lg" />
+                      <div className="relative">
+                        <img src="/placeholder.svg" alt="Bathroom" className="w-full h-39 object-cover rounded-lg" />
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
+                          <div className="text-white text-center">
+                            <Camera className="h-6 w-6 mx-auto mb-1" />
+                            <span className="text-sm">+12 Photos</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Admin Media Controls */}
+                  {isAdmin && (
+                    <div className="absolute top-4 right-4">
+                      <AdminPropertyMediaControls property={property} />
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

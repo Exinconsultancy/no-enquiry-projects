@@ -9,6 +9,7 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import AdminPropertyControls from "./AdminPropertyControls";
+import AdminPropertyMediaControls from "./AdminPropertyMediaControls";
 
 interface PropertyCardProps {
   property: {
@@ -139,33 +140,34 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
 
   return (
     <>
-      <Card className="relative overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={handleCardClick}>
         <div className="relative">
           <img
-            src={property.image}
+            src={property.image || "/placeholder.svg"}
             alt={property.title}
             className="w-full h-48 object-cover"
           />
           
+          {/* Admin Controls Overlay */}
+          {isAdmin && (
+            <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <AdminPropertyMediaControls property={property} />
+              <AdminPropertyControls property={property} />
+            </div>
+          )}
+          
           {/* Favorite Button */}
           <Button
             variant="ghost"
-            size="sm"
-            className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/80 hover:bg-white"
+            size="icon"
+            className="absolute top-2 left-2 h-8 w-8 bg-white/80 hover:bg-white"
             onClick={(e) => {
               e.stopPropagation();
               handleFavoriteToggle();
             }}
           >
-            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
           </Button>
-
-          {/* Admin Controls */}
-          {isAdmin && (
-            <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <AdminPropertyControls property={property} />
-            </div>
-          )}
         </div>
 
         <CardHeader className="pb-2" onClick={handleCardClick}>
