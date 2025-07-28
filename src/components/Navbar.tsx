@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Building, Search, User, Menu, X, Settings } from "lucide-react";
+import { Home, Building, Search, User, Menu, X, Settings, Hammer } from "lucide-react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import AuthModal from "./AuthModal";
 
@@ -111,6 +111,15 @@ const Navbar = () => {
                       <span>Admin</span>
                     </Link>
                   )}
+                  {user.role === 'builder' && (
+                    <Link
+                      to="/builder-dashboard"
+                      className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                    >
+                      <Hammer className="h-4 w-4" />
+                      <span>Builder Dashboard</span>
+                    </Link>
+                  )}
                   <Button variant="outline" onClick={logout}>
                     Logout
                   </Button>
@@ -206,6 +215,16 @@ const Navbar = () => {
                       >
                         <Settings className="h-4 w-4" />
                         <span>Admin</span>
+                      </Link>
+                    )}
+                    {user.role === 'builder' && (
+                      <Link
+                        to="/builder-dashboard"
+                        className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Hammer className="h-4 w-4" />
+                        <span>Builder Dashboard</span>
                       </Link>
                     )}
                     <Button
