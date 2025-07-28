@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, CheckCircle, Clock, Star } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Shield, CheckCircle, Clock, Star, AlertTriangle } from "lucide-react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionService } from "@/services/subscriptionService";
@@ -189,10 +190,31 @@ const PricingPage = () => {
   const handleCancelBuilderSubscription = async () => {
     if (!user) return;
 
-    toast({
-      title: "Subscription Cancelled",
-      description: "Builder subscription has been cancelled",
-    });
+    setIsBuilderLoading(true);
+    try {
+      const result = await SubscriptionService.cancelBuilderSubscription(user, updateUser);
+      
+      if (result.success) {
+        toast({
+          title: "Subscription Cancelled",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel builder subscription",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBuilderLoading(false);
+    }
   };
 
   // Mock subscription status for now
@@ -262,13 +284,51 @@ const PricingPage = () => {
                 
                 {user.plan === 'Builder' && (
                   <div className="mt-4 pt-4 border-t">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleCancelBuilderSubscription}
-                      disabled={isBuilderLoading}
-                    >
-                      Cancel Builder Subscription
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          disabled={isBuilderLoading}
+                          className="w-full text-destructive hover:text-destructive"
+                        >
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Cancel Builder Subscription
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                            Cancel Builder Subscription
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="space-y-2">
+                            <p>Are you sure you want to cancel your Builder subscription?</p>
+                            <div className="bg-destructive/10 p-3 rounded-lg">
+                              <p className="text-sm font-medium text-destructive">This action will:</p>
+                              <ul className="text-sm text-destructive mt-1 space-y-1">
+                                <li>• Remove unlimited project access</li>
+                                <li>• Remove priority listing benefits</li>
+                                <li>• Remove dedicated account manager access</li>
+                                <li>• Remove custom branding options</li>
+                                <li>• Reset your plan to "No Plan"</li>
+                              </ul>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              You can resubscribe anytime, but you'll need to purchase a new Builder subscription.
+                            </p>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleCancelBuilderSubscription}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Yes, Cancel Subscription
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
               </CardContent>
