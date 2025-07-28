@@ -53,7 +53,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       await register(registerData.email, registerData.password, registerData.name);
       toast({
         title: "Registration Successful",
-        description: "Please check your email to verify your account.",
+        description: "Account created! You can now log in.",
       });
       onClose();
       onSuccess?.();
@@ -74,7 +74,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         <DialogHeader>
           <DialogTitle>Authentication Required</DialogTitle>
           <DialogDescription>
-            Please login or create an account to purchase a plan.
+            Please login or create an account to access premium features.
           </DialogDescription>
         </DialogHeader>
         
