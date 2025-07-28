@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, Building, Search, User, Menu, X, Settings } from "lucide-react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
-import { AuthModal } from "./AuthModal";
+import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

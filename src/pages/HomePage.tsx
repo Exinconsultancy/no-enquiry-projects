@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +6,7 @@ import { Search, MapPin, Shield, Users, TrendingUp, Star, CheckCircle, Home, Bui
 import { useNavigate } from "react-router-dom";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useState } from "react";
-import { AuthModal } from "@/components/AuthModal";
+import AuthModal from "@/components/AuthModal";
 import FeaturedProperties from "@/components/FeaturedProperties";
 
 const HomePage = () => {
