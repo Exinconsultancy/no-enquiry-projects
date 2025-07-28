@@ -57,6 +57,7 @@ const PropertyDetailPage = () => {
         description: "You've reached your project viewing limit. Upgrade your plan to view more projects.",
         variant: "destructive"
       });
+      navigate('/pricing');
       return;
     }
 
