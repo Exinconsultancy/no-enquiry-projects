@@ -56,6 +56,16 @@ const RentalsPage = () => {
       return;
     }
 
+    const hasReachedLimit = user.projectsViewed && user.projectsLimit && user.projectsViewed >= user.projectsLimit;
+    if (hasReachedLimit) {
+      toast({
+        title: "Limit Reached",
+        description: "You have reached your project viewing limit. Please upgrade your plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Navigate to property detail page
     navigate(`/${property.category}/${property.id}`);
   };
