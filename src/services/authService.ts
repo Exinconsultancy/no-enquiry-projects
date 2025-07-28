@@ -13,6 +13,7 @@ interface User {
   googleId?: string;
   loginAttempts?: number;
   lockoutUntil?: Date;
+  role?: 'user' | 'admin';
 }
 
 // Browser-compatible password hashing using Web Crypto API
@@ -69,7 +70,8 @@ const users: User[] = [
     plan: "Professional",
     projectsViewed: 5,
     projectsLimit: 10,
-    loginAttempts: 0
+    loginAttempts: 0,
+    role: "user"
   },
   {
     id: "2",
@@ -77,7 +79,8 @@ const users: User[] = [
     email: "admin@demo.com",
     hashedPassword: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // admin123
     plan: "Admin",
-    loginAttempts: 0
+    loginAttempts: 0,
+    role: "admin"
   }
 ];
 
@@ -119,7 +122,8 @@ export class AuthService {
     const token = createToken({
       id: user.id, 
       email: user.email, 
-      plan: user.plan 
+      plan: user.plan,
+      role: user.role
     });
 
     // Remove sensitive data
@@ -145,7 +149,8 @@ export class AuthService {
       hashedPassword: userHashedPassword,
       projectsViewed: 0,
       projectsLimit: 0,
-      loginAttempts: 0
+      loginAttempts: 0,
+      role: "user"
     };
 
     users.push(newUser);
@@ -154,7 +159,8 @@ export class AuthService {
     const token = createToken({
       id: newUser.id, 
       email: newUser.email, 
-      plan: newUser.plan 
+      plan: newUser.plan,
+      role: newUser.role
     });
 
     // Remove sensitive data
@@ -185,7 +191,8 @@ export class AuthService {
           googleId: googleUser.googleId,
           projectsViewed: 0,
           projectsLimit: 0,
-          loginAttempts: 0
+          loginAttempts: 0,
+          role: "user"
         };
         users.push(user);
       }
@@ -194,7 +201,8 @@ export class AuthService {
       const token = createToken({
         id: user.id, 
         email: user.email, 
-        plan: user.plan 
+        plan: user.plan,
+        role: user.role
       });
 
       // Remove sensitive data

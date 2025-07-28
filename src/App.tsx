@@ -1,63 +1,56 @@
 
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomePage from '@/pages/HomePage';
-import PropertiesPage from '@/pages/PropertiesPage';
-import PricingPage from '@/pages/PricingPage';
-import ProfilePage from '@/pages/ProfilePage';
-import AdminPage from '@/pages/AdminPage';
-import NotFound from '@/pages/NotFound';
-import AuthModal from '@/components/AuthModal';
-import { Toaster } from "@/components/ui/toaster"
-import { useAuth } from '@/contexts/AuthContext';
-import Navbar from '@/components/Navbar';
-import RentalsPage from '@/pages/RentalsPage';
-import BuilderDashboard from '@/pages/BuilderDashboard';
-import HostelPage from '@/pages/HostelPage';
-import { useToast } from '@/hooks/use-toast';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AdminProvider } from "./contexts/AdminContext";
+import Navbar from "./components/Navbar";
+import HomePage from "./pages/HomePage";
+import PropertiesPage from "./pages/PropertiesPage";
+import RentalsPage from "./pages/RentalsPage";
+import HostelPage from "./pages/HostelPage";
+import PricingPage from "./pages/PricingPage";
+import ProfilePage from "./pages/ProfilePage";
+import BuilderDashboard from "./pages/BuilderDashboard";
+import AdminPage from "./pages/AdminPage";
+import NotFound from "./pages/NotFound";
+import AuthModal from "./components/AuthModal";
+import { useToast } from "./hooks/use-toast";
 
-function App() {
+function AppContent() {
   const { user, login, register, googleSignIn, logout } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { toast } = useToast();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleLogin = () => {
-    setIsAuthModalOpen(true);
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
-
-  const handleAuthLogin = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     try {
       await login(email, password);
-      setIsAuthModalOpen(false);
+      setShowAuthModal(false);
       toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+        title: "Success",
+        description: "Logged in successfully!",
       });
     } catch (error) {
       toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "Please try again",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Login failed",
         variant: "destructive",
       });
     }
   };
 
-  const handleAuthRegister = async (email: string, password: string, name: string) => {
+  const handleRegister = async (email: string, password: string, name: string) => {
     try {
       await register(email, password, name);
-      setIsAuthModalOpen(false);
+      setShowAuthModal(false);
       toast({
-        title: "Registration Successful",
-        description: "Welcome to NoNo Broker!",
+        title: "Success",
+        description: "Account created successfully!",
       });
     } catch (error) {
       toast({
-        title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Please try again",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Registration failed",
         variant: "destructive",
       });
     }
@@ -66,45 +59,67 @@ function App() {
   const handleGoogleSignIn = async (credential: string) => {
     try {
       await googleSignIn(credential);
-      setIsAuthModalOpen(false);
+      setShowAuthModal(false);
       toast({
-        title: "Google Sign-In Successful",
-        description: "Welcome to NoNo Broker!",
+        title: "Success",
+        description: "Signed in with Google successfully!",
       });
     } catch (error) {
       toast({
-        title: "Google Sign-In Failed",
-        description: error instanceof Error ? error.message : "Please try again",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Google sign-in failed",
         variant: "destructive",
       });
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Success",
+      description: "Logged out successfully!",
+    });
+  };
+
   return (
-    <Router>
-      <div className="min-h-screen bg-background">
-        <Navbar user={user} onLogin={handleLogin} onLogout={handleLogout} />
-        <Routes>
-          <Route path="/" element={<HomePage onLogin={handleLogin} />} />
-          <Route path="/properties" element={<PropertiesPage onLogin={handleLogin} />} />
-          <Route path="/hostels" element={<HostelPage />} />
-          <Route path="/rentals" element={<RentalsPage />} />
-          <Route path="/pricing" element={<PricingPage onLogin={handleLogin} />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/builder-dashboard" element={<BuilderDashboard />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)} 
-          onLogin={handleAuthLogin}
-          onRegister={handleAuthRegister}
-          onGoogleSignIn={handleGoogleSignIn}
-        />
-        <Toaster />
-      </div>
-    </Router>
+    <AdminProvider>
+      <Router>
+        <div className="min-h-screen bg-background">
+          <Navbar 
+            user={user}
+            onLoginClick={() => setShowAuthModal(true)}
+            onLogout={handleLogout}
+          />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/properties" element={<PropertiesPage />} />
+            <Route path="/rentals" element={<RentalsPage />} />
+            <Route path="/hostels" element={<HostelPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/builder-dashboard" element={<BuilderDashboard />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onLogin={handleLogin}
+            onRegister={handleRegister}
+            onGoogleSignIn={handleGoogleSignIn}
+          />
+          <Toaster />
+        </div>
+      </Router>
+    </AdminProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

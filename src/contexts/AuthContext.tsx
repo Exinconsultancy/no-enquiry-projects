@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthService } from "../services/authService";
 import { loginSchema, registerSchema, LoginData, RegisterData } from "../lib/validation";
@@ -10,6 +11,7 @@ interface User {
   projectsViewed?: number;
   projectsLimit?: number;
   subscriptionExpiry?: string;
+  role?: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -23,6 +25,7 @@ interface AuthContextType {
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   isLoading: boolean;
   token: string | null;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,6 +46,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     // Check for existing session
@@ -177,7 +182,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     updateUserName,
     changePassword,
     isLoading,
-    token
+    token,
+    isAdmin
   };
 
   return (

@@ -1,482 +1,91 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilters from "@/components/PropertyFilters";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { Grid, List, SlidersHorizontal, X } from "lucide-react";
-import { SubscriptionService } from "@/services/subscriptionService";
-import { useAuth } from "@/contexts/AuthContext";
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
+import AdminFAB from "@/components/AdminFAB";
+import { useAdmin } from "@/contexts/AdminContext";
 
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  image: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  type: "apartment" | "villa" | "commercial";
-  amenities: string[];
-  isLocked?: boolean;
-  builderContact?: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-}
+const PropertiesPage = () => {
+  const { getPropertiesByCategory } = useAdmin();
+  const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("property"));
 
-interface PropertiesPageProps {
-  onLogin: () => void;
-}
-
-const PropertiesPage = ({ onLogin }: PropertiesPageProps) => {
-  const { user, updateUser } = useAuth();
-  const { toast } = useToast();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = useState(false);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-
-  const [filters, setFilters] = useState({
-    location: "",
-    propertyType: "all",
-    priceRange: [1000000, 50000000] as [number, number],
-    bedrooms: "any",
-    bathrooms: "any",
-    amenities: [] as string[],
-    area: [500, 5000] as [number, number],
-    readyToMove: false,
-    newProject: false,
-  });
-
-  // Expanded sample properties data
-  const sampleProperties: Property[] = [
-    {
-      id: "1",
-      title: "Luxury Residences at Marina Bay",
-      location: "Mumbai, Maharashtra",
-      price: "₹2.5 Cr onwards",
-      image: property1,
-      bedrooms: 3,
-      bathrooms: 2,
-      area: "1,450 sq ft",
-      type: "apartment",
-      amenities: ["Swimming Pool", "Gym", "Parking", "Security", "Garden"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Rajesh Kumar",
-        phone: "+91 98765 43210",
-        email: "rajesh@luxurybuilders.com"
-      }
-    },
-    {
-      id: "2",
-      title: "Premium Villas in Green Valley",
-      location: "Bangalore, Karnataka",
-      price: "₹1.8 Cr onwards",
-      image: property2,
-      bedrooms: 4,
-      bathrooms: 3,
-      area: "2,200 sq ft",
-      type: "villa",
-      amenities: ["Swimming Pool", "Club House", "Children's Play Area", "Power Backup"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Priya Sharma",
-        phone: "+91 87654 32109",
-        email: "priya@greenvalley.com"
-      }
-    },
-    {
-      id: "3",
-      title: "Commercial Spaces Tech Park",
-      location: "Gurgaon, Haryana",
-      price: "₹3.2 Cr onwards",
-      image: property3,
-      bedrooms: 0,
-      bathrooms: 1,
-      area: "1,800 sq ft",
-      type: "commercial",
-      amenities: ["Elevator", "CCTV", "Fire Safety", "Parking", "Power Backup"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Amit Patel",
-        phone: "+91 76543 21098",
-        email: "amit@techpark.com"
-      }
-    },
-    {
-      id: "4",
-      title: "Skyline Apartments",
-      location: "Pune, Maharashtra",
-      price: "₹1.2 Cr onwards",
-      image: property1,
-      bedrooms: 2,
-      bathrooms: 2,
-      area: "1,100 sq ft",
-      type: "apartment",
-      amenities: ["Gym", "Parking", "Security", "Intercom"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Sneha Joshi",
-        phone: "+91 65432 10987",
-        email: "sneha@skyline.com"
-      }
-    },
-    {
-      id: "5",
-      title: "Elite Towers Business District",
-      location: "Chennai, Tamil Nadu",
-      price: "₹2.8 Cr onwards",
-      image: property2,
-      bedrooms: 0,
-      bathrooms: 2,
-      area: "2,500 sq ft",
-      type: "commercial",
-      amenities: ["Conference Room", "Reception", "High-Speed Internet", "Parking", "Security"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Karthik Reddy",
-        phone: "+91 98765 12345",
-        email: "karthik@elitetowers.com"
-      }
-    },
-    {
-      id: "6",
-      title: "Golden Heights Luxury Apartments",
-      location: "Hyderabad, Telangana",
-      price: "₹1.9 Cr onwards",
-      image: property3,
-      bedrooms: 3,
-      bathrooms: 3,
-      area: "1,650 sq ft",
-      type: "apartment",
-      amenities: ["Swimming Pool", "Gym", "Spa", "Parking", "Security", "Garden", "Club House"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Meera Nair",
-        phone: "+91 87654 98765",
-        email: "meera@goldenheights.com"
-      }
-    },
-    {
-      id: "7",
-      title: "Serene Villas Eco-Friendly Homes",
-      location: "Coimbatore, Tamil Nadu",
-      price: "₹1.5 Cr onwards",
-      image: property1,
-      bedrooms: 4,
-      bathrooms: 4,
-      area: "2,800 sq ft",
-      type: "villa",
-      amenities: ["Solar Panels", "Rain Water Harvesting", "Garden", "Parking", "Security"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Arjun Pillai",
-        phone: "+91 76543 87654",
-        email: "arjun@serenevillas.com"
-      }
-    },
-    {
-      id: "8",
-      title: "Metropolitan Business Center",
-      location: "Kolkata, West Bengal",
-      price: "₹2.2 Cr onwards",
-      image: property2,
-      bedrooms: 0,
-      bathrooms: 3,
-      area: "3,000 sq ft",
-      type: "commercial",
-      amenities: ["Meeting Rooms", "Cafeteria", "Parking", "Security", "Power Backup", "AC"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Debanjan Roy",
-        phone: "+91 65432 76543",
-        email: "debanjan@metrocenter.com"
-      }
-    },
-    {
-      id: "9",
-      title: "Sunrise Residency Premium Flats",
-      location: "Jaipur, Rajasthan",
-      price: "₹95 Lakh onwards",
-      image: property3,
-      bedrooms: 2,
-      bathrooms: 2,
-      area: "1,200 sq ft",
-      type: "apartment",
-      amenities: ["Gym", "Children's Play Area", "Parking", "Security", "Garden"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Vikram Singh",
-        phone: "+91 54321 65432",
-        email: "vikram@sunriseresidency.com"
-      }
-    },
-    {
-      id: "10",
-      title: "Royal Villas Heritage Collection",
-      location: "Udaipur, Rajasthan",
-      price: "₹3.5 Cr onwards",
-      image: property1,
-      bedrooms: 5,
-      bathrooms: 5,
-      area: "3,500 sq ft",
-      type: "villa",
-      amenities: ["Swimming Pool", "Heritage Architecture", "Garden", "Parking", "Security", "Servant Quarter"],
-      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
-      builderContact: {
-        name: "Maharaja Constructions",
-        phone: "+91 43210 54321",
-        email: "info@royalvillas.com"
-      }
-    }
+  const stats = [
+    { title: "Total Properties", value: filteredProperties.length },
+    { title: "Active Listings", value: filteredProperties.filter(p => p.status === "active").length },
+    { title: "Cities Covered", value: new Set(filteredProperties.map(p => p.location.split(",")[1]?.trim())).size },
+    { title: "Builders", value: new Set(filteredProperties.map(p => p.builder)).size }
   ];
 
-  useEffect(() => {
-    setProperties(sampleProperties);
-    setFilteredProperties(sampleProperties);
-  }, [user]);
-
-  const handleFiltersChange = (newFilters: typeof filters) => {
-    setFilters(newFilters);
-  };
-
-  const handleSearch = () => {
-    let filtered = properties;
-
-    // Apply filters
-    if (filters.location) {
-      filtered = filtered.filter(p => 
-        p.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    if (filters.propertyType !== "all") {
-      filtered = filtered.filter(p => p.type === filters.propertyType);
-    }
-
-    if (filters.bedrooms !== "any") {
-      const bedrooms = parseInt(filters.bedrooms);
-      filtered = filtered.filter(p => p.bedrooms >= bedrooms);
-    }
-
-    if (filters.amenities.length > 0) {
-      filtered = filtered.filter(p => 
-        filters.amenities.some(amenity => p.amenities.includes(amenity))
-      );
-    }
-
-    setFilteredProperties(filtered);
-    toast({
-      title: "Filters Applied",
-      description: `Found ${filtered.length} properties matching your criteria.`,
-    });
-  };
-
-  const handleReset = () => {
-    setFilters({
-      location: "",
-      propertyType: "all",
-      priceRange: [1000000, 50000000] as [number, number],
-      bedrooms: "any",
-      bathrooms: "any",
-      amenities: [] as string[],
-      area: [500, 5000] as [number, number],
-      readyToMove: false,
-      newProject: false,
-    });
-    setFilteredProperties(properties);
-  };
-
-  const handleViewDetails = (property: Property) => {
-    if (!user) {
-      onLogin();
-      return;
-    }
-
-    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to a plan to view property details.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!SubscriptionService.canViewMoreProjects(user)) {
-      toast({
-        title: "Plan Limit Reached",
-        description: "You've reached your plan's project viewing limit. Please upgrade.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Increment project view count
-    if (user) {
-      SubscriptionService.incrementProjectView(user, updateUser);
-    }
-
-    setSelectedProperty(property);
-  };
-
-  const handleDownloadBrochure = (property: Property) => {
-    if (!user) {
-      onLogin();
-      return;
-    }
-
-    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to a plan to download brochures.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Brochure Downloaded",
-      description: `Brochure for ${property.title} has been downloaded.`,
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Premium Properties</h1>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            Premium Properties
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Discover your dream home from our exclusive collection of premium properties
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <Card key={index}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div className="mb-8">
+          <PropertyFilters
+            properties={getPropertiesByCategory("property")}
+            onFilterChange={setFilteredProperties}
+          />
+        </div>
+
+        {/* Properties Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProperties.map((property) => (
+            <PropertyCard
+              key={property.id}
+              id={property.id}
+              title={property.title}
+              location={property.location}
+              price={property.price}
+              type={property.type}
+              image={property.image || "/placeholder.svg"}
+              builder={property.builder}
+              isNew={new Date(property.createdDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
+            />
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredProperties.length === 0 && (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No properties found
+            </h3>
             <p className="text-muted-foreground">
-              Discover {filteredProperties.length} verified properties from trusted builders
+              Try adjusting your filters to see more properties
             </p>
           </div>
-
-          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden"
-            >
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-          </div>
-        </div>
-
-        {/* User Plan Info */}
-        {user && (
-          <Card className="mb-6 bg-accent/50">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div className="flex items-center space-x-4">
-                  <Badge variant="secondary" className="text-sm">
-                    {user.plan || "No Plan"}
-                  </Badge>
-                  {user.plan !== "Builder" && (
-                    <span className="text-sm text-muted-foreground">
-                      Projects viewed: {user.projectsViewed || 0}/{user.projectsLimit || 0}
-                    </span>
-                  )}
-                  {user.plan === "Builder" && (
-                    <span className="text-sm text-muted-foreground">
-                      Builder Account - Unlimited Access
-                    </span>
-                  )}
-                </div>
-                {!user.plan && (
-                  <Button size="sm" variant="default" onClick={() => window.location.href = '/pricing'} className="mt-2 sm:mt-0">
-                    Subscribe Now
-                  </Button>
-                )}
-                {user.plan === "Builder" && (
-                  <Button size="sm" variant="outline" onClick={() => window.location.href = '/builder-dashboard'} className="mt-2 sm:mt-0">
-                    Manage Projects
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className={`lg:w-80 ${showFilters ? "block" : "hidden lg:block"}`}>
-            <div className="lg:hidden mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(false)}
-                className="w-full"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Close Filters
-              </Button>
-            </div>
-            <PropertyFilters
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              onSearch={handleSearch}
-              onReset={handleReset}
-            />
-          </div>
-
-          {/* Properties Grid */}
-          <div className="flex-1">
-            {filteredProperties.length === 0 ? (
-              <Card className="p-12 text-center">
-                <CardContent>
-                  <h3 className="text-xl font-semibold mb-2">No Properties Found</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Try adjusting your filters to see more results.
-                  </p>
-                  <Button onClick={handleReset}>Reset Filters</Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className={`grid gap-6 ${
-                viewMode === "grid" 
-                  ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" 
-                  : "grid-cols-1"
-              }`}>
-                {filteredProperties.map((property) => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    onViewDetails={handleViewDetails}
-                    onDownloadBrochure={handleDownloadBrochure}
-                    user={user}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Admin FAB */}
+        <AdminFAB category="property" />
       </div>
     </div>
   );
