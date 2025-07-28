@@ -101,7 +101,7 @@ function App() {
                 <Route path="/pricing" element={
                   <>
                     <Navbar user={user} onLogin={handleLoginClick} onLogout={handleLogout} />
-                    <PricingPage onLogin={handleLoginClick} />
+                    <PricingPage />
                   </>
                 } />
                 <Route path="/profile" element={
