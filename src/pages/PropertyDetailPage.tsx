@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MapPin, Phone, Mail, Calendar, Home, Bath, Maximize, Lock, Star, Wifi, Car, Shield, TreePine, Dumbbell, Waves, Building, Users, Clock, Camera, FileText, Calculator, TrendingUp } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Mail, Calendar, Home, Bath, Maximize, Lock, Star, Wifi, Car, Shield, TreePine, Dumbbell, Waves, Building, Users, Clock, Camera, FileText, Calculator } from "lucide-react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { SubscriptionService } from "@/services/subscriptionService";
@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useSecureAuth();
+  const { user, isAdmin } = useSecureAuth();
   const { getPropertyById } = useAdmin();
   const { toast } = useToast();
 
@@ -41,7 +41,7 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const canAccessPremiumFeatures = user && SubscriptionService.canAccessPremiumFeatures(user);
+  const canAccessPremiumFeatures = (user && SubscriptionService.canAccessPremiumFeatures(user)) || isAdmin;
 
   const handleDownloadBrochure = () => {
     if (!canAccessPremiumFeatures) {
@@ -499,37 +499,6 @@ const PropertyDetailPage = () => {
               </CardContent>
             </Card>
 
-            {/* Market Trends */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Market Trends</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Area Growth</span>
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                    <span className="text-green-500">+12%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Price Trend</span>
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                    <span className="text-green-500">+8%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Demand</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '78%' }}></div>
-                    </div>
-                    <span className="text-sm">High</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
