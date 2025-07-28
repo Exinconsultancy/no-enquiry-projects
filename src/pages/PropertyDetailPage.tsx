@@ -41,24 +41,16 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const canViewDetails = user && SubscriptionService.canAccessPremiumFeatures(user);
+  const canAccessPremiumFeatures = user && SubscriptionService.canAccessPremiumFeatures(user);
 
   const handleDownloadBrochure = () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please login to download brochure",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!user.plan) {
+    if (!canAccessPremiumFeatures) {
       toast({
         title: "Subscription Required",
         description: "Please subscribe to a plan to download brochures",
         variant: "destructive",
       });
+      navigate('/pricing');
       return;
     }
 
@@ -68,31 +60,27 @@ const PropertyDetailPage = () => {
     });
   };
 
-  const handleViewDetails = () => {
-    if (!user) {
+  const handleScheduleVisit = () => {
+    if (!canAccessPremiumFeatures) {
       toast({
-        title: "Login Required",
-        description: "Please login to view detailed property information",
+        title: "Subscription Required", 
+        description: "Please subscribe to a plan to schedule visits",
         variant: "destructive",
       });
       navigate('/pricing');
       return;
     }
+  };
 
-    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
+  const handleContactBuilder = () => {
+    if (!canAccessPremiumFeatures) {
       toast({
         title: "Subscription Required",
-        description: "Please subscribe to a plan to view detailed property information",
+        description: "Please subscribe to a plan to access builder contact details",
         variant: "destructive",
       });
       navigate('/pricing');
       return;
-    }
-
-    // If user has access, increment project view count
-    if (SubscriptionService.canViewMoreProjects(user)) {
-      // In real app, you would call updateUser function here
-      console.log("Incrementing project view count");
     }
   };
 
@@ -137,104 +125,6 @@ const PropertyDetailPage = () => {
     shopping: ["Phoenix Mall", "Express Avenue", "Forum Mall"],
     restaurants: ["Saravana Bhavan", "Pind Balluchi", "Absolute Barbecue"]
   };
-
-  // If user doesn't have access, show limited info with subscription prompt
-  if (!canViewDetails) {
-    return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="mb-6 flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
-          </Button>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <img
-                      src={property.image || "/placeholder.svg"}
-                      alt={property.title}
-                      className="w-full h-96 object-cover rounded-lg"
-                    />
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
-                      <div className="text-center text-white">
-                        <Lock className="h-16 w-16 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold mb-2">Premium Content</h3>
-                        <p className="mb-4">Subscribe to view detailed property information</p>
-                        <Button onClick={() => navigate('/pricing')} className="bg-primary hover:bg-primary/90">
-                          View Plans
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl">{property.title}</CardTitle>
-                  <div className="flex items-center space-x-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{property.location}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-primary mb-4">{property.price}</div>
-                  <p className="text-muted-foreground mb-4">
-                    Subscribe to view detailed property information, amenities, floor plans, and more...
-                  </p>
-                  <Button onClick={() => navigate('/pricing')} className="w-full">
-                    Subscribe Now
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contact Builder</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold">{property.builder}</h4>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                      <Phone className="h-4 w-4" />
-                      <span className="blur-sm">+91 9876543210</span>
-                      <Lock className="h-3 w-3" />
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                      <Mail className="h-4 w-4" />
-                      <span className="blur-sm">contact@builder.com</span>
-                      <Lock className="h-3 w-3" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Button disabled className="w-full">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule Visit
-                      <Lock className="h-4 w-4 ml-2" />
-                    </Button>
-                    <Button variant="outline" disabled className="w-full">
-                      Download Brochure
-                      <Lock className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -511,33 +401,75 @@ const PropertyDetailPage = () => {
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">{property.builder}</h4>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                    <Phone className="h-4 w-4" />
-                    <span>+91 9876543210</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                    <Mail className="h-4 w-4" />
-                    <span>contact@builder.com</span>
-                  </div>
+                  {canAccessPremiumFeatures ? (
+                    <>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                        <Phone className="h-4 w-4" />
+                        <span>+91 9876543210</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                        <Mail className="h-4 w-4" />
+                        <span>contact@builder.com</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                        <Phone className="h-4 w-4" />
+                        <span className="blur-sm">+91 9876543210</span>
+                        <Lock className="h-3 w-3" />
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                        <Mail className="h-4 w-4" />
+                        <span className="blur-sm">contact@builder.com</span>
+                        <Lock className="h-3 w-3" />
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
-                  <ScheduleVisitDialog
-                    property={{
-                      id: property.id,
-                      title: property.title,
-                      location: property.location,
-                      builder: property.builder
-                    }}
-                  >
-                    <Button className="w-full">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule Visit
-                    </Button>
-                  </ScheduleVisitDialog>
-                  <Button variant="outline" onClick={handleDownloadBrochure} className="w-full">
-                    Download Brochure
-                  </Button>
+                  {canAccessPremiumFeatures ? (
+                    <>
+                      <ScheduleVisitDialog
+                        property={{
+                          id: property.id,
+                          title: property.title,
+                          location: property.location,
+                          builder: property.builder
+                        }}
+                      >
+                        <Button className="w-full">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Schedule Visit
+                        </Button>
+                      </ScheduleVisitDialog>
+                      <Button variant="outline" onClick={handleDownloadBrochure} className="w-full">
+                        Download Brochure
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button disabled className="w-full" onClick={handleScheduleVisit}>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Schedule Visit
+                        <Lock className="h-4 w-4 ml-2" />
+                      </Button>
+                      <Button variant="outline" disabled className="w-full" onClick={handleDownloadBrochure}>
+                        Download Brochure
+                        <Lock className="h-4 w-4 ml-2" />
+                      </Button>
+                      <div className="text-center pt-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => navigate('/pricing')}
+                          className="text-xs"
+                        >
+                          Subscribe to Access Contact Details
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
