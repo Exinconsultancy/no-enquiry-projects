@@ -24,28 +24,51 @@ const PropertyDetailPage = () => {
 
   const property = getPropertyById(id || "");
 
-  // Track property view when component mounts (only for authenticated users)
-  React.useEffect(() => {
-    if (property && user && !isAdmin) {
-      // Check if user can view more projects
-      if (SubscriptionService.canViewMoreProjects(user)) {
-        // Increment the view count
-        SubscriptionService.incrementProjectView(user, updateUser);
-        console.log(`Project view counted for user ${user.email}. Views: ${(user.projectsViewed || 0) + 1}/${user.projectsLimit}`);
-        
-        toast({
-          title: "Project Viewed",
-          description: `You have viewed ${(user.projectsViewed || 0) + 1} of ${user.projectsLimit} projects`,
-        });
-      } else if (SubscriptionService.canAccessPremiumFeatures(user) && !SubscriptionService.canViewMoreProjects(user)) {
-        toast({
-          title: "View Limit Reached",
-          description: "You've reached your project viewing limit. Upgrade your plan to view more projects.",
-          variant: "destructive"
-        });
-      }
+  const [contactDetailsVisible, setContactDetailsVisible] = React.useState(false);
+
+  const handleViewDetails = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to view contact details.",
+        variant: "destructive"
+      });
+      return;
     }
-  }, [property, user, isAdmin, updateUser]);
+
+    if (isAdmin) {
+      setContactDetailsVisible(true);
+      return;
+    }
+
+    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to view contact details.",
+        variant: "destructive"
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    if (!SubscriptionService.canViewMoreProjects(user)) {
+      toast({
+        title: "View Limit Reached",
+        description: "You've reached your project viewing limit. Upgrade your plan to view more projects.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Increment the view count
+    SubscriptionService.incrementProjectView(user, updateUser);
+    setContactDetailsVisible(true);
+    
+    toast({
+      title: "Contact Details Unlocked",
+      description: `Project viewed! You have ${(user.projectsViewed || 0) + 1} of ${user.projectsLimit} views used.`,
+    });
+  };
 
   if (!property) {
     return (
@@ -435,7 +458,7 @@ const PropertyDetailPage = () => {
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">{property.builder}</h4>
-                  {canAccessPremiumFeatures ? (
+                  {contactDetailsVisible || isAdmin ? (
                     <>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
                         <Phone className="h-4 w-4" />
@@ -447,64 +470,38 @@ const PropertyDetailPage = () => {
                       </div>
                     </>
                   ) : (
-                    <>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                        <Phone className="h-4 w-4" />
-                        <span className="blur-sm">+91 9876543210</span>
-                        <Lock className="h-3 w-3" />
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                        <Mail className="h-4 w-4" />
-                        <span className="blur-sm">contact@builder.com</span>
-                        <Lock className="h-3 w-3" />
-                      </div>
-                    </>
+                    <div className="text-center py-4">
+                      <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Contact details are premium content
+                      </p>
+                      <Button onClick={handleViewDetails} className="w-full">
+                        View Details
+                      </Button>
+                    </div>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  {canAccessPremiumFeatures ? (
-                    <>
-                      <ScheduleVisitDialog
-                        property={{
-                          id: property.id,
-                          title: property.title,
-                          location: property.location,
-                          builder: property.builder
-                        }}
-                      >
-                        <Button className="w-full">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Schedule Visit
-                        </Button>
-                      </ScheduleVisitDialog>
-                      <Button variant="outline" onClick={handleDownloadBrochure} className="w-full">
-                        Download Brochure
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button disabled className="w-full" onClick={handleScheduleVisit}>
+                {(contactDetailsVisible || isAdmin) && (
+                  <div className="space-y-2">
+                    <ScheduleVisitDialog
+                      property={{
+                        id: property.id,
+                        title: property.title,
+                        location: property.location,
+                        builder: property.builder
+                      }}
+                    >
+                      <Button className="w-full">
                         <Calendar className="h-4 w-4 mr-2" />
                         Schedule Visit
-                        <Lock className="h-4 w-4 ml-2" />
                       </Button>
-                      <Button variant="outline" disabled className="w-full" onClick={handleDownloadBrochure}>
-                        Download Brochure
-                        <Lock className="h-4 w-4 ml-2" />
-                      </Button>
-                      <div className="text-center pt-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => navigate('/pricing')}
-                          className="text-xs"
-                        >
-                          Subscribe to Access Contact Details
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    </ScheduleVisitDialog>
+                    <Button variant="outline" onClick={handleDownloadBrochure} className="w-full">
+                      Download Brochure
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
