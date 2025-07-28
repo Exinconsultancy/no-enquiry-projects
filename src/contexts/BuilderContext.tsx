@@ -95,8 +95,12 @@ export const BuilderProvider = ({ children }: BuilderProviderProps) => {
       image: project.images[0] || undefined
     });
 
-    // Remove from builder projects (it's now published)
-    setProjects(prev => prev.filter(p => p.id !== id));
+    // Update project status to published (keep it in builder dashboard)
+    setProjects(prev => 
+      prev.map(p => 
+        p.id === id ? { ...p, status: "published" } : p
+      )
+    );
     
     toast({
       title: "Project Published",

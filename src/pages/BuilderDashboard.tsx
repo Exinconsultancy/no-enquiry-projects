@@ -52,7 +52,7 @@ const BuilderDashboard = () => {
   }
 
   const userProjects = getUserProjects(user.email);
-  const canAddProject = userProjects.length === 0; // Only one project allowed
+  const canAddProject = userProjects.filter(p => p.status === 'draft').length === 0; // Only one draft project allowed
 
   const handleSubmitProject = async () => {
     if (!projectForm.title || !projectForm.location || !projectForm.price) {
@@ -208,7 +208,7 @@ const BuilderDashboard = () => {
                   <Building2 className="h-5 w-5 text-primary" />
                   <span className="text-sm font-medium">Projects</span>
                 </div>
-                <p className="text-2xl font-bold mt-2">{userProjects.length}/1</p>
+                <p className="text-2xl font-bold mt-2">{userProjects.filter(p => p.status === 'draft').length}/1</p>
               </CardContent>
             </Card>
             
@@ -241,9 +241,9 @@ const BuilderDashboard = () => {
           <Card className="mb-8">
             <CardContent className="p-6 text-center">
               <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Create Your Project</h3>
+              <h3 className="text-lg font-semibold mb-2">Create Your Next Project</h3>
               <p className="text-muted-foreground mb-4">
-                You can create and manage one project with your builder subscription.
+                Create a new draft project. You can have one draft project at a time.
               </p>
               <Button onClick={() => setIsEditing(true)}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -454,7 +454,7 @@ const BuilderDashboard = () => {
                       </div>
                     )}
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         size="sm"
                         variant="outline"
@@ -474,6 +474,17 @@ const BuilderDashboard = () => {
                         </Button>
                       )}
                       
+                      {project.status === 'published' && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => navigate('/properties')}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View on Properties Page
+                        </Button>
+                      )}
+                      
                       <Button
                         size="sm"
                         variant="destructive"
@@ -490,7 +501,7 @@ const BuilderDashboard = () => {
           </div>
         )}
 
-        {!canAddProject && userProjects.length === 0 && !isEditing && (
+        {userProjects.length === 0 && !isEditing && (
           <Card>
             <CardContent className="p-8 text-center">
               <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
