@@ -11,7 +11,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role?: string;
+  role: string;
   plan?: string;
   projectsViewed?: number;
   projectsLimit?: number;
