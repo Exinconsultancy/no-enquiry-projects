@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthService } from "../services/authService";
 import { loginSchema, registerSchema, LoginData, RegisterData } from "../lib/validation";
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   console.log("AuthProvider - Current user:", user);
   console.log("AuthProvider - isAdmin:", isAdmin);
+  console.log("AuthProvider - User role:", user?.role);
 
   useEffect(() => {
     // Check for existing session
@@ -64,11 +66,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         AuthService.verifyToken(savedToken);
         setToken(savedToken);
         const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        console.log("AuthProvider - Restored user session:", parsedUser);
+        console.log("AuthProvider - Parsed user from storage:", parsedUser);
+        
+        // Ensure the user object is properly structured
+        if (parsedUser && typeof parsedUser === 'object' && parsedUser.id && parsedUser.email) {
+          setUser(parsedUser);
+          console.log("AuthProvider - Restored user session:", parsedUser);
+        } else {
+          console.log("AuthProvider - Invalid user data in storage, clearing");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
       } catch (error) {
         console.log("AuthProvider - Invalid token, clearing storage");
-        // Token is invalid, clear storage
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
@@ -81,6 +91,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const updatedUser = { ...user, ...updates };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      console.log("AuthProvider - User updated:", updatedUser);
     }
   };
 
@@ -118,6 +129,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const { user: loggedInUser, token: authToken } = await AuthService.login(validatedData);
       
       console.log("AuthProvider - Login successful:", loggedInUser);
+      console.log("AuthProvider - User role after login:", loggedInUser.role);
       
       setUser(loggedInUser);
       setToken(authToken);

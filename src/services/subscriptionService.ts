@@ -23,7 +23,7 @@ export class SubscriptionService {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Mock subscription logic
+      // Mock subscription logic with project-based plans
       const plans = {
         'starter': { name: 'Starter', projectsLimit: 5, duration: 7 },
         'professional': { name: 'Professional', projectsLimit: 10, duration: 15 },
@@ -42,7 +42,7 @@ export class SubscriptionService {
       updateUser({
         plan: selectedPlan.name,
         projectsLimit: selectedPlan.projectsLimit,
-        projectsViewed: user.projectsViewed || 0,
+        projectsViewed: 0, // Reset project count on new subscription
         subscriptionExpiry: expiryDate.toISOString()
       });
       
@@ -50,7 +50,7 @@ export class SubscriptionService {
       
       return {
         success: true,
-        message: `Successfully subscribed to ${selectedPlan.name} plan!`
+        message: `Successfully subscribed to ${selectedPlan.name} plan! You can now view ${selectedPlan.projectsLimit} projects.`
       };
     } catch (error) {
       return {
@@ -58,13 +58,6 @@ export class SubscriptionService {
         message: error instanceof Error ? error.message : 'Subscription failed'
       };
     }
-  }
-
-  static async getBuilderSubscriptionInfo(): Promise<{ contactEmail: string; contactPhone: string }> {
-    return {
-      contactEmail: 'builders@nonobroker.com',
-      contactPhone: '+91 98765 43210'
-    };
   }
 
   static async handleBuilderSubscription(userEmail: string, updateUser: (updates: Partial<User>) => void): Promise<{ success: boolean; message: string }> {

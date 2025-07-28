@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, CheckCircle, Clock, Phone, Mail, Star } from "lucide-react";
+import { Shield, CheckCircle, Clock, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionService } from "@/services/subscriptionService";
@@ -23,35 +24,34 @@ const PricingPage = () => {
   const { user, updateUser, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [builderContactInfo, setBuilderContactInfo] = useState<{contactEmail: string; contactPhone: string} | null>(null);
 
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([
     {
       id: "starter",
       name: "Starter",
-      price: "₹299/week",
-      originalPrice: "₹499/week",
+      price: "₹299",
+      originalPrice: "₹499",
       projects: 5,
       features: [
         "Access to 5 projects",
         "Basic property details",
         "Email support",
-        "7-day validity"
+        "Valid for 7 days from purchase"
       ],
       badge: "Save 40%"
     },
     {
       id: "professional",
       name: "Professional",
-      price: "₹499/2 weeks",
-      originalPrice: "₹899/2 weeks",
+      price: "₹499",
+      originalPrice: "₹899",
       projects: 10,
       features: [
         "Access to 10 projects",
         "Detailed property information",
         "Priority support",
         "Download brochures",
-        "15-day validity"
+        "Valid for 15 days from purchase"
       ],
       popular: true,
       badge: "Best Value"
@@ -59,8 +59,8 @@ const PricingPage = () => {
     {
       id: "premium",
       name: "Premium",
-      price: "₹799/month",
-      originalPrice: "₹1299/month",
+      price: "₹799",
+      originalPrice: "₹1299",
       projects: 15,
       features: [
         "Access to 15 projects",
@@ -68,7 +68,7 @@ const PricingPage = () => {
         "24/7 support",
         "Download all brochures",
         "Schedule property visits",
-        "30-day validity"
+        "Valid for 30 days from purchase"
       ],
       badge: "Most Popular"
     }
@@ -128,7 +128,7 @@ const PricingPage = () => {
     if (!user) {
       toast({
         title: "Login Required",
-        description: "Please login to request builder subscription",
+        description: "Please login for builder subscription",
         variant: "destructive",
       });
       return;
@@ -136,11 +136,6 @@ const PricingPage = () => {
 
     setIsLoading(true);
     try {
-      if (!builderContactInfo) {
-        const info = await SubscriptionService.getBuilderSubscriptionInfo();
-        setBuilderContactInfo(info);
-      }
-      
       const result = await SubscriptionService.handleBuilderSubscription(user.email, updateUser);
       
       if (result.success) {
@@ -315,26 +310,9 @@ const PricingPage = () => {
                 
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-primary mb-2">Custom Pricing</div>
-                    <div className="text-muted-foreground">Contact us for a personalized quote</div>
+                    <div className="text-3xl font-bold text-primary mb-2">₹1,00,000/month</div>
+                    <div className="text-muted-foreground">Premium builder subscription</div>
                   </div>
-                  
-                  {builderContactInfo && (
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <a href={`mailto:${builderContactInfo.contactEmail}`} className="text-primary hover:underline">
-                          {builderContactInfo.contactEmail}
-                        </a>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a href={`tel:${builderContactInfo.contactPhone}`} className="text-primary hover:underline">
-                          {builderContactInfo.contactPhone}
-                        </a>
-                      </div>
-                    </div>
-                  )}
                   
                   <Button
                     onClick={handleBuilderSubscription}
@@ -342,7 +320,7 @@ const PricingPage = () => {
                     className="w-full"
                     variant="premium"
                   >
-                    {isLoading ? "Processing..." : "Request Builder Access"}
+                    {isLoading ? "Processing..." : "Subscribe Now"}
                   </Button>
                 </div>
               </div>
