@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from '@/pages/HomePage';
 import PropertiesPage from '@/pages/PropertiesPage';
@@ -15,23 +16,15 @@ import BuilderDashboard from '@/pages/BuilderDashboard';
 import HostelPage from '@/pages/HostelPage';
 
 function App() {
-  const { user, setUser } = useAuth();
+  const { user, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, [setUser]);
 
   const handleLogin = () => {
     setIsAuthModalOpen(true);
   };
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+    logout();
   };
 
   return (
@@ -39,8 +32,8 @@ function App() {
       <div className="min-h-screen bg-background">
         <Navbar user={user} onLogin={handleLogin} onLogout={handleLogout} />
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/properties" element={<PropertiesPage />} />
+          <Route path="/" element={<HomePage onLogin={handleLogin} />} />
+          <Route path="/properties" element={<PropertiesPage onLogin={handleLogin} />} />
           <Route path="/hostels" element={<HostelPage />} />
           <Route path="/rentals" element={<RentalsPage />} />
           <Route path="/pricing" element={<PricingPage onLogin={handleLogin} />} />
@@ -52,7 +45,9 @@ function App() {
         <AuthModal 
           isOpen={isAuthModalOpen} 
           onClose={() => setIsAuthModalOpen(false)} 
-          onLogin={setUser} 
+          onLogin={() => setIsAuthModalOpen(false)}
+          onRegister={() => setIsAuthModalOpen(false)}
+          onGoogleSignIn={() => setIsAuthModalOpen(false)}
         />
         <Toaster />
       </div>
