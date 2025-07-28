@@ -77,8 +77,13 @@ const PricingCard = ({ plan, onSelect, onUpdatePlan, userPlan }: PricingCardProp
         <Button
           className="w-full"
           variant={plan.popular ? "premium" : isCurrentPlan ? "success" : "default"}
-          onClick={() => onSelect(plan)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onSelect(plan);
+          }}
           disabled={isCurrentPlan}
+          type="button"
         >
           {isCurrentPlan ? "Current Plan" : "Choose Plan"}
         </Button>
