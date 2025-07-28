@@ -19,10 +19,10 @@ import AdminRouteGuard from "./components/AdminRouteGuard";
 
 function App() {
   return (
-    <SecureAuthProvider>
-      <AdminProvider>
-        <FavoritesProvider>
-          <Router>
+    <Router>
+      <SecureAuthProvider>
+        <AdminProvider>
+          <FavoritesProvider>
             <div className="min-h-screen bg-background">
               <Navbar />
               <Routes>
@@ -48,10 +48,10 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
-          </Router>
-        </FavoritesProvider>
-      </AdminProvider>
-    </SecureAuthProvider>
+          </FavoritesProvider>
+        </AdminProvider>
+      </SecureAuthProvider>
+    </Router>
   );
 }
 
