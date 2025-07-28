@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MapPin, Home, Bath, Maximize, Download, Eye, Heart, Crown, Check } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -39,7 +39,8 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: PropertyCardProps) => {
-  const { isAdmin } = useSecureAuth();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   const navigate = useNavigate();
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
