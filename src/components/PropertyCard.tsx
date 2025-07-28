@@ -203,24 +203,15 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
             </div>
           </div>
 
-          <div className="flex space-x-2">
+          <div className="flex justify-center">
             <Button
               size="sm"
               variant="outline"
               onClick={handleViewDetails}
-              className="flex-1"
+              className="w-full"
             >
               <Eye className="h-3 w-3 mr-1" />
               View Details
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDownloadBrochure}
-              className="flex-1"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              Brochure
             </Button>
           </div>
         </CardContent>
