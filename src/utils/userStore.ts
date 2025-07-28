@@ -16,10 +16,13 @@ interface User {
 const users: User[] = [
   {
     id: "admin-1",
-    name: "Admin User",
-    email: "admin@example.com",
-    password: "Admin123!",
+    name: "Administrator",
+    email: "admin@admin.com",
+    password: "admin123",
     role: "admin",
+    plan: "Admin Access",
+    projectsViewed: 0,
+    projectsLimit: 999,
     createdAt: new Date().toISOString()
   }
 ];
@@ -40,14 +43,19 @@ export const createUser = async (userData: {
     throw new Error("User already exists");
   }
 
+  // Determine role based on email
+  const role = userData.email === 'admin@admin.com' ? 'admin' : 'user';
+
   const newUser: User = {
     id: `user-${Date.now()}`,
     name: userData.name,
     email: userData.email,
     password: userData.password, // In production, this should be hashed
-    role: "user",
+    role,
+    plan: role === 'admin' ? 'Admin Access' : undefined,
+    projectsViewed: 0,
+    projectsLimit: role === 'admin' ? 999 : 0,
     createdAt: new Date().toISOString()
-    // No automatic plan assignment
   };
 
   users.push(newUser);
