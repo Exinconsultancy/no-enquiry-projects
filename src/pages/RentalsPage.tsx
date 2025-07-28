@@ -2,6 +2,7 @@
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ const RentalsPage = () => {
   const { user } = useSecureAuth();
   const { getPropertiesByCategory } = useAdmin();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [priceFilter, setPriceFilter] = useState("");
@@ -44,7 +46,18 @@ const RentalsPage = () => {
       });
       return;
     }
-    // Navigation will be handled by the PropertyCard component
+
+    if (!user.plan) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to a plan to view property details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to property detail page
+    navigate(`/${property.category}/${property.id}`);
   };
 
   const handleDownloadBrochure = (property: any) => {

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useNavigate } from "react-router-dom";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilterContainer from "@/components/PropertyFilterContainer";
 import AdminFAB from "@/components/AdminFAB";
@@ -12,6 +13,7 @@ const PropertiesPage = () => {
   const { user } = useSecureAuth();
   const { getPropertiesByCategory } = useAdmin();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("property"));
 
   const stats = [
@@ -50,10 +52,8 @@ const PropertiesPage = () => {
       return;
     }
 
-    toast({
-      title: "Property Details",
-      description: "Property details are now visible below",
-    });
+    // Navigate to property detail page
+    navigate(`/${property.category}/${property.id}`);
   };
 
   const handleDownloadBrochure = (property: any) => {
