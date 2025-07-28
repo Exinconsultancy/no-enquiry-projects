@@ -1,12 +1,13 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useAdmin } from "@/contexts/AdminContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Bed, Bath, Square, Phone, Mail, Calendar, User, Home, Star } from "lucide-react";
+import { ArrowLeft, MapPin, Bed, Bath, Square, Phone, Mail, Calendar, User, Home, Star, Heart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,7 @@ const PropertyDetailPage = () => {
   const { properties } = useAdmin();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
   const property = properties.find(p => p.id === id);
 
@@ -51,6 +53,23 @@ const PropertyDetailPage = () => {
       title: "Download Started",
       description: "Brochure download has started",
     });
+  };
+
+  const handleFavoriteToggle = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add properties to favorites",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isFavorite(property.id)) {
+      removeFromFavorites(property.id);
+    } else {
+      addToFavorites(property.id);
+    }
   };
 
   // Demo images for different property types
@@ -324,9 +343,11 @@ const PropertyDetailPage = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-3">
-                  <Button className="w-full" size="lg">
-                    Schedule Visit
-                  </Button>
+                  <ScheduleVisitDialog property={property}>
+                    <Button className="w-full" size="lg">
+                      Schedule Visit
+                    </Button>
+                  </ScheduleVisitDialog>
                   <Button 
                     variant="outline" 
                     className="w-full" 
@@ -334,8 +355,13 @@ const PropertyDetailPage = () => {
                   >
                     Download Brochure
                   </Button>
-                  <Button variant="outline" className="w-full">
-                    Add to Favorites
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={handleFavoriteToggle}
+                  >
+                    <Heart className={`h-4 w-4 mr-2 ${isFavorite(property.id) ? 'fill-current text-red-500' : ''}`} />
+                    {isFavorite(property.id) ? 'Remove from Favorites' : 'Add to Favorites'}
                   </Button>
                 </div>
               </CardContent>
