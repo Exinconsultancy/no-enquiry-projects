@@ -1,7 +1,7 @@
 
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { SecureAuthProvider } from "./contexts/SecureAuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import { BuilderProvider } from "./contexts/BuilderContext";
 import HomePage from "./pages/HomePage";
@@ -21,7 +21,7 @@ import AdminRouteGuard from "./components/AdminRouteGuard";
 function App() {
   return (
     <Router>
-      <SecureAuthProvider>
+      <AuthProvider>
         <AdminProvider>
           <BuilderProvider>
             <FavoritesProvider>
@@ -49,7 +49,7 @@ function App() {
             </FavoritesProvider>
           </BuilderProvider>
         </AdminProvider>
-      </SecureAuthProvider>
+      </AuthProvider>
     </Router>
   );
 }
