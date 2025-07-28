@@ -98,6 +98,16 @@ const PricingPage = () => {
       return;
     }
 
+    // Prevent builders from subscribing to regular plans
+    if (user.role === 'builder') {
+      toast({
+        title: "Access Restricted",
+        description: "Builders can only use the Builder Subscription. Regular plans are for property viewers only.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -273,6 +283,7 @@ const PricingPage = () => {
               onSelect={handlePlanSelect}
               onUpdatePlan={isAdmin ? handleUpdatePlan : undefined}
               userPlan={user?.plan}
+              userRole={user?.role}
             />
           ))}
         </div>
