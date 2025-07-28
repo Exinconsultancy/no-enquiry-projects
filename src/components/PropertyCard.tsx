@@ -38,7 +38,7 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
   const hasSubscription = user && user.plan;
   const hasReachedLimit = user?.projectsViewed && user?.projectsLimit && user.projectsViewed >= user.projectsLimit;
   const canViewDetails = hasSubscription && !hasReachedLimit;
-  const canDownloadBrochure = hasSubscription;
+  const canDownloadBrochure = hasSubscription; // Brochure download requires subscription
 
   const handleViewDetails = () => {
     if (canViewDetails) {
@@ -46,6 +46,14 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
       onViewDetails(property);
     } else {
       onViewDetails(property);
+    }
+  };
+
+  const handleDownloadBrochure = () => {
+    if (canDownloadBrochure) {
+      onDownloadBrochure(property);
+    } else {
+      onDownloadBrochure(property);
     }
   };
 
@@ -167,11 +175,13 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
           variant="outline"
           size="sm"
           className="w-full"
-          onClick={() => onDownloadBrochure(property)}
+          onClick={handleDownloadBrochure}
           disabled={!canDownloadBrochure}
         >
           <Download className="h-4 w-4 mr-2" />
-          {canDownloadBrochure ? "Download Brochure" : "Subscribe to Download"}
+          {!user ? "Login to Download" : 
+           !hasSubscription ? "Subscribe to Download" : 
+           "Download Brochure"}
         </Button>
       </CardFooter>
     </Card>

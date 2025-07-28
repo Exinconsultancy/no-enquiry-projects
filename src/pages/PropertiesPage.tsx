@@ -56,7 +56,7 @@ const PropertiesPage = ({ onLogin }: PropertiesPageProps) => {
     newProject: false,
   });
 
-  // Sample properties data
+  // Expanded sample properties data
   const sampleProperties: Property[] = [
     {
       id: "1",
@@ -112,7 +112,6 @@ const PropertiesPage = ({ onLogin }: PropertiesPageProps) => {
         email: "amit@techpark.com"
       }
     },
-    // Add more sample properties
     {
       id: "4",
       title: "Skyline Apartments",
@@ -129,6 +128,114 @@ const PropertiesPage = ({ onLogin }: PropertiesPageProps) => {
         name: "Sneha Joshi",
         phone: "+91 65432 10987",
         email: "sneha@skyline.com"
+      }
+    },
+    {
+      id: "5",
+      title: "Elite Towers Business District",
+      location: "Chennai, Tamil Nadu",
+      price: "₹2.8 Cr onwards",
+      image: property2,
+      bedrooms: 0,
+      bathrooms: 2,
+      area: "2,500 sq ft",
+      type: "commercial",
+      amenities: ["Conference Room", "Reception", "High-Speed Internet", "Parking", "Security"],
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
+      builderContact: {
+        name: "Karthik Reddy",
+        phone: "+91 98765 12345",
+        email: "karthik@elitetowers.com"
+      }
+    },
+    {
+      id: "6",
+      title: "Golden Heights Luxury Apartments",
+      location: "Hyderabad, Telangana",
+      price: "₹1.9 Cr onwards",
+      image: property3,
+      bedrooms: 3,
+      bathrooms: 3,
+      area: "1,650 sq ft",
+      type: "apartment",
+      amenities: ["Swimming Pool", "Gym", "Spa", "Parking", "Security", "Garden", "Club House"],
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
+      builderContact: {
+        name: "Meera Nair",
+        phone: "+91 87654 98765",
+        email: "meera@goldenheights.com"
+      }
+    },
+    {
+      id: "7",
+      title: "Serene Villas Eco-Friendly Homes",
+      location: "Coimbatore, Tamil Nadu",
+      price: "₹1.5 Cr onwards",
+      image: property1,
+      bedrooms: 4,
+      bathrooms: 4,
+      area: "2,800 sq ft",
+      type: "villa",
+      amenities: ["Solar Panels", "Rain Water Harvesting", "Garden", "Parking", "Security"],
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
+      builderContact: {
+        name: "Arjun Pillai",
+        phone: "+91 76543 87654",
+        email: "arjun@serenevillas.com"
+      }
+    },
+    {
+      id: "8",
+      title: "Metropolitan Business Center",
+      location: "Kolkata, West Bengal",
+      price: "₹2.2 Cr onwards",
+      image: property2,
+      bedrooms: 0,
+      bathrooms: 3,
+      area: "3,000 sq ft",
+      type: "commercial",
+      amenities: ["Meeting Rooms", "Cafeteria", "Parking", "Security", "Power Backup", "AC"],
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
+      builderContact: {
+        name: "Debanjan Roy",
+        phone: "+91 65432 76543",
+        email: "debanjan@metrocenter.com"
+      }
+    },
+    {
+      id: "9",
+      title: "Sunrise Residency Premium Flats",
+      location: "Jaipur, Rajasthan",
+      price: "₹95 Lakh onwards",
+      image: property3,
+      bedrooms: 2,
+      bathrooms: 2,
+      area: "1,200 sq ft",
+      type: "apartment",
+      amenities: ["Gym", "Children's Play Area", "Parking", "Security", "Garden"],
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
+      builderContact: {
+        name: "Vikram Singh",
+        phone: "+91 54321 65432",
+        email: "vikram@sunriseresidency.com"
+      }
+    },
+    {
+      id: "10",
+      title: "Royal Villas Heritage Collection",
+      location: "Udaipur, Rajasthan",
+      price: "₹3.5 Cr onwards",
+      image: property1,
+      bedrooms: 5,
+      bathrooms: 5,
+      area: "3,500 sq ft",
+      type: "villa",
+      amenities: ["Swimming Pool", "Heritage Architecture", "Garden", "Parking", "Security", "Servant Quarter"],
+      isLocked: !SubscriptionService.canAccessPremiumFeatures(user),
+      builderContact: {
+        name: "Maharaja Constructions",
+        phone: "+91 43210 54321",
+        email: "info@royalvillas.com"
       }
     }
   ];
