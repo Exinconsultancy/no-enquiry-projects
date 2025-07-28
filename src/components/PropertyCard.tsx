@@ -25,7 +25,7 @@ interface PropertyCardProps {
       phone: string;
       email: string;
     };
-    category: string;
+    category: "property" | "rental" | "hostel";
     status: "active" | "pending" | "sold";
     builder: string;
     createdDate: string;
