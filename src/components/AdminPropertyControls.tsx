@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Trash2 } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -32,7 +32,8 @@ interface AdminPropertyControlsProps {
 }
 
 const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyControlsProps) => {
-  const { isAdmin } = useSecureAuth();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   const { updateProperty, deleteProperty } = useAdmin();
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);

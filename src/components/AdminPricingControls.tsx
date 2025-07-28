@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Edit } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface PricingPlan {
@@ -25,7 +25,8 @@ interface AdminPricingControlsProps {
 }
 
 const AdminPricingControls = ({ plan, onUpdate }: AdminPricingControlsProps) => {
-  const { isAdmin } = useSecureAuth();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({

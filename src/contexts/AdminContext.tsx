@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useSecureAuth } from "./SecureAuthContext";
+import { useAuth } from "./AuthContext";
 
 interface Property {
   id: string;
@@ -160,9 +160,10 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   let isAdmin = false;
   let isBuilder = false;
   try {
-    const { isAdmin: authIsAdmin, user } = useSecureAuth();
+    const { profile } = useAuth();
+    const authIsAdmin = profile?.role === 'admin';
     isAdmin = authIsAdmin;
-    isBuilder = user?.role === 'builder';
+    isBuilder = profile?.role === 'builder';
   } catch (error) {
     // SecureAuth not available yet, default to false
     isAdmin = false;

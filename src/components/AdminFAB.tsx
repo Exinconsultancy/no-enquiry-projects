@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +16,8 @@ interface AdminFABProps {
 }
 
 const AdminFAB = ({ category }: AdminFABProps) => {
-  const { isAdmin } = useSecureAuth();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   const { addProperty } = useAdmin();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);

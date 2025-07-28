@@ -1,6 +1,6 @@
 
 import { ReactNode } from "react";
-import { useSecureAuth } from "../contexts/SecureAuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Shield } from "lucide-react";
 
@@ -10,9 +10,11 @@ interface AdminRouteGuardProps {
 }
 
 const AdminRouteGuard = ({ children, fallback }: AdminRouteGuardProps) => {
-  const { isAuthenticated, isAdmin, isLoading } = useSecureAuth();
+  const { user, profile, loading } = useAuth();
+  const isAuthenticated = !!user;
+  const isAdmin = profile?.role === 'admin';
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

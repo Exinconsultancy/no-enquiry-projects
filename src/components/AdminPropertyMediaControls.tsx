@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Edit, X, Image, FileText, Settings } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface Property {
@@ -28,7 +28,8 @@ interface AdminPropertyMediaControlsProps {
 }
 
 const AdminPropertyMediaControls = ({ property, onUpdate }: AdminPropertyMediaControlsProps) => {
-  const { isAdmin } = useSecureAuth();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   const { toast } = useToast();
   const [isMediaOpen, setIsMediaOpen] = useState(false);
   const [images, setImages] = useState<string[]>([
