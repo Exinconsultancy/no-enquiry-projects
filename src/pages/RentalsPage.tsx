@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import PropertyCard from "@/components/PropertyCard";
+import { SubscriptionService } from "@/services/subscriptionService";
 
 const RentalsPage = () => {
   const { user } = useSecureAuth();
@@ -47,22 +48,25 @@ const RentalsPage = () => {
       return;
     }
 
-    if (!user.plan) {
+    // Check if user has premium access (handles both plan existence and expiry)
+    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
       toast({
         title: "Subscription Required",
         description: "Please subscribe to a plan to view property details",
         variant: "destructive",
       });
+      navigate('/pricing');
       return;
     }
 
-    const hasReachedLimit = user.projectsViewed && user.projectsLimit && user.projectsViewed >= user.projectsLimit;
-    if (hasReachedLimit) {
+    // Check if user can view more projects
+    if (!SubscriptionService.canViewMoreProjects(user)) {
       toast({
-        title: "Limit Reached",
-        description: "You have reached your project viewing limit. Please upgrade your plan.",
+        title: "View Limit Reached",
+        description: "You have reached your project viewing limit. Please renew or upgrade your plan.",
         variant: "destructive",
       });
+      navigate('/pricing');
       return;
     }
 
@@ -80,12 +84,13 @@ const RentalsPage = () => {
       return;
     }
 
-    if (!user.plan) {
+    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
       toast({
         title: "Subscription Required",
         description: "Please subscribe to a plan to download brochures",
         variant: "destructive",
       });
+      navigate('/pricing');
       return;
     }
 
