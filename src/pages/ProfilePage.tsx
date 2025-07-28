@@ -139,7 +139,7 @@ const ProfilePage = () => {
                 </div>
               )}
               
-              {subscriptionStatus.isActive && (
+              {subscriptionStatus.isActive && user.plan === 'Builder' && (
                 <div className="flex items-center justify-between">
                   <span>Days Remaining:</span>
                   <span>{subscriptionStatus.daysRemaining}</span>

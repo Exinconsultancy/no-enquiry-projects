@@ -234,15 +234,17 @@ const PricingPage = () => {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {subscriptionStatus?.isActive 
-                        ? `${subscriptionStatus.daysRemaining} days left`
-                        : 'Expired'
-                      }
-                    </span>
-                  </div>
+                  {user.plan === 'Builder' && (
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {subscriptionStatus?.isActive 
+                          ? `${subscriptionStatus.daysRemaining} days left`
+                          : 'Expired'
+                        }
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center space-x-2">
                     <Star className="h-4 w-4 text-muted-foreground" />
                     <span>{user.projectsViewed || 0} of {user.projectsLimit || 0} projects viewed</span>
