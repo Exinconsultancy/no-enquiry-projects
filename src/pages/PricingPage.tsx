@@ -24,6 +24,7 @@ const PricingPage = () => {
   const { user, isAdmin, updateUser } = useSecureAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isBuilderLoading, setIsBuilderLoading] = useState(false);
 
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([
     {
@@ -139,10 +140,19 @@ const PricingPage = () => {
       return;
     }
 
-    toast({
-      title: "Builder Subscription",
-      description: "Builder subscription feature coming soon!",
-    });
+    setIsBuilderLoading(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Builder Subscription",
+        description: "Builder subscription feature coming soon!",
+      });
+    } finally {
+      setIsBuilderLoading(false);
+    }
   };
 
   const handleCancelBuilderSubscription = async () => {
@@ -222,7 +232,7 @@ const PricingPage = () => {
                     <Button 
                       variant="outline" 
                       onClick={handleCancelBuilderSubscription}
-                      disabled={isLoading}
+                      disabled={isBuilderLoading}
                     >
                       Cancel Builder Subscription
                     </Button>
@@ -284,11 +294,11 @@ const PricingPage = () => {
                   
                   <Button
                     onClick={handleBuilderSubscription}
-                    disabled={isLoading}
+                    disabled={isBuilderLoading}
                     className="w-full"
                     variant="default"
                   >
-                    {isLoading ? "Processing..." : "Subscribe Now"}
+                    {isBuilderLoading ? "Processing..." : "Subscribe Now"}
                   </Button>
                 </div>
               </div>
