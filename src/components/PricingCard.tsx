@@ -78,16 +78,16 @@ const PricingCard = ({ plan, onSelect, onUpdatePlan, userPlan, userRole }: Prici
 
         <Button
           className="w-full"
-          variant={plan.popular ? "premium" : isCurrentPlan ? "success" : "default"}
+          variant={plan.popular ? "premium" : isCurrentPlan ? "outline" : "default"}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onSelect(plan);
           }}
-          disabled={isCurrentPlan || isBuilder}
+          disabled={isBuilder}
           type="button"
         >
-          {isCurrentPlan ? "Current Plan" : isBuilder ? "Builder Only" : "Choose Plan"}
+          {isCurrentPlan ? "Renew Plan" : isBuilder ? "Builder Only" : "Choose Plan"}
         </Button>
       </CardContent>
     </Card>
