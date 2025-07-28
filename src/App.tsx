@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -11,7 +12,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import BuilderDashboard from "./pages/BuilderDashboard";
 import PropertyDetailPage from "./pages/PropertyDetailPage";
-import NotFound from "./pages/NotFoundPage";
+import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import AuthModal from "./components/AuthModal";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
@@ -46,6 +47,19 @@ function App() {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData)); // Store user data
     setIsAuthModalOpen(false);
+  };
+
+  const handleGoogleSignIn = (credential) => {
+    // Handle Google Sign In
+    console.log("Google Sign In credential:", credential);
+    // You can process the credential here and create user data
+    const userData = {
+      id: "google-user-" + Date.now(),
+      name: "Google User",
+      email: "user@gmail.com",
+      plan: "free"
+    };
+    handleLogin(userData);
   };
 
   const handleLogout = () => {
@@ -134,6 +148,7 @@ function App() {
                 onClose={handleAuthModalClose}
                 onLogin={handleLogin}
                 onRegister={handleRegister}
+                onGoogleSignIn={handleGoogleSignIn}
               />
             </div>
           </Router>
