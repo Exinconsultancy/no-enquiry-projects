@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Building2, Users, Calendar, Settings } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, Users, Calendar, Settings, Upload, X, Image, FileText } from "lucide-react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +28,9 @@ const AdminPage = () => {
     builder: "",
     description: "",
     category: "property" as "property" | "rental" | "hostel",
-    status: "active" as "active" | "pending" | "sold"
+    status: "active" as "active" | "pending" | "sold",
+    images: [] as string[],
+    brochure: "" as string
   });
 
   if (!user) {
@@ -91,7 +93,9 @@ const AdminPage = () => {
         builder: "",
         description: "",
         category: "property",
-        status: "active"
+        status: "active",
+        images: [],
+        brochure: ""
       });
       setShowAddForm(false);
       
@@ -106,6 +110,45 @@ const AdminPage = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const imageUrls = Array.from(files).map(file => URL.createObjectURL(file));
+      setNewProperty(prev => ({
+        ...prev,
+        images: [...prev.images, ...imageUrls]
+      }));
+      
+      toast({
+        title: "Images Added",
+        description: `${files.length} image(s) added to property.`,
+      });
+    }
+  };
+
+  const handleBrochureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const brochureUrl = URL.createObjectURL(file);
+      setNewProperty(prev => ({
+        ...prev,
+        brochure: brochureUrl
+      }));
+      
+      toast({
+        title: "Brochure Added",
+        description: "Property brochure has been added successfully.",
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setNewProperty(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const stats = [
@@ -234,6 +277,70 @@ const AdminPage = () => {
                     onChange={(e) => setNewProperty({ ...newProperty, description: e.target.value })}
                     rows={3}
                   />
+                </div>
+                
+                {/* Property Images Upload */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Property Images</Label>
+                  <div className="space-y-4">
+                    <Input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="w-full"
+                    />
+                    
+                    {newProperty.images.length > 0 && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {newProperty.images.map((image, index) => (
+                          <Card key={index} className="relative">
+                            <CardContent className="p-2">
+                              <img
+                                src={image}
+                                alt={`Property ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-md"
+                              />
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                                onClick={() => removeImage(index)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Property Brochure Upload */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Property Brochure</Label>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-lg">
+                          <FileText className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <Input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={handleBrochureUpload}
+                          />
+                          {newProperty.brochure && (
+                            <p className="text-sm text-green-600 mt-2">
+                              ✓ Brochure uploaded successfully
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
                 
                 <div className="flex space-x-2">
