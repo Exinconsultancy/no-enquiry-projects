@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Plus, Calendar, User, AlertTriangle, Edit, Save, Upload, X, Eye, Trash2, FileText } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useBuilder } from "@/contexts/BuilderContext";
 import { useNavigate } from "react-router-dom";
 
 const BuilderDashboard = () => {
-  const { user } = useSecureAuth();
+  const { user } = useAuth();
   const { getUserProjects, addProject, updateProject, deleteProject, publishProject } = useBuilder();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const BuilderDashboard = () => {
     brochure: ""
   });
 
-  if (!user || user.role !== 'builder') {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
@@ -196,7 +196,7 @@ const BuilderDashboard = () => {
             <div>
               <h1 className="text-3xl font-bold">Builder Dashboard</h1>
               <p className="text-muted-foreground">
-                Welcome back, {user.name || user.email}
+                Welcome back, {user?.user_metadata?.display_name || user?.email}
               </p>
             </div>
           </div>

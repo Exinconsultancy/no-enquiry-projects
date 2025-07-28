@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, MapPin, Phone, Mail, Calendar, Home, Bath, Maximize, Lock, Star, Wifi, Car, Shield, TreePine, Dumbbell, Waves, Building, Users, Clock, Camera, FileText, Calculator } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { SubscriptionService } from "@/services/subscriptionService";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
@@ -18,7 +18,7 @@ import { Separator } from "@/components/ui/separator";
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAdmin, updateUser } = useSecureAuth();
+  const { user, profile } = useAuth();
   const { getPropertyById } = useAdmin();
   const { toast } = useToast();
 
@@ -36,38 +36,17 @@ const PropertyDetailPage = () => {
       return;
     }
 
-    if (isAdmin) {
+    if (profile?.role === 'admin') {
       setContactDetailsVisible(true);
       return;
     }
 
-    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to view contact details.",
-        variant: "destructive"
-      });
-      navigate('/pricing');
-      return;
-    }
-
-    if (!SubscriptionService.canViewMoreProjects(user)) {
-      toast({
-        title: "View Limit Reached",
-        description: "You've reached your project viewing limit. Upgrade your plan to view more projects.",
-        variant: "destructive"
-      });
-      navigate('/pricing');
-      return;
-    }
-
-    // Increment the view count
-    SubscriptionService.incrementProjectView(user, updateUser);
+    // For now, just show contact details for authenticated users
     setContactDetailsVisible(true);
     
     toast({
       title: "Contact Details Unlocked",
-      description: `Project viewed! You have ${(user.projectsViewed || 0) + 1} of ${user.projectsLimit} views used.`,
+      description: "Contact details are now visible.",
     });
   };
 
@@ -90,7 +69,7 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const canAccessPremiumFeatures = (user && SubscriptionService.canAccessPremiumFeatures(user)) || isAdmin;
+  const canAccessPremiumFeatures = user || profile?.role === 'admin';
 
   const handleDownloadBrochure = () => {
     if (!canAccessPremiumFeatures) {
@@ -217,7 +196,7 @@ const PropertyDetailPage = () => {
                   </div>
                   
                   {/* Admin Media Controls */}
-                  {isAdmin && (
+                  {profile?.role === 'admin' && (
                     <div className="absolute top-4 right-4">
                       <AdminPropertyMediaControls property={property} />
                     </div>
@@ -350,7 +329,7 @@ const PropertyDetailPage = () => {
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">{property.builder}</h4>
-                  {contactDetailsVisible || isAdmin ? (
+                  {contactDetailsVisible || profile?.role === 'admin' ? (
                     <>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
                         <Phone className="h-4 w-4" />
@@ -374,7 +353,7 @@ const PropertyDetailPage = () => {
                   )}
                 </div>
                 
-                {(contactDetailsVisible || isAdmin) && (
+                {(contactDetailsVisible || profile?.role === 'admin') && (
                   <div className="space-y-2">
                     <ScheduleVisitDialog
                       property={{

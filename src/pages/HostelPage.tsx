@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from "react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ import PropertyCard from "@/components/PropertyCard";
 import { SubscriptionService } from "@/services/subscriptionService";
 
 const HostelPage = () => {
-  const { user } = useSecureAuth();
+  const { user } = useAuth();
   const { getPropertiesByCategory } = useAdmin();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -45,27 +45,6 @@ const HostelPage = () => {
         description: "Please login to view property details",
         variant: "destructive",
       });
-      return;
-    }
-
-    // Check if user has premium access (handles both plan existence and expiry)
-    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to a plan to view property details",
-        variant: "destructive",
-      });
-      navigate('/pricing');
-      return;
-    }
-
-    // Check if user can view more projects
-    if (!SubscriptionService.canViewMoreProjects(user)) {
-      toast({
-        title: "View Limit Reached",
-        description: "You have reached your project viewing limit. Please renew or upgrade your plan.",
-        variant: "destructive",
-      });
       navigate('/pricing');
       return;
     }
@@ -84,16 +63,7 @@ const HostelPage = () => {
       return;
     }
 
-    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to a plan to download brochures",
-        variant: "destructive",
-      });
-      navigate('/pricing');
-      return;
-    }
-
+    // For authenticated users, allow downloading brochures
     toast({
       title: "Download Started",
       description: "Brochure download has started",

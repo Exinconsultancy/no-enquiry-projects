@@ -9,13 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Building2, Users, Calendar, Settings, Upload, X, Image, FileText } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useNavigate } from "react-router-dom";
 import AdminPropertyControls from "@/components/AdminPropertyControls";
 
 const AdminPage = () => {
-  const { user, isAdmin } = useSecureAuth();
+  const { user, profile } = useAuth();
   const { properties, addProperty } = useAdmin();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const AdminPage = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (profile?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
