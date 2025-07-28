@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +13,7 @@ import ProfilePage from "./pages/ProfilePage";
 import BuilderDashboard from "./pages/BuilderDashboard";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
+import PropertyDetailPage from "./pages/PropertyDetailPage";
 import AuthModal from "./components/AuthModal";
 import { useToast } from "./hooks/use-toast";
 
@@ -97,8 +97,11 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<HomePage onLogin={handleShowLogin} />} />
             <Route path="/properties" element={<PropertiesPage />} />
+            <Route path="/property/:id" element={<PropertyDetailPage />} />
             <Route path="/rentals" element={<RentalsPage />} />
+            <Route path="/rental/:id" element={<PropertyDetailPage />} />
             <Route path="/hostels" element={<HostelPage />} />
+            <Route path="/hostel/:id" element={<PropertyDetailPage />} />
             <Route path="/pricing" element={<PricingPage onLogin={handleShowLogin} />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/builder-dashboard" element={<BuilderDashboard />} />

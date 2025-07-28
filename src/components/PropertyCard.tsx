@@ -1,9 +1,9 @@
-
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bed, Bath, Square, Download, Lock, Phone, Mail } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Download, Lock, Phone, Mail, Eye } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Property {
   id: string;
@@ -34,6 +34,7 @@ interface PropertyCardProps {
 const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: PropertyCardProps) => {
   const [showContactDetails, setShowContactDetails] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const navigate = useNavigate();
   
   const hasSubscription = user && user.plan;
   const hasReachedLimit = user?.projectsViewed && user?.projectsLimit && user.projectsViewed >= user.projectsLimit;
@@ -55,6 +56,13 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
     } else {
       onDownloadBrochure(property);
     }
+  };
+
+  const handleViewFullDetails = () => {
+    // Navigate to detail page - determine category from current path
+    const category = window.location.pathname.includes('/hostels') ? 'hostel' : 
+                    window.location.pathname.includes('/rentals') ? 'rental' : 'property';
+    navigate(`/${category}/${property.id}`);
   };
 
   return (
@@ -161,28 +169,37 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
       <CardFooter className="p-4 pt-0 flex flex-col gap-2 mt-auto">
         <Button
           className="w-full"
-          onClick={handleViewDetails}
-          disabled={!canViewDetails}
-          variant={canViewDetails ? "default" : "outline"}
+          onClick={handleViewFullDetails}
+          variant="default"
         >
-          {!user ? "Login to View Details" : 
-           !hasSubscription ? "Subscribe to View Details" :
-           hasReachedLimit ? "Upgrade Plan" :
-           showContactDetails ? "Contact Details Shown" :
-           "View Details"}
+          <Eye className="h-4 w-4 mr-2" />
+          View Full Details
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleDownloadBrochure}
-          disabled={!canDownloadBrochure}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          {!user ? "Login to Download" : 
-           !hasSubscription ? "Subscribe to Download" : 
-           "Download Brochure"}
-        </Button>
+        <div className="grid grid-cols-2 gap-2 w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewDetails}
+            disabled={!canViewDetails}
+          >
+            {!user ? "Login" : 
+             !hasSubscription ? "Subscribe" :
+             hasReachedLimit ? "Upgrade" :
+             showContactDetails ? "Contact" :
+             "Contact"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadBrochure}
+            disabled={!canDownloadBrochure}
+          >
+            <Download className="h-4 w-4 mr-1" />
+            {!user ? "Login" : 
+             !hasSubscription ? "Subscribe" : 
+             "Brochure"}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
