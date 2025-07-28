@@ -1,4 +1,6 @@
 
+import { getSession } from "../utils/sessionUtils";
+
 interface SubscriptionPlan {
   id: string;
   name: string;
@@ -69,6 +71,7 @@ export class SubscriptionService {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
       
+      // Update user state
       updateUser({
         role: 'builder',
         plan: 'Builder',
@@ -76,6 +79,13 @@ export class SubscriptionService {
         projectsViewed: 0,
         subscriptionExpiry: expiryDate.toISOString()
       });
+
+      // Also update the session storage
+      const session = getSession();
+      if (session) {
+        session.role = 'builder';
+        localStorage.setItem('auth_session', JSON.stringify(session));
+      }
       
       console.log(`Builder subscription activated for ${userEmail} until ${expiryDate.toDateString()}`);
       
