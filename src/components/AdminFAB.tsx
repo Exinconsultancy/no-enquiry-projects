@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Settings } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Plus } from "lucide-react";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +16,7 @@ interface AdminFABProps {
 }
 
 const AdminFAB = ({ category }: AdminFABProps) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useSecureAuth();
   const { addProperty } = useAdmin();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -24,13 +24,41 @@ const AdminFAB = ({ category }: AdminFABProps) => {
     title: "",
     location: "",
     price: "",
-    type: "",
+    type: getDefaultType(category),
     builder: "",
     description: "",
-    status: "active" as const
+    status: "active" as "active" | "pending" | "sold"
   });
 
-  if (!isAdmin) return null;
+  function getDefaultType(category: string) {
+    switch (category) {
+      case "property":
+        return "Apartment";
+      case "rental":
+        return "Apartment";
+      case "hostel":
+        return "Hostel";
+      default:
+        return "Apartment";
+    }
+  }
+
+  function getTypeOptions(category: string) {
+    switch (category) {
+      case "property":
+        return ["Apartment", "Villa", "Commercial", "Plot"];
+      case "rental":
+        return ["Apartment", "Villa", "House", "Room"];
+      case "hostel":
+        return ["Hostel", "PG", "Dormitory", "Shared Room"];
+      default:
+        return ["Apartment", "Villa", "House"];
+    }
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,50 +82,23 @@ const AdminFAB = ({ category }: AdminFABProps) => {
         title: "",
         location: "",
         price: "",
-        type: "",
+        type: getDefaultType(category),
         builder: "",
         description: "",
         status: "active"
       });
-      
       setIsOpen(false);
       
       toast({
         title: "Success",
-        description: "Property added successfully!",
+        description: `${category.charAt(0).toUpperCase() + category.slice(1)} added successfully!`,
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add property.",
+        description: `Failed to add ${category}.`,
         variant: "destructive",
       });
-    }
-  };
-
-  const getTypeOptions = () => {
-    switch (category) {
-      case "property":
-        return ["Apartment", "Villa", "Commercial", "Plot"];
-      case "rental":
-        return ["Apartment", "Villa", "House", "Room"];
-      case "hostel":
-        return ["Hostel", "PG", "Dormitory", "Shared Room"];
-      default:
-        return [];
-    }
-  };
-
-  const getPlaceholderPrice = () => {
-    switch (category) {
-      case "property":
-        return "₹1.5 Cr";
-      case "rental":
-        return "₹25,000/month";
-      case "hostel":
-        return "₹10,000/month";
-      default:
-        return "";
     }
   };
 
@@ -105,25 +106,21 @@ const AdminFAB = ({ category }: AdminFABProps) => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          size="lg"
-          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14"
+          className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+          size="sm"
         >
           <Plus className="h-6 w-6" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Settings className="h-5 w-5 mr-2" />
-            Add New {category.charAt(0).toUpperCase() + category.slice(1)}
-          </DialogTitle>
+          <DialogTitle>Add New {category.charAt(0).toUpperCase() + category.slice(1)}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
-              placeholder="Enter property title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
@@ -134,7 +131,6 @@ const AdminFAB = ({ category }: AdminFABProps) => {
             <Label htmlFor="location">Location *</Label>
             <Input
               id="location"
-              placeholder="Enter location"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               required
@@ -146,7 +142,6 @@ const AdminFAB = ({ category }: AdminFABProps) => {
               <Label htmlFor="price">Price *</Label>
               <Input
                 id="price"
-                placeholder={getPlaceholderPrice()}
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
@@ -160,7 +155,7 @@ const AdminFAB = ({ category }: AdminFABProps) => {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getTypeOptions().map((option) => (
+                  {getTypeOptions(category).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -174,7 +169,6 @@ const AdminFAB = ({ category }: AdminFABProps) => {
             <Label htmlFor="builder">Builder/Provider</Label>
             <Input
               id="builder"
-              placeholder="Enter builder/provider name"
               value={formData.builder}
               onChange={(e) => setFormData({ ...formData, builder: e.target.value })}
             />
@@ -184,7 +178,6 @@ const AdminFAB = ({ category }: AdminFABProps) => {
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              placeholder="Enter property description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
@@ -193,7 +186,7 @@ const AdminFAB = ({ category }: AdminFABProps) => {
           
           <div className="flex space-x-2">
             <Button type="submit" className="flex-1">
-              Add Property
+              Add {category.charAt(0).toUpperCase() + category.slice(1)}
             </Button>
             <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
