@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Edit, X, Image, FileText, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Property {
   id: string;
@@ -44,31 +45,71 @@ const AdminPropertyMediaControls = ({ property, onUpdate }: AdminPropertyMediaCo
     return null;
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      const newImages = [...images];
-      newImages[index] = imageUrl;
-      setImages(newImages);
-      
-      toast({
-        title: "Image Updated",
-        description: `Image ${index + 1} has been updated successfully.`,
-      });
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${property.id}/images/${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('property-media')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-media')
+          .getPublicUrl(fileName);
+
+        const newImages = [...images];
+        newImages[index] = publicUrl;
+        setImages(newImages);
+        
+        toast({
+          title: "Image Updated",
+          description: `Image ${index + 1} has been updated successfully.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Upload Error",
+          description: "Failed to upload image. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
-  const handleBrochureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBrochureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const brochureUrl = URL.createObjectURL(file);
-      setBrochure(brochureUrl);
-      
-      toast({
-        title: "Brochure Updated",
-        description: "Property brochure has been updated successfully.",
-      });
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${property.id}/brochure/${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('property-media')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-media')
+          .getPublicUrl(fileName);
+
+        setBrochure(publicUrl);
+        
+        toast({
+          title: "Brochure Updated",
+          description: "Property brochure has been updated successfully.",
+        });
+      } catch (error) {
+        toast({
+          title: "Upload Error", 
+          description: "Failed to upload brochure. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
