@@ -2,37 +2,15 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, Building, Search, User, Menu, X, Settings, Hammer } from "lucide-react";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
-  const { user, login, register, logout } = useSecureAuth();
+  const { user, profile, logout } = useAuth();
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setShowAuthModal(false);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
-  };
-
-  const handleRegister = async (email: string, password: string, name: string) => {
-    try {
-      await register(email, password, name);
-      setShowAuthModal(false);
-    } catch (error) {
-      console.error("Registration failed:", error);
-    }
-  };
-
-  const handleGoogleSignIn = (credential: string) => {
-    // Google sign-in implementation would go here
-    console.log("Google sign-in:", credential);
-  };
 
   return (
     <>
@@ -100,9 +78,9 @@ const Navbar = () => {
                     className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
                   >
                     <User className="h-4 w-4" />
-                    <span>{user.name || user.email}</span>
+                    <span>{profile?.display_name || user?.email}</span>
                   </Link>
-                  {user.role === 'admin' && (
+                  {profile?.role === 'admin' && (
                     <Link
                       to="/admin"
                       className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
@@ -111,7 +89,7 @@ const Navbar = () => {
                       <span>Admin</span>
                     </Link>
                   )}
-                  {user.role === 'builder' && (
+                  {profile?.role === 'builder' && (
                     <Link
                       to="/builder-dashboard"
                       className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
@@ -205,9 +183,9 @@ const Navbar = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <User className="h-4 w-4" />
-                      <span>{user.name || user.email}</span>
+                      <span>{profile?.display_name || user?.email}</span>
                     </Link>
-                    {user.role === 'admin' && (
+                    {profile?.role === 'admin' && (
                       <Link
                         to="/admin"
                         className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent"
@@ -217,7 +195,7 @@ const Navbar = () => {
                         <span>Admin</span>
                       </Link>
                     )}
-                    {user.role === 'builder' && (
+                    {profile?.role === 'builder' && (
                       <Link
                         to="/builder-dashboard"
                         className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent"
@@ -258,9 +236,9 @@ const Navbar = () => {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        onGoogleSignIn={handleGoogleSignIn}
+        onSuccess={() => {
+          // Handle successful auth
+        }}
       />
     </>
   );

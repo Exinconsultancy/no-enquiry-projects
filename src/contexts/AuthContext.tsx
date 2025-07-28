@@ -1,31 +1,16 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { AuthService } from "../services/authService";
-import { loginSchema, registerSchema, LoginData, RegisterData } from "../lib/validation";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  plan?: string;
-  projectsViewed?: number;
-  projectsLimit?: number;
-  subscriptionExpiry?: string;
-  role?: 'user' | 'admin';
-}
+import { supabase } from "@/integrations/supabase/client";
+import { User, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
+  profile: any | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
-  googleSignIn: (credential: string) => Promise<void>;
-  logout: () => void;
-  updateUser: (updates: Partial<User>) => void;
-  updateUserName: (newName: string) => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
-  isLoading: boolean;
-  token: string | null;
-  isAdmin: boolean;
+  logout: () => Promise<void>;
+  loading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,170 +29,83 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const isAdmin = user?.role === 'admin';
-
-  console.log("AuthProvider - Current user:", user);
-  console.log("AuthProvider - isAdmin:", isAdmin);
-  console.log("AuthProvider - User role:", user?.role);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const savedToken = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-    
-    console.log("AuthProvider - Loading saved session:", { savedToken: !!savedToken, savedUser: !!savedUser });
-    
-    if (savedToken && savedUser) {
-      try {
-        // Verify token is still valid
-        AuthService.verifyToken(savedToken);
-        setToken(savedToken);
-        const parsedUser = JSON.parse(savedUser);
-        console.log("AuthProvider - Parsed user from storage:", parsedUser);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
         
-        // Ensure the user object is properly structured
-        if (parsedUser && typeof parsedUser === 'object' && parsedUser.id && parsedUser.email) {
-          setUser(parsedUser);
-          console.log("AuthProvider - Restored user session:", parsedUser);
+        // Fetch profile when user signs in
+        if (session?.user) {
+          setTimeout(async () => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .single();
+            setProfile(profile);
+          }, 0);
         } else {
-          console.log("AuthProvider - Invalid user data in storage, clearing");
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          setProfile(null);
         }
-      } catch (error) {
-        console.log("AuthProvider - Invalid token, clearing storage");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
       }
-    }
-    setIsLoading(false);
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const updateUser = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      console.log("AuthProvider - User updated:", updatedUser);
-    }
-  };
-
-  const updateUserName = async (newName: string) => {
-    if (!user) throw new Error("No user logged in");
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    updateUser({ name: newName });
-  };
-
-  const changePassword = async (currentPassword: string, newPassword: string) => {
-    if (!user) throw new Error("No user logged in");
-    
-    // Simulate API call with validation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In real implementation, this would validate current password and update it
-    console.log(`Password changed for user ${user.email}`);
-  };
-
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    
-    try {
-      console.log("AuthProvider - Attempting login with:", { email, password });
-      
-      // Validate input
-      const validatedData = loginSchema.parse({ email, password });
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const { user: loggedInUser, token: authToken } = await AuthService.login(validatedData);
-      
-      console.log("AuthProvider - Login successful:", loggedInUser);
-      console.log("AuthProvider - User role after login:", loggedInUser.role);
-      
-      setUser(loggedInUser);
-      setToken(authToken);
-      localStorage.setItem("user", JSON.stringify(loggedInUser));
-      localStorage.setItem("token", authToken);
-    } catch (error) {
-      console.error("AuthProvider - Login failed:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
   };
 
   const register = async (email: string, password: string, name: string) => {
-    setIsLoading(true);
+    const redirectUrl = `${window.location.origin}/`;
     
-    try {
-      // Validate input
-      const validatedData = registerSchema.parse({ email, password, name });
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const { user, token } = await AuthService.register(validatedData);
-      
-      setUser(user);
-      setToken(token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          display_name: name,
+        },
+      },
+    });
+    if (error) throw error;
   };
 
-  const googleSignIn = async (credential: string) => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const { user, token } = await AuthService.googleAuth({
-        credential,
-        clientId: "your-google-client-id"
-      });
-      
-      setUser(user);
-      setToken(token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-  };
+  const isAuthenticated = !!user;
 
   const value = {
     user,
+    session,
+    profile,
     login,
     register,
-    googleSignIn,
     logout,
-    updateUser,
-    updateUserName,
-    changePassword,
-    isLoading,
-    token,
-    isAdmin
+    loading,
+    isAuthenticated,
   };
 
   return (

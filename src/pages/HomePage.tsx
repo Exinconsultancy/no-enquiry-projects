@@ -3,38 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Shield, Users, TrendingUp, Star, CheckCircle, Home, Building, UserCheck, Phone, Mail, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import AuthModal from "@/components/AuthModal";
 import FeaturedProperties from "@/components/FeaturedProperties";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user, login, register } = useSecureAuth();
+  const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await login(email, password);
-      setShowAuthModal(false);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
-  };
-
-  const handleRegister = async (email: string, password: string, name: string) => {
-    try {
-      await register(email, password, name);
-      setShowAuthModal(false);
-    } catch (error) {
-      console.error("Registration failed:", error);
-    }
-  };
-
-  const handleGoogleSignIn = (credential: string) => {
-    // Google sign-in implementation would go here
-    console.log("Google sign-in:", credential);
-  };
 
   const stats = [
     { label: "Properties Listed", value: "4,500+", icon: MapPin, color: "text-blue-500" },
@@ -280,9 +257,9 @@ const HomePage = () => {
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        onGoogleSignIn={handleGoogleSignIn}
+        onSuccess={() => {
+          // Handle successful auth
+        }}
       />
     </>
   );
