@@ -47,10 +47,16 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     status: property.status
   });
 
-  if (!isAdmin) return null;
+  console.log("AdminPropertyControls rendered for property:", property.id, "isAdmin:", isAdmin);
+
+  if (!isAdmin) {
+    console.log("User is not admin, hiding controls");
+    return null;
+  }
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Updating property:", property.id, "with data:", editForm);
     
     if (!editForm.title || !editForm.location || !editForm.price) {
       toast({
@@ -71,6 +77,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property updated successfully!",
       });
     } catch (error) {
+      console.error("Error updating property:", error);
       toast({
         title: "Error",
         description: "Failed to update property.",
@@ -80,6 +87,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
   };
 
   const handleDelete = () => {
+    console.log("Deleting property:", property.id);
     try {
       deleteProperty(property.id);
       onDelete?.();
@@ -89,6 +97,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property deleted successfully!",
       });
     } catch (error) {
+      console.error("Error deleting property:", error);
       toast({
         title: "Error",
         description: "Failed to delete property.",
@@ -106,15 +115,15 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
       case "hostel":
         return ["Hostel", "PG", "Dormitory", "Shared Room"];
       default:
-        return [];
+        return ["Apartment", "Villa", "House"];
     }
   };
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogTrigger asChild>
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
             <Edit className="h-4 w-4" />
           </Button>
         </DialogTrigger>
@@ -218,7 +227,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
 
       <ConfirmationDialog
         trigger={
-          <Button size="sm" variant="destructive">
+          <Button size="sm" variant="destructive" className="h-8 w-8 p-0">
             <Trash2 className="h-4 w-4" />
           </Button>
         }

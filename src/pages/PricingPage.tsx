@@ -1,13 +1,12 @@
-
 import { useState } from "react";
-import PricingCard from "@/components/PricingCard";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { Check, X, Crown, Building, Star, Phone, Mail } from "lucide-react";
-import { SubscriptionService } from "@/services/subscriptionService";
+import { Shield, CheckCircle, Clock, Phone, Mail, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { SubscriptionService } from "@/services/subscriptionService";
+import PricingCard from "@/components/PricingCard";
 
 interface PricingPlan {
   id: string;
@@ -20,144 +19,96 @@ interface PricingPlan {
   badge?: string;
 }
 
-interface PricingPageProps {
-  onLogin: () => void;
-}
-
-const PricingPage = ({ onLogin }: PricingPageProps) => {
-  const { user, updateUser } = useAuth();
+const PricingPage = () => {
+  const { user, updateUser, isAdmin } = useAuth();
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [builderContactInfo, setBuilderContactInfo] = useState<{contactEmail: string; contactPhone: string} | null>(null);
 
-  const pricingPlans: PricingPlan[] = [
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([
     {
       id: "starter",
       name: "Starter",
-      price: "₹299",
+      price: "₹299/week",
+      originalPrice: "₹499/week",
       projects: 5,
       features: [
-        "Access to 5 premium properties",
+        "Access to 5 projects",
         "Basic property details",
-        "Download brochures",
         "Email support",
         "7-day validity"
-      ]
+      ],
+      badge: "Save 40%"
     },
     {
       id: "professional",
       name: "Professional",
-      price: "₹599",
-      originalPrice: "₹799",
+      price: "₹499/2 weeks",
+      originalPrice: "₹899/2 weeks",
       projects: 10,
-      popular: true,
-      badge: "Best Value",
       features: [
-        "Access to 10 premium properties",
+        "Access to 10 projects",
         "Detailed property information",
-        "Builder contact details",
+        "Priority support",
         "Download brochures",
-        "Priority email support",
-        "15-day validity",
-        "Property comparison tool"
-      ]
+        "15-day validity"
+      ],
+      popular: true,
+      badge: "Best Value"
     },
     {
       id: "premium",
       name: "Premium",
-      price: "₹999",
-      originalPrice: "₹1,299",
+      price: "₹799/month",
+      originalPrice: "₹1299/month",
       projects: 15,
-      badge: "Most Popular",
       features: [
-        "Access to 15 premium properties",
-        "Complete property details",
-        "Direct builder contacts",
-        "Download brochures",
-        "Phone & email support",
-        "30-day validity",
-        "Property comparison tool",
-        "Market insights",
-        "Virtual property tours"
-      ]
+        "Access to 15 projects",
+        "Premium property details",
+        "24/7 support",
+        "Download all brochures",
+        "Schedule property visits",
+        "30-day validity"
+      ],
+      badge: "Most Popular"
     }
-  ];
+  ]);
 
-  const builderPlan = {
-    name: "Builder Subscription",
-    price: "₹1,00,000",
-    duration: "per month",
-    features: [
-      "Post unlimited property ads",
-      "Premium listing placement",
-      "Builder profile page",
-      "Lead management dashboard",
-      "Analytics and insights",
-      "Dedicated account manager",
-      "Marketing support",
-      "Mobile app access"
-    ]
+  const handleUpdatePlan = (planId: string, updates: Partial<PricingPlan>) => {
+    setPricingPlans(prev => 
+      prev.map(plan => 
+        plan.id === planId ? { ...plan, ...updates } : plan
+      )
+    );
+    
+    toast({
+      title: "Success",
+      description: "Pricing plan updated successfully!",
+    });
   };
 
   const handlePlanSelect = async (plan: PricingPlan) => {
     if (!user) {
-      onLogin();
+      toast({
+        title: "Login Required",
+        description: "Please login to subscribe to a plan",
+        variant: "destructive",
+      });
       return;
     }
 
-    setSelectedPlan(plan);
-    setIsProcessing(true);
-
+    setIsLoading(true);
     try {
       const result = await SubscriptionService.subscribeToPlan(plan.id, user, updateUser);
       
       if (result.success) {
         toast({
-          title: "Subscription Successful!",
+          title: "Success",
           description: result.message,
         });
       } else {
         toast({
-          title: "Subscription Failed",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Subscription Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-      setSelectedPlan(null);
-    }
-  };
-
-  const handleBuilderSubscription = async () => {
-    if (!user) {
-      onLogin();
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      const result = await SubscriptionService.handleBuilderSubscription(user.email, updateUser);
-      
-      if (result.success) {
-        toast({
-          title: "Builder Subscription Activated!",
-          description: result.message,
-        });
-        // Redirect to builder dashboard after successful subscription
-        setTimeout(() => {
-          window.location.href = '/builder-dashboard';
-        }, 2000);
-      } else {
-        toast({
-          title: "Request Failed",
+          title: "Error",
           description: result.message,
           variant: "destructive",
         });
@@ -165,208 +116,238 @@ const PricingPage = ({ onLogin }: PricingPageProps) => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to process builder subscription request.",
+        description: "Failed to process subscription",
         variant: "destructive",
       });
     } finally {
-      setIsProcessing(false);
+      setIsLoading(false);
+    }
+  };
+  
+  const handleBuilderSubscription = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to request builder subscription",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (!builderContactInfo) {
+        const info = await SubscriptionService.getBuilderSubscriptionInfo();
+        setBuilderContactInfo(info);
+      }
+      
+      const result = await SubscriptionService.handleBuilderSubscription(user.email, updateUser);
+      
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process builder subscription",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleCancelBuilderSubscription = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const result = await SubscriptionService.cancelBuilderSubscription(user, updateUser);
+      
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel subscription",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const subscriptionStatus = user ? SubscriptionService.getSubscriptionStatus(user) : null;
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-16">
+    <div className="min-h-screen bg-background py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Choose Your Perfect Plan
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Unlock premium property listings and direct builder contacts with our flexible subscription plans
-          </p>
-          
-          {user?.plan && (
-            <div className="mt-6">
-              <Badge variant="secondary" className="text-lg px-4 py-2">
-                Current Plan: {user.plan}
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {/* User Plans */}
-        <div className="mb-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 flex items-center justify-center">
-              <Crown className="h-8 w-8 text-primary mr-3" />
-              User Subscription Plans
-            </h2>
-            <p className="text-muted-foreground">
-              Get direct access to premium properties and builder contacts
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12 max-w-5xl mx-auto">
-            {pricingPlans.map((plan) => (
-              <PricingCard
-                key={plan.id}
-                plan={plan}
-                onSelect={handlePlanSelect}
-                userPlan={user?.plan}
-              />
-            ))}
-          </div>
-
-          {/* Features Comparison */}
-          <Card className="overflow-hidden">
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-center mb-8">Plan Comparison</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-4 px-4">Feature</th>
-                      <th className="text-center py-4 px-4">Starter</th>
-                      <th className="text-center py-4 px-4">Professional</th>
-                      <th className="text-center py-4 px-4">Premium</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      ["Property Access", "5", "10", "15"],
-                      ["Builder Contacts", "✗", "✓", "✓"],
-                      ["Priority Support", "✗", "✓", "✓"],
-                      ["Comparison Tool", "✗", "✓", "✓"],
-                      ["Market Insights", "✗", "✗", "✓"],
-                      ["Virtual Tours", "✗", "✗", "✓"],
-                      ["Validity", "7 days", "15 days", "30 days"]
-                    ].map(([feature, starter, professional, premium], index) => (
-                      <tr key={index} className="border-b">
-                        <td className="py-4 px-4 font-medium">{feature}</td>
-                        <td className="text-center py-4 px-4">
-                          {starter === "✓" ? <Check className="h-5 w-5 text-success mx-auto" /> :
-                           starter === "✗" ? <X className="h-5 w-5 text-muted-foreground mx-auto" /> :
-                           starter}
-                        </td>
-                        <td className="text-center py-4 px-4">
-                          {professional === "✓" ? <Check className="h-5 w-5 text-success mx-auto" /> :
-                           professional === "✗" ? <X className="h-5 w-5 text-muted-foreground mx-auto" /> :
-                           professional}
-                        </td>
-                        <td className="text-center py-4 px-4">
-                          {premium === "✓" ? <Check className="h-5 w-5 text-success mx-auto" /> :
-                           premium === "✗" ? <X className="h-5 w-5 text-muted-foreground mx-auto" /> :
-                           premium}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Builder Plan */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 flex items-center justify-center">
-            <Building className="h-8 w-8 text-primary mr-3" />
-            Builder Subscription
-          </h2>
-          <p className="text-muted-foreground">
-            Showcase your properties to thousands of potential buyers
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            Choose Your Plan
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Select the perfect plan for your property search needs
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <Card className="relative border-2 border-primary shadow-[var(--shadow-elegant)]">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <Badge className="bg-gradient-to-r from-primary to-primary-glow px-4 py-2">
-                <Star className="h-4 w-4 mr-1" />
-                For Builders
-              </Badge>
-            </div>
-
-            <CardContent className="p-8 text-center">
-              <h3 className="text-2xl font-bold mb-2">{builderPlan.name}</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-primary">{builderPlan.price}</span>
-                <span className="text-muted-foreground ml-2">{builderPlan.duration}</span>
-              </div>
-
-              <div className="space-y-4 mb-8 text-left max-w-md mx-auto">
-                {builderPlan.features.map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-success flex-shrink-0" />
-                    <span>{feature}</span>
+        {/* Current Subscription Status */}
+        {user && user.plan && (
+          <div className="mb-8 max-w-2xl mx-auto">
+            <Card className="border-success bg-success/5">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-success" />
+                    <CardTitle className="text-lg">Current Plan: {user.plan}</CardTitle>
                   </div>
-                ))}
-              </div>
-
-              <Button
-                size="lg"
-                variant="default"
-                onClick={handleBuilderSubscription}
-                disabled={isProcessing}
-                className="w-full mb-4"
-              >
-                {isProcessing ? "Activating..." : "Activate Builder Plan"}
-              </Button>
-
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <div className="flex items-center justify-center space-x-2">
-                  <Phone className="h-4 w-4" />
-                  <span>+91 98765 43210</span>
+                  {subscriptionStatus?.isActive && (
+                    <Badge variant="default" className="bg-success">
+                      Active
+                    </Badge>
+                  )}
                 </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <Mail className="h-4 w-4" />
-                  <span>builders@nonobroker.com</span>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span>
+                      {subscriptionStatus?.isActive 
+                        ? `${subscriptionStatus.daysRemaining} days left`
+                        : 'Expired'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Star className="h-4 w-4 text-muted-foreground" />
+                    <span>{user.projectsViewed || 0} of {user.projectsLimit || 0} projects viewed</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span>
+                      {subscriptionStatus?.expiryDate 
+                        ? `Until ${subscriptionStatus.expiryDate}`
+                        : 'No expiry date'
+                      }
+                    </span>
+                  </div>
                 </div>
-                <p className="mt-4">
-                  Instant activation - Start posting projects immediately!
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* FAQ Section */}
-        <div className="mt-20 text-center">
-          <h2 className="text-3xl font-bold mb-8">Frequently Asked Questions</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-2">How do I access builder contacts?</h3>
-                <p className="text-muted-foreground text-sm">
-                  After subscribing to Professional or Premium plan, you'll get direct contact details of builder sourcing teams for the properties you view.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-2">Can I change my plan later?</h3>
-                <p className="text-muted-foreground text-sm">
-                  Yes, you can upgrade your plan anytime. The remaining validity will be adjusted for the new plan.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-2">What happens after plan expires?</h3>
-                <p className="text-muted-foreground text-sm">
-                  You can still browse properties but won't be able to access contact details until you renew your subscription.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-2">Are there any hidden charges?</h3>
-                <p className="text-muted-foreground text-sm">
-                  No hidden charges! All prices are inclusive. You only pay the subscription fee - no broker commissions.
-                </p>
+                
+                {user.plan === 'Builder' && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleCancelBuilderSubscription}
+                      disabled={isLoading}
+                    >
+                      Cancel Builder Subscription
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Pricing Plans */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {pricingPlans.map((plan) => (
+            <PricingCard
+              key={plan.id}
+              plan={plan}
+              onSelect={handlePlanSelect}
+              onUpdatePlan={isAdmin ? handleUpdatePlan : undefined}
+              userPlan={user?.plan}
+            />
+          ))}
+        </div>
+
+        {/* Builder Subscription Section */}
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-primary bg-primary/5">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">Builder Subscription</CardTitle>
+              <CardDescription className="text-center text-lg">
+                Special plan for property builders and developers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Builder Benefits</h3>
+                  <ul className="space-y-3">
+                    {[
+                      "Unlimited project access",
+                      "Priority listing for your projects",
+                      "Dedicated account manager",
+                      "Advanced analytics and insights",
+                      "Custom branding options",
+                      "30-day validity"
+                    ].map((feature, index) => (
+                      <li key={index} className="flex items-center space-x-3">
+                        <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-2">Custom Pricing</div>
+                    <div className="text-muted-foreground">Contact us for a personalized quote</div>
+                  </div>
+                  
+                  {builderContactInfo && (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <a href={`mailto:${builderContactInfo.contactEmail}`} className="text-primary hover:underline">
+                          {builderContactInfo.contactEmail}
+                        </a>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <a href={`tel:${builderContactInfo.contactPhone}`} className="text-primary hover:underline">
+                          {builderContactInfo.contactPhone}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Button
+                    onClick={handleBuilderSubscription}
+                    disabled={isLoading}
+                    className="w-full"
+                    variant="premium"
+                  >
+                    {isLoading ? "Processing..." : "Request Builder Access"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

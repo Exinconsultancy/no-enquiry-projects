@@ -1,7 +1,9 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star } from "lucide-react";
+import AdminPricingControls from "./AdminPricingControls";
 
 interface PricingPlan {
   id: string;
@@ -17,16 +19,21 @@ interface PricingPlan {
 interface PricingCardProps {
   plan: PricingPlan;
   onSelect: (plan: PricingPlan) => void;
+  onUpdatePlan?: (planId: string, updates: Partial<PricingPlan>) => void;
   userPlan?: string;
 }
 
-const PricingCard = ({ plan, onSelect, userPlan }: PricingCardProps) => {
+const PricingCard = ({ plan, onSelect, onUpdatePlan, userPlan }: PricingCardProps) => {
   const isCurrentPlan = userPlan === plan.name;
 
   return (
     <Card className={`relative transition-all duration-300 hover:shadow-[var(--shadow-elegant)] ${
       plan.popular ? "border-primary shadow-lg scale-105" : ""
     }`}>
+      {onUpdatePlan && (
+        <AdminPricingControls plan={plan} onUpdate={onUpdatePlan} />
+      )}
+      
       {plan.popular && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
           <Badge variant="default" className="bg-gradient-to-r from-primary to-primary-glow">
