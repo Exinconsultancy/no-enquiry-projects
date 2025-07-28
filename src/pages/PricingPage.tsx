@@ -143,12 +143,33 @@ const PricingPage = () => {
     setIsBuilderLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await SubscriptionService.handleBuilderSubscription(user.email, updateUser);
       
+      if (result.success) {
+        // Update user role to builder
+        updateUser({ role: 'builder' });
+        
+        toast({
+          title: "Builder Subscription Activated!",
+          description: result.message,
+        });
+        
+        // Redirect to builder dashboard after a short delay
+        setTimeout(() => {
+          window.location.href = '/builder-dashboard';
+        }, 2000);
+      } else {
+        toast({
+          title: "Subscription Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Builder Subscription",
-        description: "Builder subscription feature coming soon!",
+        title: "Error",
+        description: "Failed to process builder subscription",
+        variant: "destructive",
       });
     } finally {
       setIsBuilderLoading(false);

@@ -37,11 +37,7 @@ function App() {
                     <AdminPage />
                   </AdminRouteGuard>
                 } />
-                <Route path="/builder-dashboard" element={
-                  <AdminRouteGuard>
-                    <BuilderDashboard />
-                  </AdminRouteGuard>
-                } />
+                <Route path="/builder-dashboard" element={<BuilderDashboard />} />
                 <Route path="/property/:id" element={<PropertyDetailPage />} />
                 <Route path="/rental/:id" element={<PropertyDetailPage />} />
                 <Route path="/hostel/:id" element={<PropertyDetailPage />} />
