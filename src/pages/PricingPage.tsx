@@ -281,56 +281,6 @@ const PricingPage = () => {
                     </span>
                   </div>
                 </div>
-                
-                {user.plan === 'Builder' && (
-                  <div className="mt-4 pt-4 border-t">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          disabled={isBuilderLoading}
-                          className="w-full text-destructive hover:text-destructive"
-                        >
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          Cancel Builder Subscription
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-destructive" />
-                            Cancel Builder Subscription
-                          </AlertDialogTitle>
-                          <AlertDialogDescription className="space-y-2">
-                            <p>Are you sure you want to cancel your Builder subscription?</p>
-                            <div className="bg-destructive/10 p-3 rounded-lg">
-                              <p className="text-sm font-medium text-destructive">This action will:</p>
-                              <ul className="text-sm text-destructive mt-1 space-y-1">
-                                <li>• Remove unlimited project access</li>
-                                <li>• Remove priority listing benefits</li>
-                                <li>• Remove dedicated account manager access</li>
-                                <li>• Remove custom branding options</li>
-                                <li>• Reset your plan to "No Plan"</li>
-                              </ul>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              You can resubscribe anytime, but you'll need to purchase a new Builder subscription.
-                            </p>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={handleCancelBuilderSubscription}
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Yes, Cancel Subscription
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
