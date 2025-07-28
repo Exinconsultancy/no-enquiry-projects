@@ -178,14 +178,18 @@ const PropertyDetailPage = () => {
                 
                 <div className="space-y-2">
                   <ScheduleVisitDialog
-                    trigger={
-                      <Button className="w-full">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Schedule Visit
-                      </Button>
-                    }
-                    propertyTitle={property.title}
-                  />
+                    property={{
+                      id: property.id,
+                      title: property.title,
+                      location: property.location,
+                      builder: property.builder
+                    }}
+                  >
+                    <Button className="w-full">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Schedule Visit
+                    </Button>
+                  </ScheduleVisitDialog>
                   <Button variant="outline" onClick={handleDownloadBrochure} className="w-full">
                     Download Brochure
                   </Button>

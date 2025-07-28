@@ -141,7 +141,8 @@ const PropertiesPage = () => {
                   },
                   category: property.category,
                   status: property.status,
-                  builder: property.builder
+                  builder: property.builder,
+                  createdDate: property.createdDate
                 };
 
                 return (

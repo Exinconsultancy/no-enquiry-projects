@@ -28,6 +28,7 @@ interface PropertyCardProps {
     category: string;
     status: string;
     builder: string;
+    createdDate: string;
   };
   onViewDetails: (property: any) => void;
   onDownloadBrochure: (property: any) => void;
