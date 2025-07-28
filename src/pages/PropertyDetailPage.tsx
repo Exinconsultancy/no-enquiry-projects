@@ -36,12 +36,24 @@ const PropertyDetailPage = () => {
       return;
     }
 
+    // Admin always has access
     if (profile?.role === 'admin') {
       setContactDetailsVisible(true);
       return;
     }
 
-    // For now, just show contact details for authenticated users
+    // Check if user has premium subscription
+    const hasSubscription = profile?.plan && profile.plan !== 'free';
+    if (!hasSubscription) {
+      toast({
+        title: "Subscription Required",
+        description: "Upgrade to a premium plan to view contact details.",
+        variant: "destructive"
+      });
+      navigate('/pricing');
+      return;
+    }
+    
     setContactDetailsVisible(true);
     
     toast({
@@ -69,7 +81,7 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const canAccessPremiumFeatures = user || profile?.role === 'admin';
+  const canAccessPremiumFeatures = profile?.role === 'admin' || (profile?.plan && profile.plan !== 'free');
 
   const handleDownloadBrochure = () => {
     if (!canAccessPremiumFeatures) {
