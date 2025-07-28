@@ -1,14 +1,17 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import PropertyCard from "@/components/PropertyCard";
-import PropertyFilters from "@/components/PropertyFilters";
+import PropertyFilterContainer from "@/components/PropertyFilterContainer";
 import AdminFAB from "@/components/AdminFAB";
 import { useAdmin } from "@/contexts/AdminContext";
+import { useToast } from "@/hooks/use-toast";
 
 const HostelPage = () => {
+  const { user, updateUser } = useAuth();
   const { getPropertiesByCategory } = useAdmin();
+  const { toast } = useToast();
   const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("hostel"));
 
   const stats = [
@@ -17,6 +20,71 @@ const HostelPage = () => {
     { title: "Cities Covered", value: new Set(filteredProperties.map(p => p.location.split(",")[1]?.trim())).size },
     { title: "Accommodation Types", value: new Set(filteredProperties.map(p => p.type)).size }
   ];
+
+  const handleViewDetails = (property: any) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to view hostel details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user.plan) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to a plan to view hostel details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const hasReachedLimit = user.projectsViewed && user.projectsLimit && user.projectsViewed >= user.projectsLimit;
+    if (hasReachedLimit) {
+      toast({
+        title: "Limit Reached",
+        description: "You have reached your project viewing limit. Please upgrade your plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update projects viewed count
+    if (user.projectsViewed !== undefined) {
+      updateUser({ projectsViewed: user.projectsViewed + 1 });
+    }
+
+    toast({
+      title: "Hostel Details",
+      description: "Hostel details are now visible below",
+    });
+  };
+
+  const handleDownloadBrochure = (property: any) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to download brochure",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user.plan) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to a plan to download brochures",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Download Started",
+      description: "Brochure download has started",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -47,42 +115,62 @@ const HostelPage = () => {
           ))}
         </div>
 
-        {/* Filters */}
-        <div className="mb-8">
-          <PropertyFilters
-            properties={getPropertiesByCategory("hostel")}
-            onFilterChange={setFilteredProperties}
-          />
-        </div>
-
-        {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
-            <PropertyCard
-              key={property.id}
-              id={property.id}
-              title={property.title}
-              location={property.location}
-              price={property.price}
-              type={property.type}
-              image={property.image || "/placeholder.svg"}
-              builder={property.builder}
-              isNew={new Date(property.createdDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Filters */}
+          <div className="lg:col-span-1">
+            <PropertyFilterContainer
+              properties={getPropertiesByCategory("hostel")}
+              onFilterChange={setFilteredProperties}
             />
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredProperties.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No hostels found
-            </h3>
-            <p className="text-muted-foreground">
-              Try adjusting your filters to see more hostel accommodations
-            </p>
           </div>
-        )}
+
+          {/* Properties Grid */}
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProperties.map((property) => {
+                const propertyData = {
+                  id: property.id,
+                  title: property.title,
+                  location: property.location,
+                  price: property.price,
+                  image: property.image || "/placeholder.svg",
+                  bedrooms: 1,
+                  bathrooms: 1,
+                  area: "200 sq ft",
+                  type: property.type as "apartment" | "villa" | "commercial",
+                  amenities: ["WiFi", "Mess", "Security"],
+                  builderContact: {
+                    name: property.builder,
+                    phone: "+91 9876543210",
+                    email: "contact@hostel.com"
+                  }
+                };
+
+                return (
+                  <PropertyCard
+                    key={property.id}
+                    property={propertyData}
+                    onViewDetails={handleViewDetails}
+                    onDownloadBrochure={handleDownloadBrochure}
+                    user={user}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Empty State */}
+            {filteredProperties.length === 0 && (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No hostels found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your filters to see more hostel accommodations
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Admin FAB */}
         <AdminFAB category="hostel" />

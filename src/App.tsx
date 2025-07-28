@@ -81,21 +81,25 @@ function AppContent() {
     });
   };
 
+  const handleShowLogin = () => {
+    setShowAuthModal(true);
+  };
+
   return (
     <AdminProvider>
       <Router>
         <div className="min-h-screen bg-background">
           <Navbar 
             user={user}
-            onLoginClick={() => setShowAuthModal(true)}
+            onLogin={handleShowLogin}
             onLogout={handleLogout}
           />
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomePage onLogin={handleShowLogin} />} />
             <Route path="/properties" element={<PropertiesPage />} />
             <Route path="/rentals" element={<RentalsPage />} />
             <Route path="/hostels" element={<HostelPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/pricing" element={<PricingPage onLogin={handleShowLogin} />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/builder-dashboard" element={<BuilderDashboard />} />
             <Route path="/admin" element={<AdminPage />} />
