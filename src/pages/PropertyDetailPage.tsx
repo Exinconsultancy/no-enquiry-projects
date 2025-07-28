@@ -1,4 +1,5 @@
 
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,34 @@ import { Separator } from "@/components/ui/separator";
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAdmin } = useSecureAuth();
+  const { user, isAdmin, updateUser } = useSecureAuth();
   const { getPropertyById } = useAdmin();
   const { toast } = useToast();
 
   const property = getPropertyById(id || "");
+
+  // Track property view when component mounts (only for authenticated users)
+  React.useEffect(() => {
+    if (property && user && !isAdmin) {
+      // Check if user can view more projects
+      if (SubscriptionService.canViewMoreProjects(user)) {
+        // Increment the view count
+        SubscriptionService.incrementProjectView(user, updateUser);
+        console.log(`Project view counted for user ${user.email}. Views: ${(user.projectsViewed || 0) + 1}/${user.projectsLimit}`);
+        
+        toast({
+          title: "Project Viewed",
+          description: `You have viewed ${(user.projectsViewed || 0) + 1} of ${user.projectsLimit} projects`,
+        });
+      } else if (SubscriptionService.canAccessPremiumFeatures(user) && !SubscriptionService.canViewMoreProjects(user)) {
+        toast({
+          title: "View Limit Reached",
+          description: "You've reached your project viewing limit. Upgrade your plan to view more projects.",
+          variant: "destructive"
+        });
+      }
+    }
+  }, [property, user, isAdmin, updateUser]);
 
   if (!property) {
     return (

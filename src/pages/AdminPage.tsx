@@ -74,11 +74,7 @@ const AdminPage = () => {
   const handleAddProperty = (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Form submitted with data:", newProperty);
-    console.log("addProperty function:", addProperty);
-    
     if (!newProperty.title || !newProperty.location || !newProperty.price) {
-      console.log("Validation failed - missing required fields");
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -88,10 +84,7 @@ const AdminPage = () => {
     }
 
     try {
-      console.log("Attempting to add property...");
       addProperty(newProperty);
-      console.log("Property added successfully");
-      
       setNewProperty({
         title: "",
         location: "",
@@ -111,7 +104,6 @@ const AdminPage = () => {
         description: "Property added successfully!",
       });
     } catch (error) {
-      console.error("Error adding property:", error);
       toast({
         title: "Error",
         description: "Failed to add property.",
