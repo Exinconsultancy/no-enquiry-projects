@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Trash2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -33,7 +32,7 @@ interface AdminPropertyControlsProps {
 }
 
 const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyControlsProps) => {
-  const { isAdmin, user } = useAuth();
+  const { isAdmin } = useSecureAuth();
   const { updateProperty, deleteProperty } = useAdmin();
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -47,18 +46,12 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     status: property.status
   });
 
-  console.log("AdminPropertyControls - Current user:", user);
-  console.log("AdminPropertyControls - isAdmin:", isAdmin);
-  console.log("AdminPropertyControls - Property:", property.id);
-
   if (!isAdmin) {
-    console.log("AdminPropertyControls - User is not admin, hiding controls");
     return null;
   }
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("AdminPropertyControls - Updating property:", property.id, "with data:", editForm);
     
     if (!editForm.title || !editForm.location || !editForm.price) {
       toast({
@@ -79,7 +72,6 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property updated successfully!",
       });
     } catch (error) {
-      console.error("AdminPropertyControls - Error updating property:", error);
       toast({
         title: "Error",
         description: "Failed to update property.",
@@ -89,7 +81,6 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
   };
 
   const handleDelete = () => {
-    console.log("AdminPropertyControls - Deleting property:", property.id);
     try {
       deleteProperty(property.id);
       onDelete?.();
@@ -99,7 +90,6 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property deleted successfully!",
       });
     } catch (error) {
-      console.error("AdminPropertyControls - Error deleting property:", error);
       toast({
         title: "Error",
         description: "Failed to delete property.",
@@ -120,8 +110,6 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         return ["Apartment", "Villa", "House"];
     }
   };
-
-  console.log("AdminPropertyControls - Rendering controls for property:", property.id);
 
   return (
     <div className="flex space-x-2 opacity-100 z-10" onClick={(e) => e.stopPropagation()}>

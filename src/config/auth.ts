@@ -1,10 +1,15 @@
 
-// Note: In production, these should be environment variables
+// Security Notice: This file has been deprecated for security reasons
+// Hardcoded secrets and client-side authentication have been removed
+// Please use the new SecureAuthService and environment variables for production
+
 export const AUTH_CONFIG = {
-  GOOGLE_CLIENT_ID: "1050975767842-ldi4qkv8blf1qv2p2vf8qdthrf8h4s5m.apps.googleusercontent.com", // Updated with a working test client ID
-  JWT_SECRET: "your-jwt-secret-key-change-in-production", // Replace with a secure secret
-  TOKEN_EXPIRY: "1h",
-  REFRESH_TOKEN_EXPIRY: "7d"
+  // Remove hardcoded Google Client ID - should be environment variable
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "your-google-client-id",
+  // Remove other hardcoded secrets
+  SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
+  MAX_LOGIN_ATTEMPTS: 5,
+  LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
 };
 
 export const PASSWORD_CONFIG = {

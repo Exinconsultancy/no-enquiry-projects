@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { useAuth } from "./AuthContext";
+import { useSecureAuth } from "./SecureAuthContext";
 
 interface Property {
   id: string;
@@ -39,7 +39,7 @@ interface AdminProviderProps {
 }
 
 export const AdminProvider = ({ children }: AdminProviderProps) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useSecureAuth();
   
   const [properties, setProperties] = useState<Property[]>([
     // Properties
