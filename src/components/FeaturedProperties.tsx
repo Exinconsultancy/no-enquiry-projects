@@ -1,179 +1,105 @@
 
-import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Bed, Bath, Square, Star } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface FeaturedProperty {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  image: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  type: "apartment" | "villa" | "commercial";
-  rating: number;
-}
+import { useAdmin } from "@/contexts/AdminContext";
 
 const FeaturedProperties = () => {
   const navigate = useNavigate();
-  const [featuredProperties, setFeaturedProperties] = useState<FeaturedProperty[]>([]);
+  const { properties } = useAdmin();
 
-  useEffect(() => {
-    // Mock featured properties data
-    const mockProperties: FeaturedProperty[] = [
-      {
-        id: "1",
-        title: "Luxury Penthouse Downtown",
-        location: "Mumbai, Maharashtra",
-        price: "₹2.5 Cr",
-        image: "/src/assets/property-1.jpg",
-        bedrooms: 4,
-        bathrooms: 3,
-        area: "2500 sq ft",
-        type: "apartment",
-        rating: 4.8
-      },
-      {
-        id: "2",
-        title: "Modern Villa with Garden",
-        location: "Bangalore, Karnataka",
-        price: "₹1.8 Cr",
-        image: "/src/assets/property-2.jpg",
-        bedrooms: 5,
-        bathrooms: 4,
-        area: "3200 sq ft",
-        type: "villa",
-        rating: 4.9
-      },
-      {
-        id: "3",
-        title: "Commercial Space Prime Location",
-        location: "Delhi, NCR",
-        price: "₹5.2 Cr",
-        image: "/src/assets/property-3.jpg",
-        bedrooms: 0,
-        bathrooms: 2,
-        area: "4500 sq ft",
-        type: "commercial",
-        rating: 4.7
-      },
-      {
-        id: "4",
-        title: "Seafront Apartment",
-        location: "Goa, India",
-        price: "₹1.2 Cr",
-        image: "/src/assets/property-1.jpg",
-        bedrooms: 3,
-        bathrooms: 2,
-        area: "1800 sq ft",
-        type: "apartment",
-        rating: 4.6
-      },
-      {
-        id: "5",
-        title: "Tech Park Office Space",
-        location: "Hyderabad, Telangana",
-        price: "₹3.5 Cr",
-        image: "/src/assets/property-2.jpg",
-        bedrooms: 0,
-        bathrooms: 4,
-        area: "6000 sq ft",
-        type: "commercial",
-        rating: 4.5
-      }
-    ];
-    
-    setFeaturedProperties(mockProperties);
-  }, []);
+  // Get first 6 properties for featured section
+  const featuredProperties = properties.slice(0, 6);
 
-  const handlePropertyClick = (property: FeaturedProperty) => {
-    navigate('/properties', { state: { selectedProperty: property } });
+  const handleViewProperty = (property: any) => {
+    navigate(`/property/${property.id}`);
   };
 
   return (
-    <div className="py-16 bg-background">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
+    <section className="py-20 bg-background">
+      <div className="container">
+        <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Properties</h2>
-          <p className="text-muted-foreground text-lg">
-            Discover our top-rated properties carefully selected for you
+          <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
+            Discover our hand-picked selection of premium properties across prime locations
           </p>
         </div>
 
-        <Carousel className="w-full">
-          <CarouselContent>
-            {featuredProperties.map((property) => (
-              <CarouselItem key={property.id} className="md:basis-1/2 lg:basis-1/3">
-                <Card 
-                  className="group cursor-pointer hover:shadow-[var(--shadow-elegant)] transition-all duration-300"
-                  onClick={() => handlePropertyClick(property)}
-                >
-                  <div className="relative">
-                    <img
-                      src={property.image}
-                      alt={property.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <Badge
-                      variant="secondary"
-                      className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm"
-                    >
-                      {property.type.charAt(0).toUpperCase() + property.type.slice(1)}
-                    </Badge>
-                    <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm rounded-full px-2 py-1">
-                      <div className="flex items-center text-xs">
-                        <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                        <span className="font-medium">{property.rating}</span>
-                      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featuredProperties.map((property) => (
+            <Card key={property.id} className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/20">
+              <div className="aspect-video overflow-hidden rounded-t-lg">
+                <img
+                  src={property.image || "https://images.unsplash.com/photo-1721322800607-8c38375eef04"}
+                  alt={property.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <Badge variant="secondary" className="mb-2">
+                    {property.type}
+                  </Badge>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-primary">
+                      {property.price}
                     </div>
                   </div>
+                </div>
+                
+                <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                  {property.title}
+                </h3>
+                
+                <div className="flex items-center text-sm text-muted-foreground mb-4">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  {property.location}
+                </div>
 
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-2 line-clamp-1">{property.title}</h3>
-                    
-                    <div className="flex items-center text-muted-foreground mb-2">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{property.location}</span>
-                    </div>
-                    
-                    <div className="text-2xl font-bold text-primary mb-3">{property.price}</div>
-                    
-                    {property.type !== "commercial" && (
-                      <div className="grid grid-cols-3 gap-3 mb-3">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Bed className="h-4 w-4 mr-1" />
-                          <span>{property.bedrooms}</span>
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Bath className="h-4 w-4 mr-1" />
-                          <span>{property.bathrooms}</span>
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Square className="h-4 w-4 mr-1" />
-                          <span>{property.area}</span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <Button className="w-full mt-4" variant="outline">
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+                <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center">
+                    <Bed className="h-4 w-4 mr-1" />
+                    2-3 BHK
+                  </div>
+                  <div className="flex items-center">
+                    <Bath className="h-4 w-4 mr-1" />
+                    2-3 Bath
+                  </div>
+                  <div className="flex items-center">
+                    <Square className="h-4 w-4 mr-1" />
+                    1200-1800 sq ft
+                  </div>
+                </div>
+
+                <div className="text-sm text-muted-foreground mb-4">
+                  <span className="font-medium">Builder:</span> {property.builder}
+                </div>
+
+                <Button 
+                  onClick={() => handleViewProperty(property)}
+                  className="w-full group-hover:bg-primary/90 transition-colors"
+                >
+                  View Details
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => navigate('/properties')}
+          >
+            View All Properties
+          </Button>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

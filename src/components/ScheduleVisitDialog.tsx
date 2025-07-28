@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { CalendarIcon, Clock, MapPin, Phone, Mail, User } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, Mail, User } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,6 @@ const ScheduleVisitDialog = ({ property, children }: ScheduleVisitDialogProps) =
   const [timeSlot, setTimeSlot] = useState<string>("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
@@ -44,7 +43,7 @@ const ScheduleVisitDialog = ({ property, children }: ScheduleVisitDialogProps) =
   ];
 
   const handleSchedule = () => {
-    if (!date || !timeSlot || !name || !email || !phone) {
+    if (!date || !timeSlot || !name || !email) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -65,7 +64,6 @@ const ScheduleVisitDialog = ({ property, children }: ScheduleVisitDialogProps) =
     setTimeSlot("");
     setName("");
     setEmail("");
-    setPhone("");
     setMessage("");
     setOpen(false);
   };
@@ -132,7 +130,7 @@ const ScheduleVisitDialog = ({ property, children }: ScheduleVisitDialogProps) =
           </div>
 
           {/* Contact Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name *</Label>
               <Input
@@ -143,27 +141,17 @@ const ScheduleVisitDialog = ({ property, children }: ScheduleVisitDialogProps) =
                 placeholder="Enter your name"
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number *</Label>
+              <Label htmlFor="email">Email Address *</Label>
               <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter your phone number"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email address"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email address"
-            />
           </div>
 
           <div className="space-y-2">
@@ -182,7 +170,7 @@ const ScheduleVisitDialog = ({ property, children }: ScheduleVisitDialogProps) =
             <Button 
               onClick={handleSchedule}
               className="flex-1"
-              disabled={!date || !timeSlot || !name || !email || !phone}
+              disabled={!date || !timeSlot || !name || !email}
             >
               Schedule Visit
             </Button>
