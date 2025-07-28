@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
@@ -102,7 +103,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="mumbai">Mumbai</SelectItem>
                 <SelectItem value="bangalore">Bangalore</SelectItem>
                 <SelectItem value="pune">Pune</SelectItem>
@@ -115,7 +116,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="hostel">Hostel</SelectItem>
                 <SelectItem value="pg">PG</SelectItem>
               </SelectContent>
@@ -126,10 +127,10 @@ const HostelPage = () => {
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Prices</SelectItem>
-                <SelectItem value="8,000">Under ₹10,000</SelectItem>
-                <SelectItem value="12,000">₹10,000 - ₹15,000</SelectItem>
-                <SelectItem value="15,000">Above ₹15,000</SelectItem>
+                <SelectItem value="all">All Prices</SelectItem>
+                <SelectItem value="8000">Under ₹10,000</SelectItem>
+                <SelectItem value="12000">₹10,000 - ₹15,000</SelectItem>
+                <SelectItem value="15000">Above ₹15,000</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -165,8 +166,8 @@ const HostelPage = () => {
                 phone: "+91 9876543210",
                 email: "contact@builder.com"
               },
-              category: hostel.category,
-              status: hostel.status,
+              category: hostel.category as "property" | "rental" | "hostel",
+              status: hostel.status as "active" | "pending" | "sold",
               builder: hostel.builder,
               createdDate: hostel.createdDate
             };

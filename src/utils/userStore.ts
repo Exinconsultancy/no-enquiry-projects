@@ -1,142 +1,72 @@
 
-import { hashPassword, verifyPassword } from './passwordUtils';
-
 interface User {
   id: string;
   name: string;
   email: string;
-  passwordHash: string;
-  passwordSalt: string;
+  password: string;
+  role: string;
   plan?: string;
   projectsViewed?: number;
   projectsLimit?: number;
-  role: 'user' | 'admin';
-  loginAttempts: number;
-  lockoutUntil?: number;
-  createdAt: number;
+  subscriptionExpiry?: string;
+  createdAt: string;
 }
 
-// Secure user store - in production, this would be a database
-let users: User[] = [];
-
-// Initialize with secure admin user
-async function initializeUsers() {
-  if (users.length === 0) {
-    // Create admin user with secure password
-    const adminPassword = await hashPassword('SecureAdmin123!');
-    const userPassword = await hashPassword('SecureUser123!');
-    
-    users = [
-      {
-        id: "admin-001",
-        name: "System Administrator",
-        email: "admin@demo.com",
-        passwordHash: adminPassword.hash,
-        passwordSalt: adminPassword.salt,
-        plan: "Admin",
-        projectsViewed: 0,
-        projectsLimit: 999999,
-        role: "admin",
-        loginAttempts: 0,
-        createdAt: Date.now()
-      },
-      {
-        id: "user-001",
-        name: "Demo User",
-        email: "user@demo.com",
-        passwordHash: userPassword.hash,
-        passwordSalt: userPassword.salt,
-        plan: "Professional",
-        projectsViewed: 5,
-        projectsLimit: 10,
-        role: "user",
-        loginAttempts: 0,
-        createdAt: Date.now()
-      }
-    ];
+// In-memory user store (replace with actual database in production)
+const users: User[] = [
+  {
+    id: "admin-1",
+    name: "Admin User",
+    email: "admin@example.com",
+    password: "Admin123!",
+    role: "admin",
+    createdAt: new Date().toISOString()
   }
-}
+];
 
-export async function getUserByEmail(email: string): Promise<User | null> {
-  await initializeUsers();
-  return users.find(u => u.email === email) || null;
-}
+export const getUserByEmail = async (email: string): Promise<User | null> => {
+  const user = users.find(u => u.email === email);
+  return user || null;
+};
 
-export async function createUser(userData: {
-  name: string;
-  email: string;
-  password: string;
-}): Promise<User> {
-  await initializeUsers();
-  
+export const createUser = async (userData: { 
+  name: string; 
+  email: string; 
+  password: string; 
+}): Promise<User> => {
   // Check if user already exists
   const existingUser = await getUserByEmail(userData.email);
   if (existingUser) {
-    throw new Error('User already exists');
+    throw new Error("User already exists");
   }
-  
-  // Hash password securely
-  const { hash, salt } = await hashPassword(userData.password);
-  
+
   const newUser: User = {
     id: `user-${Date.now()}`,
     name: userData.name,
     email: userData.email,
-    passwordHash: hash,
-    passwordSalt: salt,
-    plan: "Starter",
-    projectsViewed: 0,
-    projectsLimit: 3,
+    password: userData.password, // In production, this should be hashed
     role: "user",
-    loginAttempts: 0,
-    createdAt: Date.now()
+    createdAt: new Date().toISOString()
+    // No automatic plan assignment
   };
-  
+
   users.push(newUser);
   return newUser;
-}
+};
 
-export async function verifyUserPassword(email: string, password: string): Promise<User | null> {
-  await initializeUsers();
-  
-  const user = await getUserByEmail(email);
-  if (!user) return null;
-  
-  // Check if account is locked
-  if (user.lockoutUntil && user.lockoutUntil > Date.now()) {
-    throw new Error('Account temporarily locked. Please try again later.');
-  }
-  
-  const isValid = await verifyPassword(password, user.passwordHash, user.passwordSalt);
-  
-  if (!isValid) {
-    // Increment login attempts
-    user.loginAttempts++;
-    
-    if (user.loginAttempts >= 5) {
-      user.lockoutUntil = Date.now() + (15 * 60 * 1000); // 15 minutes
-      throw new Error('Too many failed attempts. Account locked for 15 minutes.');
-    }
-    
-    return null;
-  }
-  
-  // Reset login attempts on successful login
-  user.loginAttempts = 0;
-  user.lockoutUntil = undefined;
-  
-  return user;
-}
+export const verifyUserPassword = async (email: string, password: string): Promise<User | null> => {
+  const user = users.find(u => u.email === email && u.password === password);
+  return user || null;
+};
 
-export async function updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
-  await initializeUsers();
-  
+export const updateUser = async (userId: string, updates: Partial<User>): Promise<User | null> => {
   const userIndex = users.findIndex(u => u.id === userId);
   if (userIndex === -1) return null;
-  
-  // Don't allow updating sensitive fields
-  const { passwordHash, passwordSalt, role, ...safeUpdates } = updates;
-  
-  users[userIndex] = { ...users[userIndex], ...safeUpdates };
+
+  users[userIndex] = { ...users[userIndex], ...updates };
   return users[userIndex];
-}
+};
+
+export const getAllUsers = (): User[] => {
+  return users;
+};

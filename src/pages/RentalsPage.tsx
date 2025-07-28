@@ -1,3 +1,4 @@
+
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
@@ -102,7 +103,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="mumbai">Mumbai</SelectItem>
                 <SelectItem value="bangalore">Bangalore</SelectItem>
                 <SelectItem value="pune">Pune</SelectItem>
@@ -115,7 +116,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="villa">Villa</SelectItem>
                 <SelectItem value="commercial">Commercial</SelectItem>
@@ -127,10 +128,10 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Prices</SelectItem>
-                <SelectItem value="25,000">Under ₹30,000</SelectItem>
-                <SelectItem value="35,000">₹30,000 - ₹40,000</SelectItem>
-                <SelectItem value="45,000">Above ₹40,000</SelectItem>
+                <SelectItem value="all">All Prices</SelectItem>
+                <SelectItem value="25000">Under ₹30,000</SelectItem>
+                <SelectItem value="35000">₹30,000 - ₹40,000</SelectItem>
+                <SelectItem value="45000">Above ₹40,000</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -166,8 +167,8 @@ const RentalsPage = () => {
                 phone: "+91 9876543210",
                 email: "contact@builder.com"
               },
-              category: rental.category,
-              status: rental.status,
+              category: rental.category as "property" | "rental" | "hostel",
+              status: rental.status as "active" | "pending" | "sold",
               builder: rental.builder,
               createdDate: rental.createdDate
             };

@@ -23,6 +23,7 @@ interface SecureAuthContextType {
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
   isAdmin: boolean;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const SecureAuthContext = createContext<SecureAuthContextType | undefined>(undefined);
@@ -97,6 +98,10 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
     setUser(null);
   };
 
+  const updateUser = (updates: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   const hasRole = (role: string): boolean => {
     return user?.role === role;
   };
@@ -112,7 +117,8 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
     isLoading,
     isAuthenticated,
     hasRole,
-    isAdmin
+    isAdmin,
+    updateUser
   };
 
   return (
