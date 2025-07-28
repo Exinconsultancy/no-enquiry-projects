@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Shield, CheckCircle, Clock, Star, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { SubscriptionService } from "@/services/subscriptionService";
+import { supabase } from "@/integrations/supabase/client";
 import PricingCard from "@/components/PricingCard";
 import AuthModal from "@/components/AuthModal";
 
@@ -28,6 +28,31 @@ const PricingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isBuilderLoading, setIsBuilderLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+
+  // Check subscription status on component mount and when user changes
+  useEffect(() => {
+    if (user) {
+      checkSubscriptionStatus();
+    }
+  }, [user]);
+
+  const checkSubscriptionStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      setSubscriptionStatus(data);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  };
 
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([
     {
@@ -110,15 +135,34 @@ const PricingPage = () => {
     setIsLoading(true);
     
     try {
-      // Mock subscription logic for now
+      // Get price amount from plan
+      const priceAmount = parseInt(plan.price.replace('₹', '').replace(',', ''));
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          planId: plan.id,
+          planName: plan.name,
+          priceAmount: priceAmount
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+      
       toast({
-        title: "Subscription Successful!",
-        description: `You have subscribed to the ${plan.name} plan.`,
+        title: "Redirecting to Payment",
+        description: "Please complete your payment in the new tab.",
       });
     } catch (error) {
+      console.error('Subscription error:', error);
       toast({
         title: "Error",
-        description: "Failed to process subscription",
+        description: "Failed to process subscription. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -135,20 +179,31 @@ const PricingPage = () => {
     setIsBuilderLoading(true);
     
     try {
-      // Mock builder subscription logic for now
-      toast({
-        title: "Builder Subscription Activated!",
-        description: "Welcome to the Builder subscription!",
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          planId: 'builder',
+          planName: 'Builder',
+          priceAmount: 100000 // ₹1,00,000
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
       });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
       
-      // Redirect to builder dashboard after a short delay
-      setTimeout(() => {
-        window.location.href = '/builder-dashboard';
-      }, 2000);
+      toast({
+        title: "Redirecting to Payment",
+        description: "Please complete your payment in the new tab.",
+      });
     } catch (error) {
+      console.error('Builder subscription error:', error);
       toast({
         title: "Error",
-        description: "Failed to process builder subscription",
+        description: "Failed to process builder subscription. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -156,12 +211,14 @@ const PricingPage = () => {
     }
   };
 
-  // Mock subscription status for now
-  const subscriptionStatus = profile ? {
-    isActive: true,
-    daysRemaining: 30,
-    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
-  } : null;
+  // Add refresh subscription button
+  const handleRefreshSubscription = async () => {
+    await checkSubscriptionStatus();
+    toast({
+      title: "Subscription Status Updated",
+      description: "Your subscription status has been refreshed.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -177,48 +234,40 @@ const PricingPage = () => {
         </div>
 
         {/* Current Subscription Status */}
-        {profile && profile.plan && (
+        {profile && subscriptionStatus && subscriptionStatus.subscribed && (
           <div className="mb-8 max-w-2xl mx-auto">
             <Card className="border-success bg-success/5">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="h-5 w-5 text-success" />
-                    <CardTitle className="text-lg">Current Plan: {profile.plan}</CardTitle>
+                    <CardTitle className="text-lg">
+                      Current Plan: {subscriptionStatus.subscription_tier}
+                    </CardTitle>
                   </div>
-                  {subscriptionStatus?.isActive && (
-                    <Badge variant="default" className="bg-success">
-                      Active
-                    </Badge>
-                  )}
+                  <Badge variant="default" className="bg-success">
+                    Active
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  {profile.plan === 'Builder' && (
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        {subscriptionStatus?.isActive 
-                          ? `${subscriptionStatus.daysRemaining} days left`
-                          : 'Expired'
-                        }
-                      </span>
-                    </div>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center space-x-2">
-                    <Star className="h-4 w-4 text-muted-foreground" />
-                    <span>{profile.projects_viewed || 0} of {profile.projects_limit || 0} projects viewed</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <Clock className="h-4 w-4 text-muted-foreground" />
                     <span>
-                      {subscriptionStatus?.expiryDate 
-                        ? `Until ${subscriptionStatus.expiryDate}`
+                      Until {subscriptionStatus.subscription_end 
+                        ? new Date(subscriptionStatus.subscription_end).toLocaleDateString()
                         : 'No expiry date'
                       }
                     </span>
                   </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRefreshSubscription}
+                  >
+                    Refresh Status
+                  </Button>
                 </div>
               </CardContent>
             </Card>
