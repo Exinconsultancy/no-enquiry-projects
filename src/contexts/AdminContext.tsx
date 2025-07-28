@@ -158,17 +158,20 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
 
   // Get auth context safely
   let isAdmin = false;
+  let isBuilder = false;
   try {
-    const { isAdmin: authIsAdmin } = useSecureAuth();
+    const { isAdmin: authIsAdmin, user } = useSecureAuth();
     isAdmin = authIsAdmin;
+    isBuilder = user?.role === 'builder';
   } catch (error) {
     // SecureAuth not available yet, default to false
     isAdmin = false;
+    isBuilder = false;
   }
 
   const addProperty = (property: Omit<Property, 'id' | 'createdDate'>) => {
-    if (!isAdmin) {
-      throw new Error("Only admins can add properties");
+    if (!isAdmin && !isBuilder) {
+      throw new Error("Only admins and builders can add properties");
     }
     
     const newProperty: Property = {
