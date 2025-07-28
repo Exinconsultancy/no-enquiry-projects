@@ -14,10 +14,12 @@ import Navbar from '@/components/Navbar';
 import RentalsPage from '@/pages/RentalsPage';
 import BuilderDashboard from '@/pages/BuilderDashboard';
 import HostelPage from '@/pages/HostelPage';
+import { useToast } from '@/hooks/use-toast';
 
 function App() {
-  const { user, logout } = useAuth();
+  const { user, login, register, googleSignIn, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleLogin = () => {
     setIsAuthModalOpen(true);
@@ -25,6 +27,57 @@ function App() {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleAuthLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      setIsAuthModalOpen(false);
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAuthRegister = async (email: string, password: string, name: string) => {
+    try {
+      await register(email, password, name);
+      setIsAuthModalOpen(false);
+      toast({
+        title: "Registration Successful",
+        description: "Welcome to NoNo Broker!",
+      });
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGoogleSignIn = async (credential: string) => {
+    try {
+      await googleSignIn(credential);
+      setIsAuthModalOpen(false);
+      toast({
+        title: "Google Sign-In Successful",
+        description: "Welcome to NoNo Broker!",
+      });
+    } catch (error) {
+      toast({
+        title: "Google Sign-In Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -45,9 +98,9 @@ function App() {
         <AuthModal 
           isOpen={isAuthModalOpen} 
           onClose={() => setIsAuthModalOpen(false)} 
-          onLogin={() => setIsAuthModalOpen(false)}
-          onRegister={() => setIsAuthModalOpen(false)}
-          onGoogleSignIn={() => setIsAuthModalOpen(false)}
+          onLogin={handleAuthLogin}
+          onRegister={handleAuthRegister}
+          onGoogleSignIn={handleGoogleSignIn}
         />
         <Toaster />
       </div>

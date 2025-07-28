@@ -1,453 +1,285 @@
-import { useState, useEffect } from "react";
-import PropertyCard from "@/components/PropertyCard";
-import PropertyFilters from "@/components/PropertyFilters";
-import { Button } from "@/components/ui/button";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Grid, List, SlidersHorizontal, X, Home, Gift, Star } from "lucide-react";
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
+import { Building2, MapPin, Users, Wifi, Car, Utensils, Lock, Star, BedDouble, Bath, Square, Calendar } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface RentalProperty {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  image: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  type: "apartment" | "villa" | "commercial";
-  amenities: string[];
-  isAvailable: boolean;
-  deposit: string;
-  ownerContact: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-}
-
-interface RentalsPageProps {
-  user?: { name: string } | null;
-}
-
-const RentalsPage = ({ user }: RentalsPageProps) => {
+const RentalsPage = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = useState(false);
-  const [properties, setProperties] = useState<RentalProperty[]>([]);
-  const [filteredProperties, setFilteredProperties] = useState<RentalProperty[]>([]);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
-  const [filters, setFilters] = useState({
-    location: "",
-    propertyType: "all",
-    priceRange: [5000, 100000] as [number, number],
-    bedrooms: "any",
-    bathrooms: "any",
-    amenities: [] as string[],
-    area: [300, 3000] as [number, number],
-    readyToMove: false,
-    newProject: false,
-  });
+  const handleViewDetails = (property: any) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to view rental property details",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  // Sample rental properties data
-  const sampleRentals: RentalProperty[] = [
+    const hasActiveSubscription = user.plan && user.plan !== 'No Plan';
+    if (!hasActiveSubscription) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to a plan to view rental property details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedProperty(property);
+    toast({
+      title: "Property Details",
+      description: `Viewing details for ${property.title}`,
+    });
+  };
+
+  const rentalProperties = [
     {
-      id: "r1",
-      title: "Modern 2BHK in Tech Hub",
-      location: "Whitefield, Bangalore",
-      price: "₹25,000/month",
-      deposit: "₹50,000",
-      image: property1,
-      bedrooms: 2,
+      id: 1,
+      title: "Luxury 3BHK Apartment",
+      location: "Koramangala, Bangalore",
+      rent: "₹45,000",
+      deposit: "₹2,25,000",
+      type: "Apartment",
+      bedrooms: 3,
       bathrooms: 2,
       area: "1,200 sq ft",
-      type: "apartment",
-      amenities: ["Parking", "Security", "Gym", "Swimming Pool"],
-      isAvailable: true,
-      ownerContact: {
-        name: "Sanjay Reddy",
-        phone: "+91 98765 43210",
-        email: "sanjay@email.com"
-      }
+      amenities: ["WiFi", "Parking", "Gym", "Swimming Pool", "Security"],
+      rating: 4.5,
+      image: "/placeholder.svg",
+      available: true,
+      furnishing: "Fully Furnished",
+      leasePeriod: "11 months"
     },
     {
-      id: "r2",
-      title: "Luxury Villa with Garden",
-      location: "Koramangala, Bangalore",
-      price: "₹60,000/month",
-      deposit: "₹1,20,000",
-      image: property2,
+      id: 2,
+      title: "Modern 2BHK Villa",
+      location: "HSR Layout, Bangalore",
+      rent: "₹35,000",
+      deposit: "₹1,75,000",
+      type: "Villa",
+      bedrooms: 2,
+      bathrooms: 2,
+      area: "1,000 sq ft",
+      amenities: ["WiFi", "Parking", "Garden", "Security", "Power Backup"],
+      rating: 4.2,
+      image: "/placeholder.svg",
+      available: true,
+      furnishing: "Semi Furnished",
+      leasePeriod: "12 months"
+    },
+    {
+      id: 3,
+      title: "Spacious 4BHK House",
+      location: "Whitefield, Bangalore",
+      rent: "₹55,000",
+      deposit: "₹2,75,000",
+      type: "House",
       bedrooms: 4,
       bathrooms: 3,
-      area: "2,500 sq ft",
-      type: "villa",
-      amenities: ["Garden", "Parking", "Security", "Power Backup"],
-      isAvailable: true,
-      ownerContact: {
-        name: "Meera Patel",
-        phone: "+91 87654 32109",
-        email: "meera@email.com"
-      }
-    },
-    {
-      id: "r3",
-      title: "Commercial Office Space",
-      location: "MG Road, Bangalore",
-      price: "₹80,000/month",
-      deposit: "₹2,40,000",
-      image: property3,
-      bedrooms: 0,
-      bathrooms: 2,
       area: "1,800 sq ft",
-      type: "commercial",
-      amenities: ["Elevator", "CCTV", "Fire Safety", "Parking"],
-      isAvailable: true,
-      ownerContact: {
-        name: "Rajesh Kumar",
-        phone: "+91 76543 21098",
-        email: "rajesh@email.com"
-      }
+      amenities: ["WiFi", "Parking", "Garden", "Security", "Servant Room"],
+      rating: 4.7,
+      image: "/placeholder.svg",
+      available: false,
+      furnishing: "Unfurnished",
+      leasePeriod: "24 months"
     },
     {
-      id: "r4",
-      title: "Cozy 1BHK Near Metro",
+      id: 4,
+      title: "Cozy 1BHK Studio",
       location: "Indiranagar, Bangalore",
-      price: "₹18,000/month",
-      deposit: "₹36,000",
-      image: property1,
+      rent: "₹25,000",
+      deposit: "₹1,25,000",
+      type: "Studio",
       bedrooms: 1,
       bathrooms: 1,
-      area: "800 sq ft",
-      type: "apartment",
-      amenities: ["Metro Access", "Security", "Parking"],
-      isAvailable: true,
-      ownerContact: {
-        name: "Priya Sharma",
-        phone: "+91 65432 10987",
-        email: "priya@email.com"
-      }
+      area: "650 sq ft",
+      amenities: ["WiFi", "Parking", "Security", "Maintenance"],
+      rating: 4.0,
+      image: "/placeholder.svg",
+      available: true,
+      furnishing: "Fully Furnished",
+      leasePeriod: "11 months"
+    },
+    {
+      id: 5,
+      title: "Premium 3BHK Penthouse",
+      location: "UB City, Bangalore",
+      rent: "₹85,000",
+      deposit: "₹4,25,000",
+      type: "Penthouse",
+      bedrooms: 3,
+      bathrooms: 3,
+      area: "2,200 sq ft",
+      amenities: ["WiFi", "Parking", "Gym", "Swimming Pool", "Concierge", "Terrace"],
+      rating: 4.8,
+      image: "/placeholder.svg",
+      available: true,
+      furnishing: "Luxury Furnished",
+      leasePeriod: "12 months"
+    },
+    {
+      id: 6,
+      title: "Family 2BHK Flat",
+      location: "Jayanagar, Bangalore",
+      rent: "₹30,000",
+      deposit: "₹1,50,000",
+      type: "Apartment",
+      bedrooms: 2,
+      bathrooms: 2,
+      area: "950 sq ft",
+      amenities: ["WiFi", "Parking", "Security", "Elevator"],
+      rating: 4.1,
+      image: "/placeholder.svg",
+      available: true,
+      furnishing: "Semi Furnished",
+      leasePeriod: "11 months"
     }
   ];
 
-  useEffect(() => {
-    setProperties(sampleRentals);
-    setFilteredProperties(sampleRentals);
-  }, []);
-
-  const handleFiltersChange = (newFilters: typeof filters) => {
-    setFilters(newFilters);
-  };
-
-  const handleSearch = () => {
-    let filtered = properties;
-
-    // Apply filters
-    if (filters.location) {
-      filtered = filtered.filter(p => 
-        p.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
+  const getAmenityIcon = (amenity: string) => {
+    switch (amenity.toLowerCase()) {
+      case 'wifi': return <Wifi className="h-4 w-4" />;
+      case 'parking': return <Car className="h-4 w-4" />;
+      case 'gym': return <Users className="h-4 w-4" />;
+      case 'security': return <Lock className="h-4 w-4" />;
+      case 'swimming pool': return <Bath className="h-4 w-4" />;
+      default: return <Building2 className="h-4 w-4" />;
     }
-
-    if (filters.propertyType !== "all") {
-      filtered = filtered.filter(p => p.type === filters.propertyType);
-    }
-
-    if (filters.bedrooms !== "any") {
-      const bedrooms = parseInt(filters.bedrooms);
-      filtered = filtered.filter(p => p.bedrooms >= bedrooms);
-    }
-
-    if (filters.amenities.length > 0) {
-      filtered = filtered.filter(p => 
-        filters.amenities.some(amenity => p.amenities.includes(amenity))
-      );
-    }
-
-    setFilteredProperties(filtered);
-    toast({
-      title: "Filters Applied",
-      description: `Found ${filtered.length} rental properties matching your criteria.`,
-    });
-  };
-
-  const handleReset = () => {
-    setFilters({
-      location: "",
-      propertyType: "all",
-      priceRange: [5000, 100000] as [number, number],
-      bedrooms: "any",
-      bathrooms: "any",
-      amenities: [] as string[],
-      area: [300, 3000] as [number, number],
-      readyToMove: false,
-      newProject: false,
-    });
-    setFilteredProperties(properties);
-  };
-
-  const handleViewDetails = (property: any) => {
-    const rental = property as RentalProperty;
-    toast({
-      title: "Contact Details",
-      description: `Owner: ${rental.ownerContact.name} - ${rental.ownerContact.phone}`,
-    });
-  };
-
-  const handleDownloadBrochure = (property: any) => {
-    toast({
-      title: "Brochure Downloaded",
-      description: `Property details for ${property.title} downloaded.`,
-    });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <Gift className="h-12 w-12 text-success mr-3" />
-            <Badge variant="outline" className="text-lg px-4 py-2 border-success text-success">
-              100% FREE
-            </Badge>
-          </div>
           <h1 className="text-4xl font-bold mb-4">Rental Properties</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Browse rental properties completely free! Connect directly with property owners without any charges or commissions.
+            Find your perfect rental home from our extensive collection of verified properties
           </p>
+          {user?.plan && (
+            <Badge variant="secondary" className="mt-4 text-lg px-4 py-2">
+              Current Plan: {user.plan}
+            </Badge>
+          )}
         </div>
 
-        {/* Free Service Highlight */}
-        <Card className="mb-8 bg-gradient-to-r from-success/10 to-success/5 border-success/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center space-x-4 mb-4 md:mb-0">
-                <div className="bg-success/20 p-3 rounded-full">
-                  <Home className="h-6 w-6 text-success" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {rentalProperties.map((property) => (
+            <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
+              <div className="relative">
+                <img 
+                  src={property.image} 
+                  alt={property.title}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <Badge variant={property.available ? "default" : "secondary"}>
+                    {property.available ? "Available" : "Rented"}
+                  </Badge>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Free Rental Service</h3>
-                  <p className="text-muted-foreground">
-                    No subscription fees, no hidden charges - completely free forever!
-                  </p>
+                <div className="absolute top-4 left-4">
+                  <Badge variant="outline" className="bg-background/80">
+                    {property.furnishing}
+                  </Badge>
+                </div>
+                <div className="absolute bottom-4 right-4">
+                  <div className="flex items-center space-x-1 bg-background/80 px-2 py-1 rounded-md">
+                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                    <span className="text-sm font-medium">{property.rating}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                <span className="font-medium">4.8/5 Rating</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Available Rentals</h2>
-            <p className="text-muted-foreground">
-              {filteredProperties.length} properties available for rent
-            </p>
-          </div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg line-clamp-1">{property.title}</CardTitle>
+                <div className="flex items-center space-x-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">{property.location}</span>
+                </div>
+              </CardHeader>
 
-          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-2xl font-bold text-primary">{property.rent}</span>
+                    <span className="text-muted-foreground text-sm">/month</span>
+                  </div>
+                  <Badge variant="outline">{property.type}</Badge>
+                </div>
 
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden"
-            >
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-          </div>
-        </div>
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium">Deposit: </span>
+                  {property.deposit}
+                </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className={`lg:w-80 ${showFilters ? "block" : "hidden lg:block"}`}>
-            <div className="lg:hidden mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(false)}
-                className="w-full"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Close Filters
-              </Button>
-            </div>
-            <PropertyFilters
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              onSearch={handleSearch}
-              onReset={handleReset}
-            />
-          </div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center space-x-1">
+                    <BedDouble className="h-4 w-4" />
+                    <span>{property.bedrooms} Bed</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Bath className="h-4 w-4" />
+                    <span>{property.bathrooms} Bath</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Square className="h-4 w-4" />
+                    <span>{property.area}</span>
+                  </div>
+                </div>
 
-          {/* Properties Grid */}
-          <div className="flex-1">
-            {filteredProperties.length === 0 ? (
-              <Card className="p-12 text-center">
-                <CardContent>
-                  <h3 className="text-xl font-semibold mb-2">No Rental Properties Found</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Try adjusting your filters to see more results.
-                  </p>
-                  <Button onClick={handleReset}>Reset Filters</Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className={`grid gap-6 ${
-                viewMode === "grid" 
-                  ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" 
-                  : "grid-cols-1"
-              }`}>
-                {filteredProperties.map((property) => (
-                  <Card key={property.id} className="group hover:shadow-[var(--shadow-elegant)] transition-all duration-300 overflow-hidden">
-                    <div className="relative">
-                      <img
-                        src={property.image}
-                        alt={property.title}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <Badge
-                        variant="secondary"
-                        className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm"
-                      >
-                        {property.type.charAt(0).toUpperCase() + property.type.slice(1)}
-                      </Badge>
-                      <Badge
-                        className="absolute top-3 right-3 bg-success text-success-foreground"
-                      >
-                        Available
-                      </Badge>
+                <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Lease: {property.leasePeriod}</span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {property.amenities.slice(0, 3).map((amenity, index) => (
+                    <div key={index} className="flex items-center space-x-1 bg-accent px-2 py-1 rounded-md text-xs">
+                      {getAmenityIcon(amenity)}
+                      <span>{amenity}</span>
                     </div>
+                  ))}
+                  {property.amenities.length > 3 && (
+                    <div className="bg-accent px-2 py-1 rounded-md text-xs">
+                      +{property.amenities.length - 3} more
+                    </div>
+                  )}
+                </div>
 
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-1">{property.title}</h3>
-                      <p className="text-muted-foreground mb-2">{property.location}</p>
-                      <div className="space-y-1 mb-3">
-                        <div className="text-2xl font-bold text-primary">{property.price}</div>
-                        <div className="text-sm text-muted-foreground">Deposit: {property.deposit}</div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-3 mb-3">
-                        <div className="text-center">
-                          <div className="text-sm font-medium">{property.bedrooms}</div>
-                          <div className="text-xs text-muted-foreground">Bedrooms</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium">{property.bathrooms}</div>
-                          <div className="text-xs text-muted-foreground">Bathrooms</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium">{property.area}</div>
-                          <div className="text-xs text-muted-foreground">Area</div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {property.amenities.slice(0, 3).map((amenity, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {amenity}
-                          </Badge>
-                        ))}
-                        {property.amenities.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{property.amenities.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Button
-                          className="w-full"
-                          onClick={() => handleViewDetails(property)}
-                        >
-                          Contact Owner
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleDownloadBrochure(property)}
-                        >
-                          Download Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleViewDetails(property)}
+                  disabled={!property.available}
+                >
+                  {property.available ? "View Details & Contact" : "Not Available"}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* How Rental Service Works */}
-        <div className="mt-20 text-center">
-          <h2 className="text-3xl font-bold mb-12">How Our Free Rental Service Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-6 border-none shadow-lg">
-              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">1</span>
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl">Browse Properties</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <p className="text-muted-foreground">
-                  Browse through hundreds of verified rental properties across different locations
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 border-none shadow-lg">
-              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">2</span>
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl">Contact Directly</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <p className="text-muted-foreground">
-                  Get direct contact details of property owners - no intermediaries, no extra fees
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 border-none shadow-lg">
-              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">3</span>
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl">Move In</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <p className="text-muted-foreground">
-                  Complete the rental process directly with the owner and move into your new home
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        {(!user || !user.plan || user.plan === 'No Plan') && (
+          <Card className="mt-12 bg-primary/5 border-primary/20">
+            <CardContent className="p-8 text-center">
+              <Building2 className="h-16 w-16 text-primary mx-auto mb-4" />
+              <h3 className="text-2xl font-bold mb-4">Unlock Premium Rental Listings</h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Get access to verified rental properties with direct owner contacts, 
+                detailed amenities, and exclusive rental deals.
+              </p>
+              <Button size="lg" onClick={() => window.location.href = '/pricing'}>
+                View Subscription Plans
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
