@@ -26,7 +26,7 @@ interface PropertyCardProps {
       email: string;
     };
     category: string;
-    status: string;
+    status: "active" | "pending" | "sold";
     builder: string;
     createdDate: string;
   };

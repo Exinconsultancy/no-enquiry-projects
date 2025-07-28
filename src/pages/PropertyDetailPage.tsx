@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MapPin, Phone, Mail, Calendar, Home, Bath, Maximize } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Mail, Calendar, Home, Bath, Maximize, Lock, Star, Wifi, Car, Shield, TreePine, Dumbbell, Waves, Building, Users, Clock, Camera, FileText, Calculator, TrendingUp } from "lucide-react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
+import { SubscriptionService } from "@/services/subscriptionService";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +41,8 @@ const PropertyDetailPage = () => {
     );
   }
 
+  const canViewDetails = user && SubscriptionService.canAccessPremiumFeatures(user);
+
   const handleDownloadBrochure = () => {
     if (!user) {
       toast({
@@ -62,12 +68,173 @@ const PropertyDetailPage = () => {
     });
   };
 
-  const mockAmenities = ["Swimming Pool", "Gym", "24/7 Security", "Parking", "Garden", "Club House"];
+  const handleViewDetails = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to view detailed property information",
+        variant: "destructive",
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    if (!SubscriptionService.canAccessPremiumFeatures(user)) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to a plan to view detailed property information",
+        variant: "destructive",
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    // If user has access, increment project view count
+    if (SubscriptionService.canViewMoreProjects(user)) {
+      // In real app, you would call updateUser function here
+      console.log("Incrementing project view count");
+    }
+  };
+
+  const mockAmenities = [
+    { icon: Waves, name: "Swimming Pool", available: true },
+    { icon: Dumbbell, name: "Gymnasium", available: true },
+    { icon: Shield, name: "24/7 Security", available: true },
+    { icon: Car, name: "Parking", available: true },
+    { icon: TreePine, name: "Garden", available: true },
+    { icon: Building, name: "Club House", available: true },
+    { icon: Wifi, name: "High Speed Internet", available: false },
+    { icon: Users, name: "Community Hall", available: true }
+  ];
+
   const mockDetails = {
     bedrooms: property.type === "Villa" ? 4 : 3,
     bathrooms: property.type === "Villa" ? 3 : 2,
-    area: property.type === "Villa" ? "2500 sq ft" : "1800 sq ft"
+    area: property.type === "Villa" ? "2500 sq ft" : "1800 sq ft",
+    builtYear: "2023",
+    floors: property.type === "Villa" ? "2" : "12th Floor",
+    facing: "East",
+    furnishing: "Semi-Furnished",
+    parking: "2 Covered",
+    possession: "Ready to Move"
   };
+
+  const mockFinancials = {
+    basePrice: "₹2.5 Cr",
+    stampDuty: "₹7.5 Lakh",
+    registration: "₹50,000",
+    maintenance: "₹8,000/month",
+    societyFees: "₹2,000/month",
+    totalCost: "₹2.58 Cr"
+  };
+
+  const mockNeighborhood = {
+    walkScore: 85,
+    transitScore: 78,
+    bikeScore: 92,
+    nearbySchools: ["DPS International", "Ryan International", "Vidya Bhawan"],
+    hospitals: ["Apollo Hospital", "Fortis Healthcare", "Max Hospital"],
+    shopping: ["Phoenix Mall", "Express Avenue", "Forum Mall"],
+    restaurants: ["Saravana Bhavan", "Pind Balluchi", "Absolute Barbecue"]
+  };
+
+  // If user doesn't have access, show limited info with subscription prompt
+  if (!canViewDetails) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="max-w-6xl mx-auto px-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-6 flex items-center space-x-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardContent className="p-0">
+                  <div className="relative">
+                    <img
+                      src={property.image || "/placeholder.svg"}
+                      alt={property.title}
+                      className="w-full h-96 object-cover rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
+                      <div className="text-center text-white">
+                        <Lock className="h-16 w-16 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold mb-2">Premium Content</h3>
+                        <p className="mb-4">Subscribe to view detailed property information</p>
+                        <Button onClick={() => navigate('/pricing')} className="bg-primary hover:bg-primary/90">
+                          View Plans
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{property.title}</CardTitle>
+                  <div className="flex items-center space-x-2 text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span>{property.location}</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary mb-4">{property.price}</div>
+                  <p className="text-muted-foreground mb-4">
+                    Subscribe to view detailed property information, amenities, floor plans, and more...
+                  </p>
+                  <Button onClick={() => navigate('/pricing')} className="w-full">
+                    Subscribe Now
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Builder</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold">{property.builder}</h4>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                      <Phone className="h-4 w-4" />
+                      <span className="blur-sm">+91 9876543210</span>
+                      <Lock className="h-3 w-3" />
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                      <Mail className="h-4 w-4" />
+                      <span className="blur-sm">contact@builder.com</span>
+                      <Lock className="h-3 w-3" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Button disabled className="w-full">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Schedule Visit
+                      <Lock className="h-4 w-4 ml-2" />
+                    </Button>
+                    <Button variant="outline" disabled className="w-full">
+                      Download Brochure
+                      <Lock className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -84,18 +251,34 @@ const PropertyDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Property Image */}
+            {/* Property Images */}
             <Card>
               <CardContent className="p-0">
-                <img
-                  src={property.image || "/placeholder.svg"}
-                  alt={property.title}
-                  className="w-full h-96 object-cover rounded-lg"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <img
+                    src={property.image || "/placeholder.svg"}
+                    alt={property.title}
+                    className="w-full h-96 md:h-80 object-cover rounded-lg"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <img src="/placeholder.svg" alt="Interior" className="w-full h-39 object-cover rounded-lg" />
+                    <img src="/placeholder.svg" alt="Bedroom" className="w-full h-39 object-cover rounded-lg" />
+                    <img src="/placeholder.svg" alt="Kitchen" className="w-full h-39 object-cover rounded-lg" />
+                    <div className="relative">
+                      <img src="/placeholder.svg" alt="Bathroom" className="w-full h-39 object-cover rounded-lg" />
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
+                        <div className="text-white text-center">
+                          <Camera className="h-6 w-6 mx-auto mb-1" />
+                          <span className="text-sm">+12 Photos</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Property Details */}
+            {/* Property Details Tabs */}
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -118,40 +301,202 @@ const PropertyDetailPage = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="flex items-center space-x-2">
-                    <Home className="h-5 w-5 text-muted-foreground" />
-                    <span>{mockDetails.bedrooms} Bedrooms</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Bath className="h-5 w-5 text-muted-foreground" />
-                    <span>{mockDetails.bathrooms} Bathrooms</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Maximize className="h-5 w-5 text-muted-foreground" />
-                    <span>{mockDetails.area}</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">Description</h3>
-                    <p className="text-muted-foreground">
-                      {property.description || "This is a beautiful property with modern amenities and excellent location. Perfect for families looking for a comfortable and convenient living space."}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold mb-2">Amenities</h3>
-                    <div className="flex flex-wrap gap-2">
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="amenities">Amenities</TabsTrigger>
+                    <TabsTrigger value="financial">Financial</TabsTrigger>
+                    <TabsTrigger value="neighborhood">Area</TabsTrigger>
+                    <TabsTrigger value="documents">Documents</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="overview" className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-center space-x-2">
+                        <Home className="h-5 w-5 text-muted-foreground" />
+                        <span>{mockDetails.bedrooms} Bedrooms</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Bath className="h-5 w-5 text-muted-foreground" />
+                        <span>{mockDetails.bathrooms} Bathrooms</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Maximize className="h-5 w-5 text-muted-foreground" />
+                        <span>{mockDetails.area}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Built Year</span>
+                          <span>{mockDetails.builtYear}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Floor</span>
+                          <span>{mockDetails.floors}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Facing</span>
+                          <span>{mockDetails.facing}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Furnishing</span>
+                          <span>{mockDetails.furnishing}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Parking</span>
+                          <span>{mockDetails.parking}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Possession</span>
+                          <span>{mockDetails.possession}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Property Type</span>
+                          <span>{property.type}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Listed Date</span>
+                          <span>{property.createdDate}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <h3 className="font-semibold mb-2">Description</h3>
+                      <p className="text-muted-foreground">
+                        {property.description || "This is a beautiful property with modern amenities and excellent location. Perfect for families looking for a comfortable and convenient living space. The property features spacious rooms, modern fixtures, and is located in a prime area with excellent connectivity to major business districts and entertainment centers."}
+                      </p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="amenities" className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       {mockAmenities.map((amenity, index) => (
-                        <Badge key={index} variant="outline">
-                          {amenity}
-                        </Badge>
+                        <div key={index} className="flex items-center space-x-3">
+                          <div className={`flex-shrink-0 p-2 rounded-full ${amenity.available ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                            <amenity.icon className="h-4 w-4" />
+                          </div>
+                          <span className={amenity.available ? 'text-foreground' : 'text-muted-foreground line-through'}>
+                            {amenity.name}
+                          </span>
+                        </div>
                       ))}
                     </div>
-                  </div>
-                </div>
+                  </TabsContent>
+
+                  <TabsContent value="financial" className="space-y-4">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Base Price</span>
+                        <span className="font-semibold">{mockFinancials.basePrice}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Stamp Duty</span>
+                        <span>{mockFinancials.stampDuty}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Registration</span>
+                        <span>{mockFinancials.registration}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Maintenance</span>
+                        <span>{mockFinancials.maintenance}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Society Fees</span>
+                        <span>{mockFinancials.societyFees}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between items-center font-semibold text-lg">
+                        <span>Total Cost</span>
+                        <span className="text-primary">{mockFinancials.totalCost}</span>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="neighborhood" className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{mockNeighborhood.walkScore}</div>
+                        <div className="text-sm text-muted-foreground">Walk Score</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{mockNeighborhood.transitScore}</div>
+                        <div className="text-sm text-muted-foreground">Transit Score</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{mockNeighborhood.bikeScore}</div>
+                        <div className="text-sm text-muted-foreground">Bike Score</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-semibold mb-2">Nearby Schools</h4>
+                        <div className="space-y-1">
+                          {mockNeighborhood.nearbySchools.map((school, index) => (
+                            <div key={index} className="text-sm text-muted-foreground">• {school}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Healthcare</h4>
+                        <div className="space-y-1">
+                          {mockNeighborhood.hospitals.map((hospital, index) => (
+                            <div key={index} className="text-sm text-muted-foreground">• {hospital}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Shopping</h4>
+                        <div className="space-y-1">
+                          {mockNeighborhood.shopping.map((shop, index) => (
+                            <div key={index} className="text-sm text-muted-foreground">• {shop}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="documents" className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <FileText className="h-5 w-5 text-muted-foreground" />
+                          <span>Property Title Deed</span>
+                        </div>
+                        <Button size="sm" variant="outline">Download</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <FileText className="h-5 w-5 text-muted-foreground" />
+                          <span>Floor Plan</span>
+                        </div>
+                        <Button size="sm" variant="outline">Download</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <FileText className="h-5 w-5 text-muted-foreground" />
+                          <span>Property Brochure</span>
+                        </div>
+                        <Button size="sm" variant="outline">Download</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Calculator className="h-5 w-5 text-muted-foreground" />
+                          <span>EMI Calculator</span>
+                        </div>
+                        <Button size="sm" variant="outline">Calculate</Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
@@ -218,6 +563,38 @@ const PropertyDetailPage = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Listed Date</span>
                   <span>{property.createdDate}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Market Trends */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Market Trends</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Area Growth</span>
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <span className="text-green-500">+12%</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Price Trend</span>
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <span className="text-green-500">+8%</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Demand</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '78%' }}></div>
+                    </div>
+                    <span className="text-sm">High</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

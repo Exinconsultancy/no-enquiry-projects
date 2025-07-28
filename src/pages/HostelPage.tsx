@@ -1,59 +1,49 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useMemo } from "react";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
-import PropertyCard from "@/components/PropertyCard";
-import PropertyFilterContainer from "@/components/PropertyFilterContainer";
-import AdminFAB from "@/components/AdminFAB";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MapPin, Home, Bath, Maximize, Download, Eye, Heart, Filter, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PropertyCard from "@/components/PropertyCard";
 
 const HostelPage = () => {
   const { user } = useSecureAuth();
   const { getPropertiesByCategory } = useAdmin();
   const { toast } = useToast();
-  const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("hostel"));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [priceFilter, setPriceFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
-  const stats = [
-    { title: "Total Hostels", value: filteredProperties.length },
-    { title: "Available Now", value: filteredProperties.filter(p => p.status === "active").length },
-    { title: "Cities Covered", value: new Set(filteredProperties.map(p => p.location.split(",")[1]?.trim())).size },
-    { title: "Accommodation Types", value: new Set(filteredProperties.map(p => p.type)).size }
-  ];
+  const hostels = getPropertiesByCategory("hostel");
+
+  const filteredHostels = useMemo(() => {
+    return hostels.filter(hostel => {
+      const matchesSearch = hostel.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           hostel.location.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLocation = !locationFilter || hostel.location.toLowerCase().includes(locationFilter.toLowerCase());
+      const matchesType = !typeFilter || hostel.type.toLowerCase() === typeFilter.toLowerCase();
+      // Basic price filtering - in real app, you'd parse price ranges
+      const matchesPrice = !priceFilter || hostel.price.includes(priceFilter);
+      
+      return matchesSearch && matchesLocation && matchesType && matchesPrice;
+    });
+  }, [hostels, searchTerm, locationFilter, priceFilter, typeFilter]);
 
   const handleViewDetails = (property: any) => {
     if (!user) {
       toast({
         title: "Login Required",
-        description: "Please login to view hostel details",
+        description: "Please login to view property details",
         variant: "destructive",
       });
       return;
     }
-
-    if (!user.plan) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to a plan to view hostel details",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const hasReachedLimit = user.projectsViewed && user.projectsLimit && user.projectsViewed >= user.projectsLimit;
-    if (hasReachedLimit) {
-      toast({
-        title: "Limit Reached",
-        description: "You have reached your project viewing limit. Please upgrade your plan.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Hostel Details",
-      description: "Hostel details are now visible below",
-    });
+    // Navigation will be handled by the PropertyCard component
   };
 
   const handleDownloadBrochure = (property: any) => {
@@ -83,95 +73,121 @@ const HostelPage = () => {
 
   return (
     <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Hostels & PG Accommodations
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find comfortable and affordable hostel accommodations for students and professionals
+          <h1 className="text-4xl font-bold mb-4">Find Your Perfect Hostel</h1>
+          <p className="text-muted-foreground text-lg">
+            Comfortable and affordable accommodation for students and professionals
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Filters */}
-          <div className="lg:col-span-1">
-            <PropertyFilterContainer
-              properties={getPropertiesByCategory("hostel")}
-              onFilterChange={setFilteredProperties}
-            />
-          </div>
-
-          {/* Properties Grid */}
-          <div className="lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProperties.map((property) => {
-                const propertyData = {
-                  id: property.id,
-                  title: property.title,
-                  location: property.location,
-                  price: property.price,
-                  image: property.image || "/placeholder.svg",
-                  bedrooms: 1,
-                  bathrooms: 1,
-                  area: "200 sq ft",
-                  type: property.type.toLowerCase() as "apartment" | "villa" | "commercial",
-                  amenities: ["WiFi", "Mess", "Security", "Laundry", "AC", "Study Room"],
-                  builderContact: {
-                    name: property.builder,
-                    phone: "+91 9876543210",
-                    email: "contact@hostel.com"
-                  },
-                  category: property.category,
-                  status: property.status,
-                  builder: property.builder
-                };
-
-                return (
-                  <PropertyCard
-                    key={property.id}
-                    property={propertyData}
-                    onViewDetails={handleViewDetails}
-                    onDownloadBrochure={handleDownloadBrochure}
-                    user={user}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Empty State */}
-            {filteredProperties.length === 0 && (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No hostels found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your filters to see more hostel accommodations
-                </p>
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search hostels..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            )}
+            </div>
+            
+            <Select value={locationFilter} onValueChange={setLocationFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="mumbai">Mumbai</SelectItem>
+                <SelectItem value="bangalore">Bangalore</SelectItem>
+                <SelectItem value="pune">Pune</SelectItem>
+                <SelectItem value="hyderabad">Hyderabad</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="hostel">Hostel</SelectItem>
+                <SelectItem value="pg">PG</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priceFilter} onValueChange={setPriceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Price Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Prices</SelectItem>
+                <SelectItem value="8,000">Under ₹10,000</SelectItem>
+                <SelectItem value="12,000">₹10,000 - ₹15,000</SelectItem>
+                <SelectItem value="15,000">Above ₹15,000</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Admin FAB */}
-        <AdminFAB category="hostel" />
+        {/* Results */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold">
+            {filteredHostels.length} Hostels Found
+          </h2>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4" />
+            <span className="text-sm text-muted-foreground">Sort by: Newest</span>
+          </div>
+        </div>
+
+        {/* Properties Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredHostels.map((hostel) => {
+            const propertyData = {
+              id: hostel.id,
+              title: hostel.title,
+              location: hostel.location,
+              price: hostel.price,
+              image: hostel.image || "/placeholder.svg",
+              bedrooms: 1,
+              bathrooms: 1,
+              area: "200 sq ft",
+              type: hostel.type as "apartment" | "villa" | "commercial",
+              amenities: ["WiFi", "Meals", "Laundry", "Security"],
+              builderContact: {
+                name: hostel.builder,
+                phone: "+91 9876543210",
+                email: "contact@builder.com"
+              },
+              category: hostel.category,
+              status: hostel.status,
+              builder: hostel.builder,
+              createdDate: hostel.createdDate
+            };
+
+            return (
+              <PropertyCard
+                key={hostel.id}
+                property={propertyData}
+                onViewDetails={handleViewDetails}
+                onDownloadBrochure={handleDownloadBrochure}
+                user={user}
+              />
+            );
+          })}
+        </div>
+
+        {filteredHostels.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">No hostels found matching your criteria.</p>
+          </div>
+        )}
       </div>
     </div>
   );

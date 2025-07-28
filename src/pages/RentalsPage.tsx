@@ -1,59 +1,49 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
-import PropertyCard from "@/components/PropertyCard";
-import PropertyFilterContainer from "@/components/PropertyFilterContainer";
-import AdminFAB from "@/components/AdminFAB";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MapPin, Home, Bath, Maximize, Download, Eye, Heart, Filter, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useMemo } from "react";
+import PropertyCard from "@/components/PropertyCard";
 
 const RentalsPage = () => {
   const { user } = useSecureAuth();
   const { getPropertiesByCategory } = useAdmin();
   const { toast } = useToast();
-  const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("rental"));
+  const [searchTerm, setSearchTerm] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [priceFilter, setPriceFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
-  const stats = [
-    { title: "Total Rentals", value: filteredProperties.length },
-    { title: "Available Now", value: filteredProperties.filter(p => p.status === "active").length },
-    { title: "Cities Covered", value: new Set(filteredProperties.map(p => p.location.split(",")[1]?.trim())).size },
-    { title: "Property Types", value: new Set(filteredProperties.map(p => p.type)).size }
-  ];
+  const rentals = getPropertiesByCategory("rental");
+
+  const filteredRentals = useMemo(() => {
+    return rentals.filter(rental => {
+      const matchesSearch = rental.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           rental.location.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLocation = !locationFilter || rental.location.toLowerCase().includes(locationFilter.toLowerCase());
+      const matchesType = !typeFilter || rental.type.toLowerCase() === typeFilter.toLowerCase();
+      // Basic price filtering - in real app, you'd parse price ranges
+      const matchesPrice = !priceFilter || rental.price.includes(priceFilter);
+      
+      return matchesSearch && matchesLocation && matchesType && matchesPrice;
+    });
+  }, [rentals, searchTerm, locationFilter, priceFilter, typeFilter]);
 
   const handleViewDetails = (property: any) => {
     if (!user) {
       toast({
         title: "Login Required",
-        description: "Please login to view rental details",
+        description: "Please login to view property details",
         variant: "destructive",
       });
       return;
     }
-
-    if (!user.plan) {
-      toast({
-        title: "Subscription Required",
-        description: "Please subscribe to a plan to view rental details",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const hasReachedLimit = user.projectsViewed && user.projectsLimit && user.projectsViewed >= user.projectsLimit;
-    if (hasReachedLimit) {
-      toast({
-        title: "Limit Reached",
-        description: "You have reached your project viewing limit. Please upgrade your plan.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Rental Details",
-      description: "Rental details are now visible below",
-    });
+    // Navigation will be handled by the PropertyCard component
   };
 
   const handleDownloadBrochure = (property: any) => {
@@ -83,95 +73,122 @@ const RentalsPage = () => {
 
   return (
     <div className="min-h-screen bg-background py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Rental Properties
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find your perfect rental home from our extensive collection of furnished and unfurnished properties
+          <h1 className="text-4xl font-bold mb-4">Find Your Perfect Rental</h1>
+          <p className="text-muted-foreground text-lg">
+            Discover comfortable and affordable rental properties in prime locations
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Filters */}
-          <div className="lg:col-span-1">
-            <PropertyFilterContainer
-              properties={getPropertiesByCategory("rental")}
-              onFilterChange={setFilteredProperties}
-            />
-          </div>
-
-          {/* Properties Grid */}
-          <div className="lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProperties.map((property) => {
-                const propertyData = {
-                  id: property.id,
-                  title: property.title,
-                  location: property.location,
-                  price: property.price,
-                  image: property.image || "/placeholder.svg",
-                  bedrooms: 2,
-                  bathrooms: 2,
-                  area: "1200 sq ft",
-                  type: property.type.toLowerCase() as "apartment" | "villa" | "commercial",
-                  amenities: ["Fully Furnished", "WiFi", "Parking", "Security", "Maintenance", "Power Backup"],
-                  builderContact: {
-                    name: property.builder,
-                    phone: "+91 9876543210",
-                    email: "contact@rental.com"
-                  },
-                  category: property.category,
-                  status: property.status,
-                  builder: property.builder
-                };
-
-                return (
-                  <PropertyCard
-                    key={property.id}
-                    property={propertyData}
-                    onViewDetails={handleViewDetails}
-                    onDownloadBrochure={handleDownloadBrochure}
-                    user={user}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Empty State */}
-            {filteredProperties.length === 0 && (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No rentals found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your filters to see more rental properties
-                </p>
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search rentals..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            )}
+            </div>
+            
+            <Select value={locationFilter} onValueChange={setLocationFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="mumbai">Mumbai</SelectItem>
+                <SelectItem value="bangalore">Bangalore</SelectItem>
+                <SelectItem value="pune">Pune</SelectItem>
+                <SelectItem value="hyderabad">Hyderabad</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="apartment">Apartment</SelectItem>
+                <SelectItem value="villa">Villa</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priceFilter} onValueChange={setPriceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Price Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Prices</SelectItem>
+                <SelectItem value="25,000">Under ₹30,000</SelectItem>
+                <SelectItem value="35,000">₹30,000 - ₹40,000</SelectItem>
+                <SelectItem value="45,000">Above ₹40,000</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Admin FAB */}
-        <AdminFAB category="rental" />
+        {/* Results */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold">
+            {filteredRentals.length} Rentals Found
+          </h2>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4" />
+            <span className="text-sm text-muted-foreground">Sort by: Newest</span>
+          </div>
+        </div>
+
+        {/* Properties Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRentals.map((rental) => {
+            const propertyData = {
+              id: rental.id,
+              title: rental.title,
+              location: rental.location,
+              price: rental.price,
+              image: rental.image || "/placeholder.svg",
+              bedrooms: rental.type === "Villa" ? 4 : 2,
+              bathrooms: rental.type === "Villa" ? 3 : 2,
+              area: rental.type === "Villa" ? "2500 sq ft" : "1200 sq ft",
+              type: rental.type as "apartment" | "villa" | "commercial",
+              amenities: ["Parking", "Security", "Maintenance", "Power Backup"],
+              builderContact: {
+                name: rental.builder,
+                phone: "+91 9876543210",
+                email: "contact@builder.com"
+              },
+              category: rental.category,
+              status: rental.status,
+              builder: rental.builder,
+              createdDate: rental.createdDate
+            };
+
+            return (
+              <PropertyCard
+                key={rental.id}
+                property={propertyData}
+                onViewDetails={handleViewDetails}
+                onDownloadBrochure={handleDownloadBrochure}
+                user={user}
+              />
+            );
+          })}
+        </div>
+
+        {filteredRentals.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">No rentals found matching your criteria.</p>
+          </div>
+        )}
       </div>
     </div>
   );
