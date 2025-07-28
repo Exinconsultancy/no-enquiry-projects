@@ -36,8 +36,8 @@ const PropertyDetailPage = () => {
       return;
     }
 
-    // Admin always has access
-    if (profile?.role === 'admin') {
+    // Admin and test users always have access
+    if (profile?.role === 'admin' || profile?.role === 'test') {
       setContactDetailsVisible(true);
       return;
     }
@@ -81,7 +81,7 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const canAccessPremiumFeatures = profile?.role === 'admin' || (profile?.plan && profile.plan !== 'free');
+  const canAccessPremiumFeatures = profile?.role === 'admin' || profile?.role === 'test' || (profile?.plan && profile.plan !== 'free');
 
   const handleDownloadBrochure = () => {
     if (!canAccessPremiumFeatures) {
@@ -341,7 +341,7 @@ const PropertyDetailPage = () => {
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold">{property.builder}</h4>
-                  {contactDetailsVisible || profile?.role === 'admin' ? (
+                  {contactDetailsVisible || profile?.role === 'admin' || profile?.role === 'test' ? (
                     <>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
                         <Phone className="h-4 w-4" />
@@ -365,7 +365,7 @@ const PropertyDetailPage = () => {
                   )}
                 </div>
                 
-                {(contactDetailsVisible || profile?.role === 'admin') && (
+                {(contactDetailsVisible || profile?.role === 'admin' || profile?.role === 'test') && (
                   <div className="space-y-2">
                     <ScheduleVisitDialog
                       property={{

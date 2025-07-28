@@ -27,6 +27,7 @@ interface PricingCardProps {
 const PricingCard = ({ plan, onSelect, onUpdatePlan, userPlan, userRole }: PricingCardProps) => {
   const isCurrentPlan = userPlan === plan.name;
   const isBuilder = userRole === 'builder';
+  const isTestUser = userRole === 'test';
 
   return (
     <Card className={`relative transition-all duration-300 hover:shadow-[var(--shadow-elegant)] ${
@@ -84,10 +85,10 @@ const PricingCard = ({ plan, onSelect, onUpdatePlan, userPlan, userRole }: Prici
             e.stopPropagation();
             onSelect(plan);
           }}
-          disabled={isBuilder}
+          disabled={isBuilder || isTestUser}
           type="button"
         >
-          {isCurrentPlan ? "Renew Plan" : isBuilder ? "Builder Only" : "Choose Plan"}
+          {isCurrentPlan ? "Renew Plan" : isBuilder ? "Builder Only" : isTestUser ? "Test Account" : "Choose Plan"}
         </Button>
       </CardContent>
     </Card>

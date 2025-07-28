@@ -122,12 +122,20 @@ const PricingPage = () => {
       return;
     }
 
-    // Prevent builders from subscribing to regular plans
+    // Prevent builders and test users from subscribing to regular plans
     if (profile?.role === 'builder') {
       toast({
         title: "Access Restricted",
         description: "Builders can only use the Builder Subscription. Regular plans are for property viewers only.",
         variant: "destructive",
+      });
+      return;
+    }
+
+    if (profile?.role === 'test') {
+      toast({
+        title: "Test Account",
+        description: "Test accounts have full access without subscriptions.",
       });
       return;
     }
