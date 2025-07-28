@@ -97,10 +97,39 @@ const PricingPage = () => {
       return;
     }
 
-    toast({
-      title: "Plan Selected",
-      description: `You selected the ${plan.name} plan`,
-    });
+    setIsLoading(true);
+    
+    try {
+      const result = await SubscriptionService.subscribeToPlan(
+        plan.id, 
+        user, 
+        (updates) => {
+          // This would update the user context - for now we'll just show success
+          console.log("User updates:", updates);
+        }
+      );
+      
+      if (result.success) {
+        toast({
+          title: "Subscription Successful!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Subscription Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process subscription",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleBuilderSubscription = async () => {
