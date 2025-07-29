@@ -16,6 +16,7 @@ import PropertyDetailPage from "./pages/PropertyDetailPage";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { MaintenanceProvider } from "@/contexts/MaintenanceContext";
 import AdminRouteGuard from "./components/AdminRouteGuard";
 import BuilderRouteGuard from "./components/BuilderRouteGuard";
 import { Toaster } from "@/components/ui/toaster";
@@ -26,7 +27,8 @@ function App() {
       <AuthProvider>
         <AdminProvider>
           <BuilderProvider>
-            <FavoritesProvider>
+            <MaintenanceProvider>
+              <FavoritesProvider>
               <div className="min-h-screen bg-background">
                 <Navbar />
                 <Routes>
@@ -53,7 +55,8 @@ function App() {
                 </Routes>
                 <Toaster />
               </div>
-            </FavoritesProvider>
+              </FavoritesProvider>
+            </MaintenanceProvider>
           </BuilderProvider>
         </AdminProvider>
       </AuthProvider>

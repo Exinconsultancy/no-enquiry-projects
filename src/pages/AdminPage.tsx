@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useNavigate } from "react-router-dom";
 import AdminPropertyControls from "@/components/AdminPropertyControls";
+import MaintenanceControls from "@/components/MaintenanceControls";
 
 const AdminPage = () => {
   const { user, profile } = useAuth();
@@ -353,6 +354,9 @@ const AdminPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Maintenance Controls */}
+        <MaintenanceControls />
 
         {/* Properties List */}
         <Card>

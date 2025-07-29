@@ -7,14 +7,22 @@ import PropertyCard from "@/components/PropertyCard";
 import PropertyFilterContainer from "@/components/PropertyFilterContainer";
 import AdminFAB from "@/components/AdminFAB";
 import { useAdmin } from "@/contexts/AdminContext";
+import { useMaintenance } from "@/contexts/MaintenanceContext";
+import MaintenancePage from "@/components/MaintenancePage";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionService } from "@/services/subscriptionService";
 
 const PropertiesPage = () => {
   const { user } = useAuth();
   const { getPropertiesByCategory } = useAdmin();
+  const { isPageInMaintenance, maintenanceMode } = useMaintenance();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check if properties page is in maintenance mode
+  if (isPageInMaintenance('properties')) {
+    return <MaintenancePage pageName="Properties" customMessage={maintenanceMode.globalMessage} />;
+  }
   const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("property"));
 
   const stats = [

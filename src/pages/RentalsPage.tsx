@@ -11,13 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import PropertyCard from "@/components/PropertyCard";
+import { useMaintenance } from "@/contexts/MaintenanceContext";
+import MaintenancePage from "@/components/MaintenancePage";
 import { SubscriptionService } from "@/services/subscriptionService";
 
 const RentalsPage = () => {
   const { user } = useAuth();
   const { getPropertiesByCategory } = useAdmin();
+  const { isPageInMaintenance, maintenanceMode } = useMaintenance();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check if rentals page is in maintenance mode
+  if (isPageInMaintenance('rentals')) {
+    return <MaintenancePage pageName="Rentals" customMessage={maintenanceMode.globalMessage} />;
+  }
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [priceFilter, setPriceFilter] = useState("");
