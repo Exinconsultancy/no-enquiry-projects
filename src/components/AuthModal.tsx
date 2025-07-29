@@ -82,7 +82,9 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         description: "Please check your email for instructions to reset your password.",
       });
       setForgotPasswordEmail("");
+      setShowForgotPassword(false); // Go back to login form
     } catch (error: any) {
+      console.error('Reset password error:', error);
       toast({
         title: "Reset Failed",
         description: error.message || "Failed to send reset email",

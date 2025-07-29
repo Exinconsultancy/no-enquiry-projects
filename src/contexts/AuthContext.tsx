@@ -95,7 +95,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) throw error;
+    if (error) {
+      // Handle specific rate limit error
+      if (error.message === "email rate limit exceeded") {
+        throw new Error("Too many reset emails sent. Please wait a few minutes before trying again.");
+      }
+      throw error;
+    }
   };
 
   const logout = async () => {
