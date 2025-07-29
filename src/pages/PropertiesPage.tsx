@@ -25,12 +25,7 @@ const PropertiesPage = () => {
   }
   const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("property"));
 
-  const stats = [
-    { title: "Total Properties", value: filteredProperties.length },
-    { title: "Available Now", value: filteredProperties.filter(p => p.status === "active").length },
-    { title: "Cities Covered", value: new Set(filteredProperties.map(p => p.location.split(",")[1]?.trim())).size },
-    { title: "Property Types", value: new Set(filteredProperties.map(p => p.type)).size }
-  ];
+  
 
   const handleViewDetails = (property: any) => {
     if (!user) {
@@ -77,21 +72,7 @@ const PropertiesPage = () => {
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filters */}

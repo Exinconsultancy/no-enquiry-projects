@@ -246,7 +246,7 @@ const HomePage = () => {
               <Button size="lg" variant="secondary" className="text-lg px-8 py-6" onClick={() => navigate('/properties')}>
                 Explore Properties Now
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => setShowAuthModal(true)}>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-black bg-black text-white hover:bg-gray-800 hover:border-gray-800" onClick={() => setShowAuthModal(true)}>
                 Get Started Free
               </Button>
             </div>

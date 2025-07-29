@@ -16,6 +16,7 @@ import PropertyDetailPage from "./pages/PropertyDetailPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { MaintenanceProvider } from "@/contexts/MaintenanceContext";
 import AdminRouteGuard from "./components/AdminRouteGuard";
@@ -30,31 +31,34 @@ function App() {
           <BuilderProvider>
             <MaintenanceProvider>
               <FavoritesProvider>
-              <div className="min-h-screen bg-background">
+              <div className="min-h-screen bg-background flex flex-col">
                 <Navbar />
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/properties" element={<PropertiesPage />} />
-                  <Route path="/rentals" element={<RentalsPage />} />
-                  <Route path="/hostels" element={<HostelPage />} />
-                  <Route path="/pricing" element={<PricingPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/admin" element={
-                    <AdminRouteGuard>
-                      <AdminPage />
-                    </AdminRouteGuard>
-                  } />
-                  <Route path="/builder-dashboard" element={
-                    <BuilderRouteGuard>
-                      <BuilderDashboard />
-                    </BuilderRouteGuard>
-                  } />
-                  <Route path="/property/:id" element={<PropertyDetailPage />} />
-                  <Route path="/rental/:id" element={<PropertyDetailPage />} />
-                  <Route path="/hostel/:id" element={<PropertyDetailPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <main className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/properties" element={<PropertiesPage />} />
+                    <Route path="/rentals" element={<RentalsPage />} />
+                    <Route path="/hostels" element={<HostelPage />} />
+                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/admin" element={
+                      <AdminRouteGuard>
+                        <AdminPage />
+                      </AdminRouteGuard>
+                    } />
+                    <Route path="/builder-dashboard" element={
+                      <BuilderRouteGuard>
+                        <BuilderDashboard />
+                      </BuilderRouteGuard>
+                    } />
+                    <Route path="/property/:id" element={<PropertyDetailPage />} />
+                    <Route path="/rental/:id" element={<PropertyDetailPage />} />
+                    <Route path="/hostel/:id" element={<PropertyDetailPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
                 <Toaster />
               </div>
               </FavoritesProvider>
