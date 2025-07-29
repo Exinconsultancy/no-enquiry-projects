@@ -15,12 +15,13 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
-  const { login, register } = useAuth();
+  const { login, register, resetPassword } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ email: "", password: "", name: "" });
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +70,28 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      await resetPassword(forgotPasswordEmail);
+      toast({
+        title: "Password Reset Email Sent! 📧",
+        description: "Please check your email for instructions to reset your password.",
+      });
+      setForgotPasswordEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Reset Failed",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -80,9 +103,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         </DialogHeader>
         
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
+            <TabsTrigger value="forgot">Forgot Password</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login" className="space-y-4">
@@ -200,6 +224,33 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   </>
                 ) : (
                   "Create Account"
+                )}
+              </Button>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="forgot" className="space-y-4">
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email">Email</Label>
+                <Input
+                  id="forgot-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending reset email...
+                  </>
+                ) : (
+                  "Send Reset Email"
                 )}
               </Button>
             </form>

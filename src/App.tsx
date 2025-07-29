@@ -13,6 +13,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import BuilderDashboard from "./pages/BuilderDashboard";
 import PropertyDetailPage from "./pages/PropertyDetailPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
@@ -51,6 +52,7 @@ function App() {
                   <Route path="/property/:id" element={<PropertyDetailPage />} />
                   <Route path="/rental/:id" element={<PropertyDetailPage />} />
                   <Route path="/hostel/:id" element={<PropertyDetailPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Toaster />
