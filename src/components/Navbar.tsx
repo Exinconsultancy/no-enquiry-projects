@@ -18,8 +18,12 @@ const Navbar = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-primary">
-                NoNo Broker
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="/logo.svg" 
+                  alt="NoNo Broker" 
+                  className="h-10 w-10"
+                />
               </Link>
             </div>
 
