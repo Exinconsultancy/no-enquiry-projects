@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const register = async (email: string, password: string, name: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `https://nonobroker.com/`;
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.log('Requesting password reset for:', email);
       
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `https://nonobroker.com/reset-password`,
       });
       
       if (error) {
