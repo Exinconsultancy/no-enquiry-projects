@@ -52,8 +52,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     try {
       await register(registerData.email, registerData.password, registerData.name);
       toast({
-        title: "Registration Successful",
-        description: "Please check your email to confirm your account before logging in.",
+        title: "Registration Successful! 📧",
+        description: "Please check your email and click the verification link before logging in. Check your spam folder if you don't see it.",
       });
       onClose();
       onSuccess?.();
