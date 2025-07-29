@@ -23,6 +23,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [registerData, setRegisterData] = useState({ email: "", password: "", name: "" });
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,21 +74,36 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!forgotPasswordEmail || !forgotPasswordEmail.includes('@')) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
       await resetPassword(forgotPasswordEmail);
+      
+      setResetEmailSent(true);
       toast({
-        title: "Password Reset Email Sent! 📧",
-        description: "Please check your email for instructions to reset your password.",
+        title: "Reset Email Sent Successfully! 📧",
+        description: "Check your email inbox (and spam folder) for password reset instructions.",
       });
+      
+      // Clear the form
       setForgotPasswordEmail("");
-      setShowForgotPassword(false); // Go back to login form
+      
     } catch (error: any) {
-      console.error('Reset password error:', error);
+      console.error('Forgot password error:', error);
+      
       toast({
         title: "Reset Failed",
-        description: error.message || "Failed to send reset email",
+        description: error.message || "Unable to send reset email. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -175,41 +191,102 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="forgot-email">Email</Label>
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={forgotPasswordEmail}
-                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending reset email...
-                    </>
-                  ) : (
-                    "Send Reset Email"
-                  )}
-                </Button>
-                
-                <div className="text-center">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="h-auto p-0 text-sm text-muted-foreground hover:underline"
-                    onClick={() => setShowForgotPassword(false)}
-                  >
-                    Back to Login
-                  </Button>
-                </div>
-              </form>
+              <div className="space-y-4">
+                {!resetEmailSent ? (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="text-center space-y-2">
+                      <h3 className="text-lg font-semibold">Forgot your password?</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Enter your email address and we'll send you a link to reset your password.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email">Email Address</Label>
+                      <Input
+                        id="forgot-email"
+                        type="email"
+                        placeholder="Enter your email address"
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        required
+                        disabled={isLoading}
+                      />
+                    </div>
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading || !forgotPasswordEmail}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending Reset Email...
+                        </>
+                      ) : (
+                        "Send Reset Email"
+                      )}
+                    </Button>
+                    
+                    <div className="text-center">
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="h-auto p-0 text-sm text-muted-foreground hover:underline"
+                        onClick={() => {
+                          setShowForgotPassword(false);
+                          setForgotPasswordEmail("");
+                          setResetEmailSent(false);
+                        }}
+                        disabled={isLoading}
+                      >
+                        ← Back to Login
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold text-green-700">Email Sent Successfully!</h3>
+                      <p className="text-sm text-muted-foreground">
+                        We've sent a password reset link to your email address. 
+                        Click the link in the email to reset your password.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Don't see the email? Check your spam folder.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          setResetEmailSent(false);
+                          setShowForgotPassword(false);
+                          setForgotPasswordEmail("");
+                        }}
+                      >
+                        Back to Login
+                      </Button>
+                      
+                      <Button
+                        variant="link"
+                        className="w-full h-auto p-0 text-sm"
+                        onClick={() => {
+                          setResetEmailSent(false);
+                          setForgotPasswordEmail("");
+                        }}
+                      >
+                        Send to different email
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </TabsContent>
           
