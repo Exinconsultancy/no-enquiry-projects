@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,17 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState(0);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (resetCooldown > 0) {
+      const timer = setInterval(() => {
+        setResetCooldown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [resetCooldown]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +101,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       await resetPassword(forgotPasswordEmail);
       
       setResetEmailSent(true);
+      setResetCooldown(60); // Start 60 second cooldown
+      
       toast({
         title: "Reset Email Sent Successfully! 📧",
         description: "Check your email inbox (and spam folder) for password reset instructions.",
@@ -101,11 +114,21 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     } catch (error: any) {
       console.error('Forgot password error:', error);
       
-      toast({
-        title: "Reset Failed",
-        description: error.message || "Unable to send reset email. Please try again.",
-        variant: "destructive",
-      });
+      // Handle rate limiting specifically
+      if (error.message.includes('14 seconds') || error.message.includes('60 seconds')) {
+        setResetCooldown(60);
+        toast({
+          title: "Too Many Requests",
+          description: "Please wait 60 seconds before requesting another password reset.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Reset Failed",
+          description: error.message || "Unable to send reset email. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -214,12 +237,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                       />
                     </div>
                     
-                    <Button type="submit" className="w-full" disabled={isLoading || !forgotPasswordEmail}>
+                    <Button type="submit" className="w-full" disabled={isLoading || !forgotPasswordEmail || resetCooldown > 0}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Sending Reset Email...
                         </>
+                      ) : resetCooldown > 0 ? (
+                        `Wait ${resetCooldown}s before requesting again`
                       ) : (
                         "Send Reset Email"
                       )}
