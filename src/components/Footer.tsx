@@ -14,7 +14,7 @@ const Footer = () => {
               className="h-8 w-8"
             />
             <div className="text-sm text-muted-foreground">
-              © 2024 NoNo Broker™. All rights reserved.
+              © 2025 NoNo Broker™. All rights reserved.
             </div>
           </div>
 
