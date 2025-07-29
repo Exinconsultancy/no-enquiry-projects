@@ -53,11 +53,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       await register(registerData.email, registerData.password, registerData.name);
       toast({
         title: "Registration Successful",
-        description: "Account created! You can now log in.",
+        description: "Please check your email to confirm your account before logging in.",
       });
       onClose();
       onSuccess?.();
     } catch (error: any) {
+      console.error('Registration error:', error);
       toast({
         title: "Registration Failed",
         description: error.message || "Failed to create account",
