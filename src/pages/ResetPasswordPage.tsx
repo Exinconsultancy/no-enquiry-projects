@@ -21,50 +21,30 @@ const ResetPasswordPage = () => {
   const [resetComplete, setResetComplete] = useState(false);
 
   useEffect(() => {
-    const checkResetLink = async () => {
+    const checkAuthSession = async () => {
       try {
-        // Check if this is a password reset link
-        const accessToken = searchParams.get('access_token');
-        const refreshToken = searchParams.get('refresh_token');
-        const type = searchParams.get('type');
+        // Get current session (Supabase handles the token automatically from the URL)
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        console.log('Reset link params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+        console.log('Current session:', { hasSession: !!session, error });
         
-        // Check for hash-based parameters (Supabase often uses hash)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hashAccessToken = hashParams.get('access_token');
-        const hashRefreshToken = hashParams.get('refresh_token');
-        const hashType = hashParams.get('type');
-        
-        const finalAccessToken = accessToken || hashAccessToken;
-        const finalRefreshToken = refreshToken || hashRefreshToken;
-        const finalType = type || hashType;
-        
-        console.log('Final params:', { finalAccessToken: !!finalAccessToken, finalRefreshToken: !!finalRefreshToken, finalType });
-        
-        if (!finalAccessToken || !finalRefreshToken || finalType !== 'recovery') {
-          throw new Error('Invalid reset link parameters');
-        }
-
-        // Set the session using the tokens
-        const { data, error } = await supabase.auth.setSession({
-          access_token: finalAccessToken,
-          refresh_token: finalRefreshToken
-        });
-
         if (error) {
           console.error('Session error:', error);
-          throw new Error(`Failed to verify reset link: ${error.message}`);
+          throw new Error(`Authentication error: ${error.message}`);
         }
 
-        console.log('Session set successfully:', data);
+        if (!session || !session.user) {
+          throw new Error('No valid session found. Please use a valid password reset link.');
+        }
+
+        console.log('Valid session found for password reset');
         setIsValidLink(true);
         
       } catch (error: any) {
-        console.error('Reset link validation error:', error);
+        console.error('Authentication check error:', error);
         toast({
-          title: "Invalid Reset Link",
-          description: "This password reset link is invalid, expired, or has already been used. Please request a new password reset.",
+          title: "Authentication Required",
+          description: "Please use a valid password reset link from your email to access this page.",
           variant: "destructive",
         });
         
@@ -77,8 +57,8 @@ const ResetPasswordPage = () => {
       }
     };
 
-    checkResetLink();
-  }, [searchParams, navigate, toast]);
+    checkAuthSession();
+  }, [navigate, toast]);
 
   const validatePassword = (pwd: string) => {
     if (pwd.length < 8) {
