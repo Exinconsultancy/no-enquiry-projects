@@ -25,7 +25,7 @@ interface Property {
 
 interface AdminPropertyMediaControlsProps {
   property: Property;
-  onUpdate?: () => void;
+  onUpdate?: (images: string[]) => void;
 }
 
 const AdminPropertyMediaControls = ({ property, onUpdate }: AdminPropertyMediaControlsProps) => {
@@ -126,7 +126,8 @@ const AdminPropertyMediaControls = ({ property, onUpdate }: AdminPropertyMediaCo
 
   const handleSaveChanges = () => {
     // In a real app, this would save to the backend
-    onUpdate?.();
+    const validImages = images.filter(img => img !== "/placeholder.svg");
+    onUpdate?.(validImages.length > 0 ? validImages : [property.image || "/placeholder.svg"]);
     setIsMediaOpen(false);
     
     toast({

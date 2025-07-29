@@ -25,6 +25,9 @@ const PropertyDetailPage = () => {
   const property = getPropertyById(id || "");
 
   const [contactDetailsVisible, setContactDetailsVisible] = React.useState(false);
+  const [propertyImages, setPropertyImages] = React.useState<string[]>([
+    property?.image || "/placeholder.svg"
+  ]);
 
   const handleViewDetails = () => {
     if (!user) {
@@ -185,32 +188,64 @@ const PropertyDetailPage = () => {
             <Card>
               <CardContent className="p-0">
                 <div className="relative">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <img
-                      src={property.image || "/placeholder.svg"}
-                      alt={property.title}
-                      className="w-full h-96 md:h-80 object-cover rounded-lg"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <img src="/placeholder.svg" alt="Interior" className="w-full h-39 object-cover rounded-lg" />
-                      <img src="/placeholder.svg" alt="Bedroom" className="w-full h-39 object-cover rounded-lg" />
-                      <img src="/placeholder.svg" alt="Kitchen" className="w-full h-39 object-cover rounded-lg" />
-                      <div className="relative">
-                        <img src="/placeholder.svg" alt="Bathroom" className="w-full h-39 object-cover rounded-lg" />
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
-                          <div className="text-white text-center">
-                            <Camera className="h-6 w-6 mx-auto mb-1" />
-                            <span className="text-sm">+12 Photos</span>
-                          </div>
+                  {propertyImages.length === 1 ? (
+                    // Single image layout
+                    <div className="relative">
+                      <img
+                        src={propertyImages[0]}
+                        alt={property.title}
+                        className="w-full h-96 object-cover rounded-lg"
+                      />
+                      {profile?.role === 'admin' && (
+                        <div className="absolute top-4 right-4">
+                          <AdminPropertyMediaControls 
+                            property={property} 
+                            onUpdate={(images) => setPropertyImages(images)}
+                          />
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                  
-                  {/* Admin Media Controls */}
-                  {profile?.role === 'admin' && (
-                    <div className="absolute top-4 right-4">
-                      <AdminPropertyMediaControls property={property} />
+                  ) : (
+                    // Multiple images layout
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {/* Main image */}
+                      <img
+                        src={propertyImages[0]}
+                        alt={property.title}
+                        className="w-full h-96 md:h-80 object-cover rounded-lg"
+                      />
+                      
+                      {/* Additional images grid */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {propertyImages.slice(1, 5).map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Property ${index + 2}`}
+                            className="w-full h-39 object-cover rounded-lg"
+                          />
+                        ))}
+                        
+                        {/* Fill remaining slots with placeholders if needed */}
+                        {Array.from({ length: Math.max(0, 4 - propertyImages.slice(1).length) }).map((_, index) => (
+                          <div
+                            key={`placeholder-${index}`}
+                            className="w-full h-39 bg-muted rounded-lg flex items-center justify-center"
+                          >
+                            <Camera className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Admin Media Controls */}
+                      {profile?.role === 'admin' && (
+                        <div className="absolute top-4 right-4">
+                          <AdminPropertyMediaControls 
+                            property={property} 
+                            onUpdate={(images) => setPropertyImages(images)}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
