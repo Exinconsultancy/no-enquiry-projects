@@ -93,6 +93,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const resetPassword = async (email: string): Promise<void> => {
     try {
+      console.log('Requesting password reset for:', email);
+      
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -101,7 +103,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error('Reset password error:', error);
         
         // Handle specific error cases
-        if (error.message.includes('rate limit')) {
+        if (error.message.includes('rate limit') || error.message.includes('429')) {
           throw new Error("Too many password reset attempts. Please wait 60 seconds before trying again.");
         }
         
@@ -113,8 +115,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           throw new Error("No account found with this email address.");
         }
         
-        throw new Error("Unable to send reset email. Please try again later.");
+        if (error.message.includes('email rate limit exceeded')) {
+          throw new Error("Email rate limit exceeded. Please wait a few minutes before requesting another reset link.");
+        }
+        
+        throw new Error(`Unable to send reset email: ${error.message}`);
       }
+      
+      console.log('Password reset email sent successfully:', data);
       
       // Function returns void, success is indicated by no error thrown
     } catch (error: any) {
