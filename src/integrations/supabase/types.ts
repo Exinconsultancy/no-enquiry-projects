@@ -50,6 +50,66 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          amenities: string[] | null
+          area: string | null
+          bathrooms: string | null
+          bedrooms: string | null
+          brochures: string[] | null
+          builder: string
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          location: string
+          price: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amenities?: string[] | null
+          area?: string | null
+          bathrooms?: string | null
+          bedrooms?: string | null
+          brochures?: string[] | null
+          builder: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location: string
+          price: string
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amenities?: string[] | null
+          area?: string | null
+          bathrooms?: string | null
+          bedrooms?: string | null
+          brochures?: string[] | null
+          builder?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string
+          price?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
