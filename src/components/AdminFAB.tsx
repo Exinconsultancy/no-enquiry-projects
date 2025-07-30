@@ -8,8 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminFABProps {
   category: "property" | "rental" | "hostel";
@@ -18,7 +18,6 @@ interface AdminFABProps {
 const AdminFAB = ({ category }: AdminFABProps) => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
-  const { addProperty } = useAdmin();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -61,7 +60,7 @@ const AdminFAB = ({ category }: AdminFABProps) => {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title || !formData.location || !formData.price) {
@@ -74,10 +73,28 @@ const AdminFAB = ({ category }: AdminFABProps) => {
     }
 
     try {
-      addProperty({
-        ...formData,
-        category
-      });
+      const { error } = await supabase
+        .from('properties')
+        .insert([{
+          title: formData.title,
+          location: formData.location,
+          price: formData.price,
+          type: formData.type,
+          builder: formData.builder,
+          description: formData.description,
+          status: formData.status,
+          category: category,
+          amenities: [],
+          images: [],
+          brochures: [],
+          bedrooms: category === 'hostel' ? '1' : '2-3 BHK',
+          bathrooms: category === 'hostel' ? '1' : '2-3 Bath',
+          area: category === 'hostel' ? '100-200 sq ft' : '1200-1800 sq ft'
+        }]);
+
+      if (error) {
+        throw error;
+      }
       
       setFormData({
         title: "",
@@ -95,6 +112,7 @@ const AdminFAB = ({ category }: AdminFABProps) => {
         description: `${category.charAt(0).toUpperCase() + category.slice(1)} added successfully!`,
       });
     } catch (error) {
+      console.error('Error adding property:', error);
       toast({
         title: "Error",
         description: `Failed to add ${category}.`,

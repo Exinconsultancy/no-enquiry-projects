@@ -7,23 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdmin } from "@/contexts/AdminContext";
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { supabase } from "@/integrations/supabase/client";
+import type { Property } from "@/hooks/useProperties";
 
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  type: string;
-  builder: string;
-  status: "active" | "pending" | "sold";
-  createdDate: string;
-  image?: string;
-  description?: string;
-  category: "property" | "rental" | "hostel";
-}
 
 interface AdminPropertyControlsProps {
   property: Property;
@@ -34,7 +22,6 @@ interface AdminPropertyControlsProps {
 const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyControlsProps) => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
-  const { updateProperty, deleteProperty } = useAdmin();
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -51,7 +38,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     return null;
   }
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!editForm.title || !editForm.location || !editForm.price) {
@@ -64,7 +51,23 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     }
 
     try {
-      updateProperty(property.id, editForm);
+      const { error } = await supabase
+        .from('properties')
+        .update({
+          title: editForm.title,
+          location: editForm.location,
+          price: editForm.price,
+          type: editForm.type,
+          builder: editForm.builder,
+          description: editForm.description,
+          status: editForm.status
+        })
+        .eq('id', property.id);
+
+      if (error) {
+        throw error;
+      }
+
       setIsEditOpen(false);
       onUpdate?.();
       
@@ -73,6 +76,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property updated successfully!",
       });
     } catch (error) {
+      console.error('Error updating property:', error);
       toast({
         title: "Error",
         description: "Failed to update property.",
@@ -81,9 +85,17 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteProperty(property.id);
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', property.id);
+
+      if (error) {
+        throw error;
+      }
+
       onDelete?.();
       
       toast({
@@ -91,6 +103,7 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
         description: "Property deleted successfully!",
       });
     } catch (error) {
+      console.error('Error deleting property:', error);
       toast({
         title: "Error",
         description: "Failed to delete property.",

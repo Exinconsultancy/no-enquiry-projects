@@ -7,6 +7,7 @@ import { MapPin, Bed, Bath, Square, ArrowRight, Home, Building, UserCheck, Wifi,
 import { useNavigate } from "react-router-dom";
 import { useProperties, Property } from "@/hooks/useProperties";
 import { useState } from "react";
+import AdminFAB from "./AdminFAB";
 
 const FeaturedProperties = () => {
   const navigate = useNavigate();
@@ -253,6 +254,9 @@ const FeaturedProperties = () => {
           })}
         </Tabs>
       </div>
+      
+      {/* Admin FAB for adding properties */}
+      <AdminFAB category={activeTab as "property" | "rental" | "hostel"} />
     </section>
   );
 };

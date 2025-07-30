@@ -8,20 +8,7 @@ import { Upload, Edit, X, Image, FileText, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  type: string;
-  builder: string;
-  status: "active" | "pending" | "sold";
-  createdDate: string;
-  image?: string;
-  description?: string;
-  category: "property" | "rental" | "hostel";
-}
+import { Property } from "@/hooks/useProperties";
 
 interface AdminPropertyMediaControlsProps {
   property: Property;
@@ -34,10 +21,8 @@ const AdminPropertyMediaControls = ({ property, onUpdate }: AdminPropertyMediaCo
   const { toast } = useToast();
   const [isMediaOpen, setIsMediaOpen] = useState(false);
   const [images, setImages] = useState<string[]>([
-    property.image || "/placeholder.svg",
-    "/placeholder.svg",
-    "/placeholder.svg",
-    "/placeholder.svg"
+    ...property.images.slice(0, 4),
+    ...Array(Math.max(0, 4 - property.images.length)).fill("/placeholder.svg")
   ]);
   const [brochure, setBrochure] = useState<string | null>(null);
 
@@ -127,7 +112,7 @@ const AdminPropertyMediaControls = ({ property, onUpdate }: AdminPropertyMediaCo
   const handleSaveChanges = () => {
     // In a real app, this would save to the backend
     const validImages = images.filter(img => img !== "/placeholder.svg");
-    onUpdate?.(validImages.length > 0 ? validImages : [property.image || "/placeholder.svg"]);
+    onUpdate?.(validImages.length > 0 ? validImages : property.images);
     setIsMediaOpen(false);
     
     toast({

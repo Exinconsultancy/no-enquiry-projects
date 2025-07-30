@@ -11,28 +11,10 @@ import { useState } from "react";
 import AdminPropertyControls from "./AdminPropertyControls";
 import AdminPropertyMediaControls from "./AdminPropertyMediaControls";
 
+import { Property } from "@/hooks/useProperties";
+
 interface PropertyCardProps {
-  property: {
-    id: string;
-    title: string;
-    location: string;
-    price: string;
-    image: string;
-    bedrooms: number;
-    bathrooms: number;
-    area: string;
-    type: "apartment" | "villa" | "commercial";
-    amenities: string[];
-    builderContact: {
-      name: string;
-      phone: string;
-      email: string;
-    };
-    category: "property" | "rental" | "hostel";
-    status: "active" | "pending" | "sold";
-    builder: string;
-    createdDate: string;
-  };
+  property: Property;
   onViewDetails: (property: any) => void;
   onDownloadBrochure: (property: any) => void;
   user: any;
@@ -144,7 +126,7 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={handleCardClick}>
         <div className="relative">
           <img
-            src={property.image || "/placeholder.svg"}
+            src={property.images?.[0] || "/placeholder.svg"}
             alt={property.title}
             className="w-full h-48 object-cover"
           />
@@ -192,11 +174,11 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
           <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
             <div className="flex items-center space-x-1">
               <Home className="h-3 w-3" />
-              <span>{property.bedrooms} BHK</span>
+              <span>{property.bedrooms}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Bath className="h-3 w-3" />
-              <span>{property.bathrooms} Bath</span>
+              <span>{property.bathrooms}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Maximize className="h-3 w-3" />

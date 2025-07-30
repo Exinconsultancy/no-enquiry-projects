@@ -10,14 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Building2, Users, Calendar, Settings, Upload, X, Image, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdmin } from "@/contexts/AdminContext";
+import { useProperties } from "@/hooks/useProperties";
 import { useNavigate } from "react-router-dom";
 import AdminPropertyControls from "@/components/AdminPropertyControls";
 import MaintenanceControls from "@/components/MaintenanceControls";
 
 const AdminPage = () => {
   const { user, profile } = useAuth();
-  const { properties, addProperty } = useAdmin();
+  const { properties } = useProperties();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -72,7 +72,7 @@ const AdminPage = () => {
     );
   }
 
-  const handleAddProperty = (e: React.FormEvent) => {
+  const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newProperty.title || !newProperty.location || !newProperty.price) {
@@ -85,25 +85,12 @@ const AdminPage = () => {
     }
 
     try {
-      addProperty(newProperty);
-      setNewProperty({
-        title: "",
-        location: "",
-        price: "",
-        type: "Apartment",
-        builder: "",
-        description: "",
-        category: "property",
-        status: "active",
-        images: [],
-        brochure: ""
+      // Note: This should use AdminFAB component instead for consistency
+      toast({
+        title: "Info",
+        description: "Please use the floating add button on the main page to add properties.",
       });
       setShowAddForm(false);
-      
-      toast({
-        title: "Success",
-        description: "Property added successfully!",
-      });
     } catch (error) {
       toast({
         title: "Error",
