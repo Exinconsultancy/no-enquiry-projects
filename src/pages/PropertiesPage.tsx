@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilterContainer from "@/components/PropertyFilterContainer";
 import AdminFAB from "@/components/AdminFAB";
-import { useAdmin } from "@/contexts/AdminContext";
+import { useProperties } from "@/hooks/useProperties";
 import { useMaintenance } from "@/contexts/MaintenanceContext";
 import MaintenancePage from "@/components/MaintenancePage";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,7 @@ import { SubscriptionService } from "@/services/subscriptionService";
 
 const PropertiesPage = () => {
   const { user } = useAuth();
-  const { getPropertiesByCategory } = useAdmin();
+  const { getPropertiesByCategory } = useProperties();
   const { isPageInMaintenance, maintenanceMode } = useMaintenance();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -23,7 +23,8 @@ const PropertiesPage = () => {
   if (isPageInMaintenance('properties')) {
     return <MaintenancePage pageName="Properties" customMessage={maintenanceMode.globalMessage} />;
   }
-  const [filteredProperties, setFilteredProperties] = useState(getPropertiesByCategory("property"));
+  const properties = getPropertiesByCategory("property");
+  const [filteredProperties, setFilteredProperties] = useState(properties);
 
   
 
@@ -78,7 +79,7 @@ const PropertiesPage = () => {
           {/* Filters */}
           <div className="lg:col-span-1">
             <PropertyFilterContainer
-              properties={getPropertiesByCategory("property")}
+              properties={properties}
               onFilterChange={setFilteredProperties}
             />
           </div>
@@ -86,39 +87,15 @@ const PropertiesPage = () => {
           {/* Properties Grid */}
           <div className="lg:col-span-3">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProperties.map((property) => {
-                const propertyData = {
-                  id: property.id,
-                  title: property.title,
-                  location: property.location,
-                  price: property.price,
-                  image: property.image || "/placeholder.svg",
-                  bedrooms: property.type === "Villa" ? 4 : 3,
-                  bathrooms: property.type === "Villa" ? 3 : 2,
-                  area: property.type === "Villa" ? "2500 sq ft" : "1800 sq ft",
-                  type: property.type.toLowerCase() as "apartment" | "villa" | "commercial",
-                  amenities: ["Swimming Pool", "Gym", "24/7 Security", "Parking", "Garden", "Club House"],
-                  builderContact: {
-                    name: property.builder,
-                    phone: "+91 9876543210",
-                    email: "contact@builder.com"
-                  },
-                  category: property.category,
-                  status: property.status,
-                  builder: property.builder,
-                  createdDate: property.createdDate
-                };
-
-                return (
-                  <PropertyCard
-                    key={property.id}
-                    property={propertyData}
-                    onViewDetails={handleViewDetails}
-                    onDownloadBrochure={handleDownloadBrochure}
-                    user={user}
-                  />
-                );
-              })}
+              {filteredProperties.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onViewDetails={handleViewDetails}
+                  onDownloadBrochure={handleDownloadBrochure}
+                  user={user}
+                />
+              ))}
             </div>
 
             {/* Empty State */}

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, MapPin, Phone, Mail, Calendar, Home, Bath, Maximize, Lock, Star, Wifi, Car, Shield, TreePine, Dumbbell, Waves, Building, Users, Clock, Camera, FileText, Calculator } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdmin } from "@/contexts/AdminContext";
+import { useProperties } from "@/hooks/useProperties";
 import { SubscriptionService } from "@/services/subscriptionService";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 import AdminPropertyMediaControls from "@/components/AdminPropertyMediaControls";
@@ -19,14 +19,14 @@ const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { getPropertyById } = useAdmin();
+  const { getPropertyById } = useProperties();
   const { toast } = useToast();
 
   const property = getPropertyById(id || "");
 
   const [contactDetailsVisible, setContactDetailsVisible] = React.useState(false);
   const [propertyImages, setPropertyImages] = React.useState<string[]>([
-    property?.image || "/placeholder.svg"
+    property?.images?.[0] || "/placeholder.svg"
   ]);
 
   const handleViewDetails = () => {
@@ -331,7 +331,7 @@ const PropertyDetailPage = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Listed Date</span>
-                          <span>{property.createdDate}</span>
+                          <span>{new Date(property.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -443,7 +443,7 @@ const PropertyDetailPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Listed Date</span>
-                  <span>{property.createdDate}</span>
+                  <span>{new Date(property.created_at).toLocaleDateString()}</span>
                 </div>
               </CardContent>
             </Card>

@@ -1,20 +1,7 @@
 
 import { useState } from "react";
 import PropertyFilters from "./PropertyFilters";
-
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  type: string;
-  builder: string;
-  status: "active" | "pending" | "sold";
-  createdDate: string;
-  image?: string;
-  description?: string;
-  category: "property" | "rental" | "hostel";
-}
+import { Property } from "@/hooks/useProperties";
 
 interface PropertyFilterContainerProps {
   properties: Property[];
@@ -58,7 +45,7 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
     // Apply new project filter
     if (filters.newProject) {
       filtered = filtered.filter(property => 
-        new Date(property.createdDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        new Date(property.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       );
     }
 

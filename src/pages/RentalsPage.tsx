@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdmin } from "@/contexts/AdminContext";
+import { useProperties } from "@/hooks/useProperties";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { SubscriptionService } from "@/services/subscriptionService";
 
 const RentalsPage = () => {
   const { user } = useAuth();
-  const { getPropertiesByCategory } = useAdmin();
+  const { getPropertiesByCategory } = useProperties();
   const { isPageInMaintenance, maintenanceMode } = useMaintenance();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -156,39 +156,15 @@ const RentalsPage = () => {
 
         {/* Properties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRentals.map((rental) => {
-            const propertyData = {
-              id: rental.id,
-              title: rental.title,
-              location: rental.location,
-              price: rental.price,
-              image: rental.image || "/placeholder.svg",
-              bedrooms: rental.type === "Villa" ? 4 : 2,
-              bathrooms: rental.type === "Villa" ? 3 : 2,
-              area: rental.type === "Villa" ? "2500 sq ft" : "1200 sq ft",
-              type: rental.type as "apartment" | "villa" | "commercial",
-              amenities: ["Parking", "Security", "Maintenance", "Power Backup"],
-              builderContact: {
-                name: rental.builder,
-                phone: "+91 9876543210",
-                email: "contact@builder.com"
-              },
-              category: rental.category as "property" | "rental" | "hostel",
-              status: rental.status as "active" | "pending" | "sold",
-              builder: rental.builder,
-              createdDate: rental.createdDate
-            };
-
-            return (
-              <PropertyCard
-                key={rental.id}
-                property={propertyData}
-                onViewDetails={handleViewDetails}
-                onDownloadBrochure={handleDownloadBrochure}
-                user={user}
-              />
-            );
-          })}
+          {filteredRentals.map((rental) => (
+            <PropertyCard
+              key={rental.id}
+              property={rental}
+              onViewDetails={handleViewDetails}
+              onDownloadBrochure={handleDownloadBrochure}
+              user={user}
+            />
+          ))}
         </div>
 
         {filteredRentals.length === 0 && (

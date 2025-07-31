@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdmin } from "@/contexts/AdminContext";
+import { useProperties } from "@/hooks/useProperties";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { SubscriptionService } from "@/services/subscriptionService";
 
 const HostelPage = () => {
   const { user } = useAuth();
-  const { getPropertiesByCategory } = useAdmin();
+  const { getPropertiesByCategory } = useProperties();
   const { isPageInMaintenance, maintenanceMode } = useMaintenance();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -155,39 +155,15 @@ const HostelPage = () => {
 
         {/* Properties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredHostels.map((hostel) => {
-            const propertyData = {
-              id: hostel.id,
-              title: hostel.title,
-              location: hostel.location,
-              price: hostel.price,
-              image: hostel.image || "/placeholder.svg",
-              bedrooms: 1,
-              bathrooms: 1,
-              area: "200 sq ft",
-              type: hostel.type as "apartment" | "villa" | "commercial",
-              amenities: ["WiFi", "Meals", "Laundry", "Security"],
-              builderContact: {
-                name: hostel.builder,
-                phone: "+91 9876543210",
-                email: "contact@builder.com"
-              },
-              category: hostel.category as "property" | "rental" | "hostel",
-              status: hostel.status as "active" | "pending" | "sold",
-              builder: hostel.builder,
-              createdDate: hostel.createdDate
-            };
-
-            return (
-              <PropertyCard
-                key={hostel.id}
-                property={propertyData}
-                onViewDetails={handleViewDetails}
-                onDownloadBrochure={handleDownloadBrochure}
-                user={user}
-              />
-            );
-          })}
+          {filteredHostels.map((hostel) => (
+            <PropertyCard
+              key={hostel.id}
+              property={hostel}
+              onViewDetails={handleViewDetails}
+              onDownloadBrochure={handleDownloadBrochure}
+              user={user}
+            />
+          ))}
         </div>
 
         {filteredHostels.length === 0 && (
