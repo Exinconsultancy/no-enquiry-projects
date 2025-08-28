@@ -21,7 +21,7 @@ const Navbar = () => {
               <Link to="/" className="flex items-center">
                 <img 
                   src="/logo.svg" 
-                  alt="NoNo Broker" 
+                  alt="Sapno ka ghar" 
                   className="h-10 w-10"
                 />
               </Link>

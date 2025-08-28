@@ -10,11 +10,11 @@ const Footer = () => {
           <div className="flex items-center space-x-3">
             <img 
               src="/logo.svg" 
-              alt="NoNo Broker" 
+              alt="Sapno ka ghar" 
               className="h-8 w-8"
             />
             <div className="text-sm text-muted-foreground">
-              © 2025 NoNo Broker™. All rights reserved.
+              © 2025 Sapno ka ghar™. All rights reserved.
             </div>
           </div>
 
@@ -22,17 +22,17 @@ const Footer = () => {
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <Mail className="h-4 w-4" />
             <a 
-              href="mailto:support@nonobroker.com" 
+              href="mailto:support@sapnokaghar.com" 
               className="hover:text-primary transition-colors"
             >
-              support@nonobroker.com
+              support@sapnokaghar.com
             </a>
           </div>
 
           {/* Social Media Links */}
           <div className="flex items-center space-x-4">
             <a 
-              href="https://twitter.com/nonobroker" 
+              href="https://twitter.com/sapnokaghar" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors"
@@ -41,7 +41,7 @@ const Footer = () => {
               <Twitter className="h-5 w-5" />
             </a>
             <a 
-              href="https://facebook.com/nonobroker" 
+              href="https://facebook.com/sapnokaghar" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors"
@@ -50,7 +50,7 @@ const Footer = () => {
               <Facebook className="h-5 w-5" />
             </a>
             <a 
-              href="https://instagram.com/nonobroker" 
+              href="https://instagram.com/sapnokaghar" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors"
@@ -59,7 +59,7 @@ const Footer = () => {
               <Instagram className="h-5 w-5" />
             </a>
             <a 
-              href="https://linkedin.com/company/nonobroker" 
+              href="https://linkedin.com/company/sapnokaghar" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors"
