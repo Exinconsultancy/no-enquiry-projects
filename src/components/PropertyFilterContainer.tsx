@@ -14,7 +14,6 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
     propertyType: "all",
     priceRange: [1000000, 50000000] as [number, number],
     bedrooms: "any",
-    bathrooms: "any",
     amenities: [] as string[],
     area: [500, 5000] as [number, number],
     readyToMove: false,
@@ -30,11 +29,15 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
   const applyFilters = (filtersToApply: typeof filters) => {
     let filtered = properties;
 
-    // Apply location filter
+    // Apply location filter with intelligent matching
     if (filtersToApply.location) {
-      filtered = filtered.filter(property => 
-        property.location.toLowerCase().includes(filtersToApply.location.toLowerCase())
-      );
+      const searchTerm = filtersToApply.location.toLowerCase().trim();
+      filtered = filtered.filter(property => {
+        const propertyLocation = property.location.toLowerCase();
+        // Direct match or partial match
+        return propertyLocation.includes(searchTerm) || 
+               searchTerm.split(' ').some(term => propertyLocation.includes(term));
+      });
     }
 
     // Apply property type filter
@@ -74,13 +77,6 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
       });
     }
 
-    // Apply bathrooms filter
-    if (filtersToApply.bathrooms !== "any") {
-      filtered = filtered.filter(property => {
-        const bathrooms = property.bathrooms || "2";
-        return bathrooms.includes(filtersToApply.bathrooms);
-      });
-    }
 
     // Apply amenities filter
     if (filtersToApply.amenities.length > 0) {
@@ -127,7 +123,6 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
       propertyType: "all",
       priceRange: [1000000, 50000000] as [number, number],
       bedrooms: "any",
-      bathrooms: "any",
       amenities: [] as string[],
       area: [500, 5000] as [number, number],
       readyToMove: false,

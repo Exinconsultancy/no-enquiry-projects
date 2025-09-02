@@ -15,7 +15,6 @@ interface Filters {
   propertyType: string;
   priceRange: [number, number];
   bedrooms: string;
-  bathrooms: string;
   amenities: string[];
   area: [number, number];
   readyToMove: boolean;
@@ -120,44 +119,24 @@ const PropertyFilters = ({ filters, onFiltersChange, onSearch, onReset }: Proper
           </div>
         </div>
 
-        {/* Bedrooms & Bathrooms */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Bedrooms</Label>
-            <Select
-              value={filters.bedrooms}
-              onValueChange={(value) => onFiltersChange({ ...filters, bedrooms: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any</SelectItem>
-                <SelectItem value="1">1 BHK</SelectItem>
-                <SelectItem value="2">2 BHK</SelectItem>
-                <SelectItem value="3">3 BHK</SelectItem>
-                <SelectItem value="4">4+ BHK</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Bathrooms</Label>
-            <Select
-              value={filters.bathrooms}
-              onValueChange={(value) => onFiltersChange({ ...filters, bathrooms: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any</SelectItem>
-                <SelectItem value="1">1+</SelectItem>
-                <SelectItem value="2">2+</SelectItem>
-                <SelectItem value="3">3+</SelectItem>
-                <SelectItem value="4">4+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Bedrooms */}
+        <div className="space-y-2">
+          <Label>Bedrooms</Label>
+          <Select
+            value={filters.bedrooms}
+            onValueChange={(value) => onFiltersChange({ ...filters, bedrooms: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="1">1 BHK</SelectItem>
+              <SelectItem value="2">2 BHK</SelectItem>
+              <SelectItem value="3">3 BHK</SelectItem>
+              <SelectItem value="4">4+ BHK</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Quick Filters */}
