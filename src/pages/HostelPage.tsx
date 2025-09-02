@@ -39,8 +39,18 @@ const HostelPage = () => {
                            hostel.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLocation = !locationFilter || locationFilter === "all" || hostel.location.toLowerCase().includes(locationFilter.toLowerCase());
       const matchesType = !typeFilter || typeFilter === "all" || hostel.type.toLowerCase() === typeFilter.toLowerCase();
-      // Basic price filtering - in real app, you'd parse price ranges
-      const matchesPrice = !priceFilter || priceFilter === "all" || hostel.price.includes(priceFilter);
+      // Parse hostel price for filtering
+      const matchesPrice = !priceFilter || priceFilter === "all" || (() => {
+        const priceStr = hostel.price.replace(/[₹,\s]/g, '');
+        const priceValue = parseFloat(priceStr.replace('/month', '')) || 0;
+        
+        switch(priceFilter) {
+          case "12000": return priceValue <= 15000;
+          case "18000": return priceValue >= 15000 && priceValue <= 20000;
+          case "25000": return priceValue > 20000;
+          default: return true;
+        }
+      })();
       
       return matchesSearch && matchesLocation && matchesType && matchesPrice;
     });

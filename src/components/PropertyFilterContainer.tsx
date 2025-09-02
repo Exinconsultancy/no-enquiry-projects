@@ -46,14 +46,19 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
 
     // Apply price range filter
     filtered = filtered.filter(property => {
-      // Extract numeric value from price string (e.g., "₹2.5 Cr" -> 25000000)
+      // Extract numeric value from price string
       const priceStr = property.price.replace(/[₹,\s]/g, '');
       let priceValue = 0;
       
       if (priceStr.includes('Cr')) {
+        // Property prices like "₹2.5 Cr" -> 25000000
         priceValue = parseFloat(priceStr.replace('Cr', '')) * 10000000;
       } else if (priceStr.includes('L')) {
+        // Property prices like "₹50 L" -> 5000000
         priceValue = parseFloat(priceStr.replace('L', '')) * 100000;
+      } else if (priceStr.includes('/month')) {
+        // Rental/hostel prices like "₹45000/month" -> 45000 (convert to annual for comparison)
+        priceValue = parseFloat(priceStr.replace('/month', '')) * 12;
       } else {
         priceValue = parseFloat(priceStr) || 0;
       }

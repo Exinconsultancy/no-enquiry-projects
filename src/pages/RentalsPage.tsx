@@ -39,8 +39,18 @@ const RentalsPage = () => {
                            rental.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLocation = !locationFilter || locationFilter === "all" || rental.location.toLowerCase().includes(locationFilter.toLowerCase());
       const matchesType = !typeFilter || typeFilter === "all" || rental.type.toLowerCase() === typeFilter.toLowerCase();
-      // Basic price filtering - in real app, you'd parse price ranges
-      const matchesPrice = !priceFilter || priceFilter === "all" || rental.price.includes(priceFilter);
+      // Parse rental price for filtering
+      const matchesPrice = !priceFilter || priceFilter === "all" || (() => {
+        const priceStr = rental.price.replace(/[₹,\s]/g, '');
+        const priceValue = parseFloat(priceStr.replace('/month', '')) || 0;
+        
+        switch(priceFilter) {
+          case "30000": return priceValue <= 35000;
+          case "50000": return priceValue >= 35000 && priceValue <= 60000;
+          case "80000": return priceValue > 60000;
+          default: return true;
+        }
+      })();
       
       return matchesSearch && matchesLocation && matchesType && matchesPrice;
     });
