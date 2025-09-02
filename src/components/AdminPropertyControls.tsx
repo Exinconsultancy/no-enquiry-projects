@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, Trash2, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Edit, Trash2, Upload, X, Image as ImageIcon, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -35,7 +35,11 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     description: property.description || "",
     status: property.status,
     images: property.images || [],
-    brochures: property.brochures || []
+    brochures: property.brochures || [],
+    amenities: property.amenities ? property.amenities.join(', ') : "",
+    bedrooms: property.bedrooms || "2-3 BHK",
+    bathrooms: property.bathrooms || "2-3 Bath",
+    area: property.area || "1200-1800 sq ft"
   });
 
   if (!isAdmin) {
@@ -66,7 +70,11 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
           description: editForm.description,
           status: editForm.status,
           images: editForm.images,
-          brochures: editForm.brochures
+          brochures: editForm.brochures,
+          amenities: editForm.amenities.split(',').map(a => a.trim()).filter(a => a),
+          bedrooms: editForm.bedrooms,
+          bathrooms: editForm.bathrooms,
+          area: editForm.area
         })
         .eq('id', property.id);
 
@@ -142,6 +150,54 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
     setEditForm(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleBrochureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `property-brochures/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('property-media')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('property-media')
+          .getPublicUrl(filePath);
+
+        setEditForm(prev => ({
+          ...prev,
+          brochures: [...prev.brochures, data.publicUrl]
+        }));
+        
+        toast({
+          title: "Brochure Uploaded",
+          description: "Property brochure uploaded successfully.",
+        });
+      } catch (error) {
+        console.error('Error uploading brochure:', error);
+        toast({
+          title: "Upload Error",
+          description: "Failed to upload brochure. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const removeBrochure = (index: number) => {
+    setEditForm(prev => ({
+      ...prev,
+      brochures: prev.brochures.filter((_, i) => i !== index)
     }));
   };
 
@@ -245,6 +301,38 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
                 </Select>
               </div>
             </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-bedrooms">Bedrooms</Label>
+                <Input
+                  id="edit-bedrooms"
+                  value={editForm.bedrooms}
+                  onChange={(e) => setEditForm({ ...editForm, bedrooms: e.target.value })}
+                  placeholder="2-3 BHK"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-bathrooms">Bathrooms</Label>
+                <Input
+                  id="edit-bathrooms"
+                  value={editForm.bathrooms}
+                  onChange={(e) => setEditForm({ ...editForm, bathrooms: e.target.value })}
+                  placeholder="2-3 Bath"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-area">Area</Label>
+                <Input
+                  id="edit-area"
+                  value={editForm.area}
+                  onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                  placeholder="1200-1800 sq ft"
+                />
+              </div>
+            </div>
             
             <div className="space-y-2">
               <Label htmlFor="edit-builder">Builder/Provider</Label>
@@ -269,6 +357,20 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
               </Select>
             </div>
             
+            <div className="space-y-2">
+              <Label htmlFor="edit-amenities">Amenities</Label>
+              <Textarea
+                id="edit-amenities"
+                value={editForm.amenities}
+                onChange={(e) => setEditForm({ ...editForm, amenities: e.target.value })}
+                rows={3}
+                placeholder="Swimming Pool, Gymnasium, Security, Parking, Garden (comma separated)"
+              />
+              <p className="text-sm text-muted-foreground">
+                Enter amenities separated by commas
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
@@ -310,6 +412,45 @@ const AdminPropertyControls = ({ property, onUpdate, onDelete }: AdminPropertyCo
                           >
                             <X className="h-3 w-3" />
                           </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Property Brochures Management */}
+            <div className="space-y-4">
+              <Label className="text-base font-semibold">Property Brochures</Label>
+              <div className="space-y-4">
+                <Input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleBrochureUpload}
+                  disabled={isUploading}
+                  className="w-full"
+                />
+                
+                {editForm.brochures.length > 0 && (
+                  <div className="space-y-2">
+                    {editForm.brochures.map((brochure, index) => (
+                      <Card key={index} className="relative">
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="h-5 w-5 text-muted-foreground" />
+                              <span className="text-sm">Brochure {index + 1}</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-6 w-6 p-0"
+                              onClick={() => removeBrochure(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
