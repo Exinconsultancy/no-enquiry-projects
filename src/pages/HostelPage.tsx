@@ -109,7 +109,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
+                <SelectItem value="">All Locations</SelectItem>
                 <SelectItem value="mumbai">Mumbai</SelectItem>
                 <SelectItem value="bangalore">Bangalore</SelectItem>
                 <SelectItem value="pune">Pune</SelectItem>
@@ -122,7 +122,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="">All Types</SelectItem>
                 <SelectItem value="hostel">Hostel</SelectItem>
                 <SelectItem value="pg">PG</SelectItem>
               </SelectContent>
@@ -133,7 +133,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Prices</SelectItem>
+                <SelectItem value="">All Prices</SelectItem>
                 <SelectItem value="8000">Under ₹10,000</SelectItem>
                 <SelectItem value="12000">₹10,000 - ₹15,000</SelectItem>
                 <SelectItem value="15000">Above ₹15,000</SelectItem>

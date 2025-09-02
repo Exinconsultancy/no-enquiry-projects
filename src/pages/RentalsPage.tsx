@@ -109,7 +109,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
+                <SelectItem value="">All Locations</SelectItem>
                 <SelectItem value="mumbai">Mumbai</SelectItem>
                 <SelectItem value="bangalore">Bangalore</SelectItem>
                 <SelectItem value="pune">Pune</SelectItem>
@@ -122,7 +122,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="">All Types</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="villa">Villa</SelectItem>
                 <SelectItem value="commercial">Commercial</SelectItem>
@@ -134,7 +134,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Prices</SelectItem>
+                <SelectItem value="">All Prices</SelectItem>
                 <SelectItem value="25000">Under ₹30,000</SelectItem>
                 <SelectItem value="35000">₹30,000 - ₹40,000</SelectItem>
                 <SelectItem value="45000">Above ₹40,000</SelectItem>
