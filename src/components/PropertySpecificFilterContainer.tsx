@@ -46,10 +46,25 @@ const PropertySpecificFilterContainer = ({ properties, onFilterChange }: Propert
 
     // Apply property type filter
     if (filtersToApply.propertyType && filtersToApply.propertyType !== "all") {
+      console.log('Filtering by property type:', filtersToApply.propertyType);
       filtered = filtered.filter(property => {
         const propertyType = property.type.toLowerCase();
         const filterType = filtersToApply.propertyType.toLowerCase();
-        return propertyType.includes(filterType) || filterType.includes(propertyType);
+        console.log('Comparing:', { propertyType, filterType, property: property.title });
+        
+        // More flexible matching for property types
+        const matches = propertyType.includes(filterType) || 
+                       filterType.includes(propertyType) ||
+                       // Handle common variations
+                       (filterType === 'apartment' && (propertyType.includes('flat') || propertyType.includes('bhk'))) ||
+                       (filterType === 'villa' && propertyType.includes('villa')) ||
+                       (filterType === 'duplex' && propertyType.includes('duplex')) ||
+                       (filterType === 'penthouse' && propertyType.includes('penthouse')) ||
+                       (filterType === 'commercial' && propertyType.includes('commercial')) ||
+                       (filterType === 'row house' && (propertyType.includes('row') || propertyType.includes('townhouse')));
+        
+        console.log('Match result:', matches);
+        return matches;
       });
       console.log('After type filter:', filtered.length);
     }
