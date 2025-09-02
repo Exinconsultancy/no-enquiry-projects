@@ -1,6 +1,4 @@
 
-import { Buffer } from 'buffer';
-
 // Secure password hashing using PBKDF2 (Web Crypto API compatible)
 export async function hashPassword(password: string, salt?: Uint8Array): Promise<{ hash: string; salt: string }> {
   const encoder = new TextEncoder();
