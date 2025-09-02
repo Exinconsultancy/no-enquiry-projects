@@ -33,15 +33,13 @@ const PricingPage = () => {
   // Check subscription status on component mount and when user changes
   useEffect(() => {
     if (user) {
-      // checkSubscriptionStatus(); // COMMENTED OUT FOR TESTING
+      checkSubscriptionStatus();
     }
   }, [user]);
 
   const checkSubscriptionStatus = async () => {
     if (!user) return;
     
-    // COMMENTED OUT STRIPE FUNCTIONALITY FOR TESTING
-    /*
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
@@ -54,7 +52,6 @@ const PricingPage = () => {
     } catch (error) {
       console.error('Error checking subscription:', error);
     }
-    */
   };
 
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([
@@ -145,8 +142,6 @@ const PricingPage = () => {
 
     setIsLoading(true);
     
-    // COMMENTED OUT STRIPE FUNCTIONALITY FOR TESTING
-    /*
     try {
       // Get price amount from plan
       const priceAmount = parseInt(plan.price.replace('₹', '').replace(',', ''));
@@ -181,14 +176,6 @@ const PricingPage = () => {
     } finally {
       setIsLoading(false);
     }
-    */
-
-    // TEST MODE: Show success message instead of actual payment
-    toast({
-      title: "Test Mode",
-      description: `Selected ${plan.name} plan. Stripe is disabled for testing.`,
-    });
-    setIsLoading(false);
   };
   
   const handleBuilderSubscription = async () => {
@@ -199,8 +186,6 @@ const PricingPage = () => {
 
     setIsBuilderLoading(true);
     
-    // COMMENTED OUT STRIPE FUNCTIONALITY FOR TESTING
-    /*
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -232,22 +217,14 @@ const PricingPage = () => {
     } finally {
       setIsBuilderLoading(false);
     }
-    */
-
-    // TEST MODE: Show success message instead of actual payment
-    toast({
-      title: "Test Mode",
-      description: "Selected Builder plan. Stripe is disabled for testing.",
-    });
-    setIsBuilderLoading(false);
   };
 
   // Add refresh subscription button
   const handleRefreshSubscription = async () => {
-    // await checkSubscriptionStatus(); // COMMENTED OUT FOR TESTING
+    await checkSubscriptionStatus();
     toast({
-      title: "Test Mode",
-      description: "Subscription refresh is disabled for testing.",
+      title: "Subscription Status Updated",
+      description: "Your subscription status has been refreshed.",
     });
   };
 
