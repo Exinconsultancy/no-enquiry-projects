@@ -27,9 +27,9 @@ const RentalsPage = () => {
     return <MaintenancePage pageName="Rentals" customMessage={maintenanceMode.globalMessage} />;
   }
   const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [priceFilter, setPriceFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const rentals = getPropertiesByCategory("rental");
 
@@ -37,10 +37,10 @@ const RentalsPage = () => {
     return rentals.filter(rental => {
       const matchesSearch = rental.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            rental.location.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesLocation = !locationFilter || rental.location.toLowerCase().includes(locationFilter.toLowerCase());
-      const matchesType = !typeFilter || rental.type.toLowerCase() === typeFilter.toLowerCase();
+      const matchesLocation = !locationFilter || locationFilter === "all" || rental.location.toLowerCase().includes(locationFilter.toLowerCase());
+      const matchesType = !typeFilter || typeFilter === "all" || rental.type.toLowerCase() === typeFilter.toLowerCase();
       // Basic price filtering - in real app, you'd parse price ranges
-      const matchesPrice = !priceFilter || rental.price.includes(priceFilter);
+      const matchesPrice = !priceFilter || priceFilter === "all" || rental.price.includes(priceFilter);
       
       return matchesSearch && matchesLocation && matchesType && matchesPrice;
     });
@@ -109,7 +109,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="mumbai">Mumbai</SelectItem>
                 <SelectItem value="bangalore">Bangalore</SelectItem>
                 <SelectItem value="pune">Pune</SelectItem>
@@ -122,7 +122,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="villa">Villa</SelectItem>
                 <SelectItem value="commercial">Commercial</SelectItem>
@@ -134,7 +134,7 @@ const RentalsPage = () => {
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Prices</SelectItem>
+                <SelectItem value="all">All Prices</SelectItem>
                 <SelectItem value="25000">Under ₹30,000</SelectItem>
                 <SelectItem value="35000">₹30,000 - ₹40,000</SelectItem>
                 <SelectItem value="45000">Above ₹40,000</SelectItem>

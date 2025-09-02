@@ -27,9 +27,9 @@ const HostelPage = () => {
     return <MaintenancePage pageName="Hostels" customMessage={maintenanceMode.globalMessage} />;
   }
   const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [priceFilter, setPriceFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const hostels = getPropertiesByCategory("hostel");
 
@@ -37,10 +37,10 @@ const HostelPage = () => {
     return hostels.filter(hostel => {
       const matchesSearch = hostel.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            hostel.location.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesLocation = !locationFilter || hostel.location.toLowerCase().includes(locationFilter.toLowerCase());
-      const matchesType = !typeFilter || hostel.type.toLowerCase() === typeFilter.toLowerCase();
+      const matchesLocation = !locationFilter || locationFilter === "all" || hostel.location.toLowerCase().includes(locationFilter.toLowerCase());
+      const matchesType = !typeFilter || typeFilter === "all" || hostel.type.toLowerCase() === typeFilter.toLowerCase();
       // Basic price filtering - in real app, you'd parse price ranges
-      const matchesPrice = !priceFilter || hostel.price.includes(priceFilter);
+      const matchesPrice = !priceFilter || priceFilter === "all" || hostel.price.includes(priceFilter);
       
       return matchesSearch && matchesLocation && matchesType && matchesPrice;
     });
@@ -109,7 +109,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="mumbai">Mumbai</SelectItem>
                 <SelectItem value="bangalore">Bangalore</SelectItem>
                 <SelectItem value="pune">Pune</SelectItem>
@@ -122,7 +122,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="hostel">Hostel</SelectItem>
                 <SelectItem value="pg">PG</SelectItem>
               </SelectContent>
@@ -133,7 +133,7 @@ const HostelPage = () => {
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Prices</SelectItem>
+                <SelectItem value="all">All Prices</SelectItem>
                 <SelectItem value="8000">Under ₹10,000</SelectItem>
                 <SelectItem value="12000">₹10,000 - ₹15,000</SelectItem>
                 <SelectItem value="15000">Above ₹15,000</SelectItem>
