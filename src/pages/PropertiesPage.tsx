@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import PropertyCard from "@/components/PropertyCard";
-import PropertyFilterContainer from "@/components/PropertyFilterContainer";
+import PropertySpecificFilterContainer from "@/components/PropertySpecificFilterContainer";
 import AdminFAB from "@/components/AdminFAB";
 import { useProperties } from "@/hooks/useProperties";
 import { useMaintenance } from "@/contexts/MaintenanceContext";
@@ -83,7 +83,7 @@ const PropertiesPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filters */}
           <div className="lg:col-span-1">
-            <PropertyFilterContainer
+            <PropertySpecificFilterContainer
               properties={properties}
               onFilterChange={setFilteredProperties}
             />
