@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PropertySpecificFilters from "./PropertySpecificFilters";
 import { Property } from "@/hooks/useProperties";
 
@@ -18,13 +18,7 @@ const PropertySpecificFilterContainer = ({ properties, onFilterChange }: Propert
     newProject: false
   });
 
-  const handleFiltersChange = (newFilters: typeof filters) => {
-    setFilters(newFilters);
-    // Auto-apply filters when they change
-    applyFilters(newFilters);
-  };
-
-  const applyFilters = (filtersToApply: typeof filters) => {
+  const applyFilters = useCallback((filtersToApply: typeof filters) => {
     console.log('Applying property filters:', filtersToApply);
     console.log('Total properties:', properties.length);
     
@@ -144,16 +138,24 @@ const PropertySpecificFilterContainer = ({ properties, onFilterChange }: Propert
 
     console.log('Final filtered properties:', filtered.length);
     onFilterChange(filtered);
-  };
+  }, [properties, onFilterChange]);
 
-  // Apply filters whenever properties change
+  const handleFiltersChange = useCallback((newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }, []);
+
+  const handleApplyFilters = useCallback(() => {
+    applyFilters(filters);
+  }, [filters, applyFilters]);
+
+  // Apply filters when properties change or on initial load
   useEffect(() => {
     if (properties.length > 0) {
       applyFilters(filters);
     }
-  }, [properties]);
+  }, [properties, applyFilters, filters]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     const resetFilters = {
       location: "",
       propertyType: "all",
@@ -165,12 +167,13 @@ const PropertySpecificFilterContainer = ({ properties, onFilterChange }: Propert
     };
     setFilters(resetFilters);
     applyFilters(resetFilters);
-  };
+  }, [applyFilters]);
 
   return (
     <PropertySpecificFilters
       filters={filters}
       onFiltersChange={handleFiltersChange}
+      onApplyFilters={handleApplyFilters}
       onReset={handleReset}
     />
   );

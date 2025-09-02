@@ -22,10 +22,11 @@ interface PropertyFilters {
 interface PropertySpecificFiltersProps {
   filters: PropertyFilters;
   onFiltersChange: (filters: PropertyFilters) => void;
+  onApplyFilters: () => void;
   onReset: () => void;
 }
 
-const PropertySpecificFilters = ({ filters, onFiltersChange, onReset }: PropertySpecificFiltersProps) => {
+const PropertySpecificFilters = ({ filters, onFiltersChange, onApplyFilters, onReset }: PropertySpecificFiltersProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const amenitiesList = [
@@ -214,8 +215,11 @@ const PropertySpecificFilters = ({ filters, onFiltersChange, onReset }: Property
           )}
         </div>
 
-        {/* Active Filters Count */}
+        {/* Apply Filters Button */}
         <div className="pt-4 border-t">
+          <Button onClick={onApplyFilters} className="w-full mb-3">
+            Apply Filters
+          </Button>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Active Filters:</span>
             <span className="font-medium">

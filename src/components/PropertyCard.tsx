@@ -7,7 +7,7 @@ import { MapPin, Home, Bath, Maximize, Download, Eye, Heart, Crown, Check } from
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import AdminPropertyControls from "./AdminPropertyControls";
 import AdminPropertyMediaControls from "./AdminPropertyMediaControls";
 
@@ -41,8 +41,11 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
     navigate(`/${property.category}/${property.id}`);
   };
 
-  const handleViewDetails = (e: React.MouseEvent) => {
+  const handleViewDetails = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Prevent multiple dialogs
+    if (showSubscriptionDialog) return;
     
     if (!user || !user.plan) {
       setShowSubscriptionDialog(true);
@@ -50,10 +53,13 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
     }
     
     onViewDetails(property);
-  };
+  }, [user, showSubscriptionDialog, onViewDetails, property]);
 
-  const handleDownloadBrochure = (e: React.MouseEvent) => {
+  const handleDownloadBrochure = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Prevent multiple dialogs
+    if (showSubscriptionDialog) return;
     
     if (!user || !user.plan) {
       setShowSubscriptionDialog(true);
@@ -61,7 +67,7 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
     }
     
     onDownloadBrochure(property);
-  };
+  }, [user, showSubscriptionDialog, onDownloadBrochure, property]);
 
   const handleSubscribeNow = () => {
     setShowSubscriptionDialog(false);
