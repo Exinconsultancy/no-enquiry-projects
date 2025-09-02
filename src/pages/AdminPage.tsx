@@ -14,13 +14,15 @@ import { useProperties } from "@/hooks/useProperties";
 import { useNavigate } from "react-router-dom";
 import AdminPropertyControls from "@/components/AdminPropertyControls";
 import MaintenanceControls from "@/components/MaintenanceControls";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminPage = () => {
   const { user, profile } = useAuth();
-  const { properties } = useProperties();
+  const { properties, refetch } = useProperties();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newProperty, setNewProperty] = useState({
     title: "",
     location: "",
@@ -85,50 +87,135 @@ const AdminPage = () => {
     }
 
     try {
-      // Note: This should use AdminFAB component instead for consistency
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('properties')
+        .insert([{
+          title: newProperty.title,
+          location: newProperty.location,
+          price: newProperty.price,
+          type: newProperty.type,
+          builder: newProperty.builder,
+          description: newProperty.description,
+          category: newProperty.category,
+          status: newProperty.status,
+          images: newProperty.images,
+          brochures: newProperty.brochure ? [newProperty.brochure] : []
+        }]);
+
+      if (error) throw error;
+
       toast({
-        title: "Info",
-        description: "Please use the floating add button on the main page to add properties.",
+        title: "Success",
+        description: "Property added successfully!",
+      });
+      
+      // Reset form
+      setNewProperty({
+        title: "",
+        location: "",
+        price: "",
+        type: "Apartment",
+        builder: "",
+        description: "",
+        category: "property",
+        status: "active",
+        images: [],
+        brochure: ""
       });
       setShowAddForm(false);
     } catch (error) {
+      console.error('Error adding property:', error);
       toast({
         title: "Error",
         description: "Failed to add property.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const imageUrls = Array.from(files).map(file => URL.createObjectURL(file));
-      setNewProperty(prev => ({
-        ...prev,
-        images: [...prev.images, ...imageUrls]
-      }));
-      
-      toast({
-        title: "Images Added",
-        description: `${files.length} image(s) added to property.`,
-      });
+      try {
+        const uploadPromises = Array.from(files).map(async (file) => {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `property-images/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('property-media')
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data } = supabase.storage
+            .from('property-media')
+            .getPublicUrl(filePath);
+
+          return data.publicUrl;
+        });
+
+        const imageUrls = await Promise.all(uploadPromises);
+        
+        setNewProperty(prev => ({
+          ...prev,
+          images: [...prev.images, ...imageUrls]
+        }));
+        
+        toast({
+          title: "Images Uploaded",
+          description: `${files.length} image(s) uploaded successfully.`,
+        });
+      } catch (error) {
+        console.error('Error uploading images:', error);
+        toast({
+          title: "Upload Error",
+          description: "Failed to upload images. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
-  const handleBrochureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBrochureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const brochureUrl = URL.createObjectURL(file);
-      setNewProperty(prev => ({
-        ...prev,
-        brochure: brochureUrl
-      }));
-      
-      toast({
-        title: "Brochure Added",
-        description: "Property brochure has been added successfully.",
-      });
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `property-brochures/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('property-media')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('property-media')
+          .getPublicUrl(filePath);
+
+        setNewProperty(prev => ({
+          ...prev,
+          brochure: data.publicUrl
+        }));
+        
+        toast({
+          title: "Brochure Uploaded",
+          description: "Property brochure uploaded successfully.",
+        });
+      } catch (error) {
+        console.error('Error uploading brochure:', error);
+        toast({
+          title: "Upload Error",
+          description: "Failed to upload brochure. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -332,7 +419,9 @@ const AdminPage = () => {
                 </div>
                 
                 <div className="flex space-x-2">
-                  <Button type="submit">Add Property</Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Adding..." : "Add Property"}
+                  </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                     Cancel
                   </Button>
@@ -366,7 +455,11 @@ const AdminPage = () => {
                       <Badge variant="outline">{property.category}</Badge>
                     </div>
                   </div>
-                  <AdminPropertyControls property={property} />
+                  <AdminPropertyControls 
+                    property={property} 
+                    onUpdate={() => refetch()}
+                    onDelete={() => refetch()}
+                  />
                 </div>
               ))}
             </div>
