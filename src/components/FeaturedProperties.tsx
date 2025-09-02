@@ -14,11 +14,10 @@ const FeaturedProperties = () => {
   const { properties, loading, getPropertiesByCategory } = useProperties();
   const [activeTab, setActiveTab] = useState("property");
 
-  // Get top 5 properties from each category
-  const getTopPropertiesByCategory = (category: "property" | "rental" | "hostel") => {
+  // Get properties from each category for scrollable display
+  const getFilteredPropertiesByCategory = (category: "property" | "rental" | "hostel") => {
     return getPropertiesByCategory(category)
-      .filter(p => p.status === "active")
-      .slice(0, 5);
+      .filter(p => p.status === "active");
   };
 
   // Map amenities to icons
@@ -64,7 +63,7 @@ const FeaturedProperties = () => {
   };
 
   const renderPropertyCard = (property: Property) => (
-    <Card key={property.id} className="group hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/30 bg-card/50 backdrop-blur-sm">
+    <Card key={property.id} className="group hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/30 bg-card/50 backdrop-blur-sm w-80 flex-shrink-0">
       <div className="aspect-[4/3] overflow-hidden rounded-t-lg relative">
         <img
           src={property.images?.[0] || "https://images.unsplash.com/photo-1721322800607-8c38375eef04"}
@@ -185,7 +184,7 @@ const FeaturedProperties = () => {
             Featured Properties
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-3xl mx-auto">
-            Discover our top 5 properties in each category across prime locations
+            Discover our featured properties across prime locations - scroll to explore more
           </p>
         </div>
 
@@ -208,21 +207,27 @@ const FeaturedProperties = () => {
           </TabsList>
 
           {Object.entries(categoryConfig).map(([category, config]) => {
-            const categoryProperties = getTopPropertiesByCategory(category as "property" | "rental" | "hostel");
+            const categoryProperties = getFilteredPropertiesByCategory(category as "property" | "rental" | "hostel");
             
             return (
-              <TabsContent key={category} value={category} className="space-y-6 sm:space-y-8">
-                <div className="text-center mb-6 sm:mb-8">
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {config.description}
-                  </p>
-                </div>
+          <TabsContent key={category} value={category} className="space-y-6 sm:space-y-8">
+            <div className="text-center mb-6 sm:mb-8">
+              <p className="text-muted-foreground text-sm sm:text-base">
+                {config.description}
+              </p>
+            </div>
 
-                {categoryProperties.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
+            {categoryProperties.length > 0 ? (
+              <div className="relative">
+                <div className="overflow-x-auto pb-4">
+                  <div className="flex gap-4 sm:gap-6 w-max">
                     {categoryProperties.map(renderPropertyCard)}
                   </div>
-                ) : (
+                </div>
+                {/* Scroll indicators */}
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-background via-background/80 to-transparent w-8 h-full pointer-events-none" />
+              </div>
+            ) : (
                   <div className="text-center py-12 sm:py-16">
                     <div className="bg-card/50 backdrop-blur-sm border rounded-lg p-8 sm:p-12 max-w-md mx-auto">
                       <div className="bg-primary/10 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
