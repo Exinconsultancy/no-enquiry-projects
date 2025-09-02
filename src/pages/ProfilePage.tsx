@@ -118,9 +118,11 @@ const ProfilePage = () => {
                 <Input
                   id="email"
                   value={profileData.email}
-                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={true}
+                  className="bg-muted cursor-not-allowed"
+                  readOnly
                 />
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
               </div>
               
               <div className="flex space-x-2">
