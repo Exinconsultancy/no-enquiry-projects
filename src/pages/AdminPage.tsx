@@ -14,6 +14,7 @@ import { useProperties } from "@/hooks/useProperties";
 import { useNavigate } from "react-router-dom";
 import AdminPropertyControls from "@/components/AdminPropertyControls";
 import MaintenanceControls from "@/components/MaintenanceControls";
+import AdminUserManagement from "@/components/AdminUserManagement";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminPage = () => {
@@ -433,6 +434,11 @@ const AdminPage = () => {
 
         {/* Maintenance Controls */}
         <MaintenanceControls />
+
+        {/* User Management */}
+        <div className="mb-8">
+          <AdminUserManagement />
+        </div>
 
         {/* Properties List */}
         <Card>
