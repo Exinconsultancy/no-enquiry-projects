@@ -21,7 +21,7 @@ const Navbar = () => {
               <Link to="/" className="flex items-center">
                 <img 
                   src="/logo.svg" 
-                  alt="Sapno ka ghar" 
+                  alt="Listing homes" 
                   className="h-10 w-10"
                 />
               </Link>

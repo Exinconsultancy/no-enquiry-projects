@@ -62,7 +62,7 @@ const HomePage = () => {
   const testimonials = [
     {
       name: "Priya Sharma",
-      text: "I found my dream home through Sapno ka ghar! The direct builder contacts made the process so much easier and saved me thousands.",
+      text: "I found my dream home through Listing homes! The direct builder contacts made the process so much easier and saved me thousands.",
       rating: 5,
       location: "Mumbai",
     },
@@ -179,7 +179,7 @@ const HomePage = () => {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Sapno ka ghar?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Listing homes?</h2>
               <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
                 Discover the features that make us the preferred choice for property seekers across India
               </p>
