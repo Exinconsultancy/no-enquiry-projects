@@ -3,16 +3,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Bed, Bath, Square, ArrowRight, Home, Building, UserCheck, Wifi, Car, Shield, Dumbbell, Waves, Coffee, Utensils, Wind } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ArrowRight, Home, Building, UserCheck, Wifi, Car, Shield, Dumbbell, Waves, Coffee, Utensils, Wind, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProperties, Property } from "@/hooks/useProperties";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import AdminFAB from "./AdminFAB";
 
 const FeaturedProperties = () => {
   const navigate = useNavigate();
   const { properties, loading, getPropertiesByCategory } = useProperties();
   const [activeTab, setActiveTab] = useState("property");
+  const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  const scrollLeft = (category: string) => {
+    const scrollContainer = scrollRefs.current[category];
+    if (scrollContainer) {
+      scrollContainer.scrollBy({ left: -320, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = (category: string) => {
+    const scrollContainer = scrollRefs.current[category];
+    if (scrollContainer) {
+      scrollContainer.scrollBy({ left: 320, behavior: 'smooth' });
+    }
+  };
 
   // Get properties from each category for scrollable display
   const getFilteredPropertiesByCategory = (category: "property" | "rental" | "hostel") => {
@@ -219,13 +234,35 @@ const FeaturedProperties = () => {
 
             {categoryProperties.length > 0 ? (
               <div className="relative">
-                <div className="overflow-x-auto pb-4">
+                {/* Left Arrow */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary/10 shadow-lg"
+                  onClick={() => scrollLeft(category)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                {/* Scrollable Container */}
+                <div 
+                  ref={(el) => scrollRefs.current[category] = el}
+                  className="overflow-x-auto pb-4 mx-12 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                >
                   <div className="flex gap-4 sm:gap-6 w-max">
                     {categoryProperties.map(renderPropertyCard)}
                   </div>
                 </div>
-                {/* Scroll indicators */}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-background via-background/80 to-transparent w-8 h-full pointer-events-none" />
+
+                {/* Right Arrow */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary/10 shadow-lg"
+                  onClick={() => scrollRight(category)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             ) : (
                   <div className="text-center py-12 sm:py-16">
