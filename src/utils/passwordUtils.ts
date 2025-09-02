@@ -48,7 +48,6 @@ export async function verifyPassword(password: string, storedHash: string, store
     const { hash } = await hashPassword(password, saltBytes);
     return hash === storedHash;
   } catch (error) {
-    console.error('Password verification failed:', error);
     return false;
   }
 }

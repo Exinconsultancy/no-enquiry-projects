@@ -43,7 +43,6 @@ export function getSession(): SessionData | null {
     
     return session;
   } catch (error) {
-    console.error('Session retrieval failed:', error);
     clearSession();
     return null;
   }
