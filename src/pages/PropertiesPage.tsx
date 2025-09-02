@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +25,11 @@ const PropertiesPage = () => {
   }
   const properties = getPropertiesByCategory("property");
   const [filteredProperties, setFilteredProperties] = useState(properties);
+
+  // Update filtered properties when main properties load
+  useEffect(() => {
+    setFilteredProperties(properties);
+  }, [properties]);
 
   
 
