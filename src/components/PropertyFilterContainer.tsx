@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropertyFilters from "./PropertyFilters";
 import { Property } from "@/hooks/useProperties";
 
@@ -23,22 +23,24 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
 
   const handleFiltersChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
+    // Auto-apply filters when they change
+    applyFilters(newFilters);
   };
 
-  const handleSearch = () => {
+  const applyFilters = (filtersToApply: typeof filters) => {
     let filtered = properties;
 
     // Apply location filter
-    if (filters.location) {
+    if (filtersToApply.location) {
       filtered = filtered.filter(property => 
-        property.location.toLowerCase().includes(filters.location.toLowerCase())
+        property.location.toLowerCase().includes(filtersToApply.location.toLowerCase())
       );
     }
 
     // Apply property type filter
-    if (filters.propertyType !== "all") {
+    if (filtersToApply.propertyType !== "all") {
       filtered = filtered.filter(property => 
-        property.type.toLowerCase() === filters.propertyType.toLowerCase()
+        property.type.toLowerCase() === filtersToApply.propertyType.toLowerCase()
       );
     }
 
@@ -56,30 +58,30 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
         priceValue = parseFloat(priceStr) || 0;
       }
       
-      return priceValue >= filters.priceRange[0] && priceValue <= filters.priceRange[1];
+      return priceValue >= filtersToApply.priceRange[0] && priceValue <= filtersToApply.priceRange[1];
     });
 
     // Apply bedrooms filter
-    if (filters.bedrooms !== "any") {
+    if (filtersToApply.bedrooms !== "any") {
       filtered = filtered.filter(property => {
         const bedrooms = property.bedrooms || property.type;
-        return bedrooms.toLowerCase().includes(filters.bedrooms);
+        return bedrooms.toLowerCase().includes(filtersToApply.bedrooms);
       });
     }
 
     // Apply bathrooms filter
-    if (filters.bathrooms !== "any") {
+    if (filtersToApply.bathrooms !== "any") {
       filtered = filtered.filter(property => {
         const bathrooms = property.bathrooms || "2";
-        return bathrooms.includes(filters.bathrooms);
+        return bathrooms.includes(filtersToApply.bathrooms);
       });
     }
 
     // Apply amenities filter
-    if (filters.amenities.length > 0) {
+    if (filtersToApply.amenities.length > 0) {
       filtered = filtered.filter(property => {
         const propertyAmenities = property.amenities || [];
-        return filters.amenities.some(amenity => 
+        return filtersToApply.amenities.some(amenity => 
           propertyAmenities.some(propAmenity => 
             propAmenity.toLowerCase().includes(amenity.toLowerCase())
           )
@@ -88,20 +90,30 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
     }
 
     // Apply ready to move filter
-    if (filters.readyToMove) {
+    if (filtersToApply.readyToMove) {
       filtered = filtered.filter(property => 
         property.status === 'active'
       );
     }
 
     // Apply new project filter
-    if (filters.newProject) {
+    if (filtersToApply.newProject) {
       filtered = filtered.filter(property => 
         new Date(property.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days
       );
     }
 
     onFilterChange(filtered);
+  };
+
+  // Apply filters whenever properties change
+  useEffect(() => {
+    applyFilters(filters);
+  }, [properties]);
+
+  const handleSearch = () => {
+    // This is now just an alias for applying current filters
+    applyFilters(filters);
   };
 
   const handleReset = () => {
@@ -117,7 +129,7 @@ const PropertyFilterContainer = ({ properties, onFilterChange }: PropertyFilterC
       newProject: false
     };
     setFilters(resetFilters);
-    onFilterChange(properties);
+    applyFilters(resetFilters);
   };
 
   return (

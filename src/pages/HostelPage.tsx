@@ -110,10 +110,15 @@ const HostelPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Locations</SelectItem>
-                <SelectItem value="mumbai">Mumbai</SelectItem>
-                <SelectItem value="bangalore">Bangalore</SelectItem>
-                <SelectItem value="pune">Pune</SelectItem>
-                <SelectItem value="hyderabad">Hyderabad</SelectItem>
+                <SelectItem value="koregaon park">Koregaon Park</SelectItem>
+                <SelectItem value="viman nagar">Viman Nagar</SelectItem>
+                <SelectItem value="baner">Baner</SelectItem>
+                <SelectItem value="hinjewadi">Hinjewadi</SelectItem>
+                <SelectItem value="wakad">Wakad</SelectItem>
+                <SelectItem value="magarpatta">Magarpatta</SelectItem>
+                <SelectItem value="hadapsar">Hadapsar</SelectItem>
+                <SelectItem value="katraj">Katraj</SelectItem>
+                <SelectItem value="shivaji nagar">Shivaji Nagar</SelectItem>
               </SelectContent>
             </Select>
 
@@ -134,9 +139,9 @@ const HostelPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="8000">Under ₹10,000</SelectItem>
-                <SelectItem value="12000">₹10,000 - ₹15,000</SelectItem>
-                <SelectItem value="15000">Above ₹15,000</SelectItem>
+                <SelectItem value="12000">Under ₹15,000</SelectItem>
+                <SelectItem value="18000">₹15,000 - ₹20,000</SelectItem>
+                <SelectItem value="25000">Above ₹20,000</SelectItem>
               </SelectContent>
             </Select>
           </div>

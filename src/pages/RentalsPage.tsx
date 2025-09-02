@@ -110,10 +110,14 @@ const RentalsPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Locations</SelectItem>
-                <SelectItem value="mumbai">Mumbai</SelectItem>
-                <SelectItem value="bangalore">Bangalore</SelectItem>
-                <SelectItem value="pune">Pune</SelectItem>
-                <SelectItem value="hyderabad">Hyderabad</SelectItem>
+                <SelectItem value="koregaon park">Koregaon Park</SelectItem>
+                <SelectItem value="viman nagar">Viman Nagar</SelectItem>
+                <SelectItem value="baner">Baner</SelectItem>
+                <SelectItem value="hinjewadi">Hinjewadi</SelectItem>
+                <SelectItem value="wakad">Wakad</SelectItem>
+                <SelectItem value="magarpatta">Magarpatta</SelectItem>
+                <SelectItem value="hadapsar">Hadapsar</SelectItem>
+                <SelectItem value="shivaji nagar">Shivaji Nagar</SelectItem>
               </SelectContent>
             </Select>
 
@@ -125,6 +129,8 @@ const RentalsPage = () => {
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="villa">Villa</SelectItem>
+                <SelectItem value="duplex">Duplex</SelectItem>
+                <SelectItem value="studio">Studio</SelectItem>
                 <SelectItem value="commercial">Commercial</SelectItem>
               </SelectContent>
             </Select>
@@ -135,9 +141,9 @@ const RentalsPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="25000">Under ₹30,000</SelectItem>
-                <SelectItem value="35000">₹30,000 - ₹40,000</SelectItem>
-                <SelectItem value="45000">Above ₹40,000</SelectItem>
+                <SelectItem value="30000">Under ₹35,000</SelectItem>
+                <SelectItem value="50000">₹35,000 - ₹60,000</SelectItem>
+                <SelectItem value="80000">Above ₹60,000</SelectItem>
               </SelectContent>
             </Select>
           </div>
