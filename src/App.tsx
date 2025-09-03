@@ -41,7 +41,7 @@ function App() {
                     <Route path="/hostels" element={<HostelPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/admin" element={
+                    <Route path="/adproplisthmx" element={
                       <AdminRouteGuard>
                         <AdminPage />
                       </AdminRouteGuard>
