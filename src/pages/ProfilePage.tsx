@@ -7,21 +7,28 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { User, Settings, CreditCard, LogOut, AlertTriangle } from "lucide-react";
+import { User, Settings, CreditCard, LogOut, AlertTriangle, Heart, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { SubscriptionService } from "@/services/subscriptionService";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { useProperties } from "@/hooks/useProperties";
 
 const ProfilePage = () => {
   const { user, profile, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { favorites } = useFavorites();
+  const { properties } = useProperties();
   const [isEditing, setIsEditing] = useState(false);
   const [isBuilderLoading, setIsBuilderLoading] = useState(false);
   const [profileData, setProfileData] = useState({
     name: profile?.display_name || "",
     email: user?.email || "",
   });
+
+  // Get favorite properties
+  const favoriteProperties = properties.filter(property => favorites.includes(property.id));
 
   if (!user) {
     return (
@@ -232,6 +239,68 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Favorite Properties */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Heart className="h-5 w-5 text-red-500" />
+              <span>Favorite Properties</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {favoriteProperties.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No favorite properties yet</p>
+                <p className="text-sm">Start exploring properties and add them to your favorites!</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => navigate('/properties')}
+                >
+                  Browse Properties
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {favoriteProperties.slice(0, 6).map((property) => (
+                  <Card 
+                    key={property.id} 
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => navigate(`/${property.category}/${property.id}`)}
+                  >
+                    <div className="relative">
+                      <img
+                        src={property.images?.[0] || "/placeholder.svg"}
+                        alt={property.title}
+                        className="w-full h-32 object-cover rounded-t-lg"
+                      />
+                    </div>
+                    <CardContent className="p-3">
+                      <h4 className="font-medium text-sm truncate">{property.title}</h4>
+                      <div className="flex items-center space-x-1 text-xs text-muted-foreground mt-1">
+                        <MapPin className="h-3 w-3" />
+                        <span className="truncate">{property.location}</span>
+                      </div>
+                      <p className="text-primary font-semibold text-sm mt-2">{property.price}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+            {favoriteProperties.length > 6 && (
+              <div className="mt-4 text-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/properties')}
+                >
+                  View All Favorites
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Additional Information */}
         <Card className="mt-6">

@@ -145,18 +145,20 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
             </div>
           )}
           
-          {/* Favorite Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 left-2 h-8 w-8 bg-white/80 hover:bg-white"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleFavoriteToggle();
-            }}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-          </Button>
+          {/* Favorite Button - Only show for authenticated users */}
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 left-2 h-8 w-8 bg-white/80 hover:bg-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFavoriteToggle();
+              }}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+            </Button>
+          )}
         </div>
 
         <CardHeader className="pb-2" onClick={handleCardClick}>
