@@ -86,7 +86,7 @@ const Navbar = () => {
                   </Link>
                   {profile?.role === 'admin' && (
                     <Link
-                      to="/admin"
+                      to="/adproplisthmx"
                       className="flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-primary"
                     >
                       <Settings className="h-4 w-4" />
@@ -191,7 +191,7 @@ const Navbar = () => {
                     </Link>
                     {profile?.role === 'admin' && (
                       <Link
-                        to="/admin"
+                        to="/adproplisthmx"
                         className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent"
                         onClick={() => setIsMenuOpen(false)}
                       >
