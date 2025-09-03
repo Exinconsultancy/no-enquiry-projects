@@ -153,7 +153,7 @@ const PropertySpecificFilterContainer = ({ properties, onFilterChange }: Propert
     if (properties.length > 0) {
       applyFilters(filters);
     }
-  }, [properties, applyFilters, filters]);
+  }, [properties.length]);
 
   const handleReset = useCallback(() => {
     const resetFilters = {
