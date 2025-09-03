@@ -30,11 +30,12 @@ const PropertiesPage = () => {
   const [locationFilter, setLocationFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   const properties = getPropertiesByCategory("property");
 
   const filteredProperties = useMemo(() => {
-    return properties.filter(property => {
+    let filtered = properties.filter(property => {
       const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            property.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLocation = !locationFilter || locationFilter === "all" || property.location.toLowerCase().includes(locationFilter.toLowerCase());
@@ -63,7 +64,45 @@ const PropertiesPage = () => {
       
       return matchesSearch && matchesLocation && matchesType && matchesPrice;
     });
-  }, [properties, searchTerm, locationFilter, priceFilter, typeFilter]);
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      switch(sortBy) {
+        case "newest":
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case "oldest":
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "price-low":
+          const getPriceValue = (price: string) => {
+            const priceStr = price.replace(/[₹,\s]/g, '');
+            if (priceStr.includes('Cr')) {
+              return parseFloat(priceStr.replace('Cr', '')) * 10000000;
+            } else if (priceStr.includes('L')) {
+              return parseFloat(priceStr.replace('L', '')) * 100000;
+            }
+            return parseFloat(priceStr) || 0;
+          };
+          return getPriceValue(a.price) - getPriceValue(b.price);
+        case "price-high":
+          const getPriceValue2 = (price: string) => {
+            const priceStr = price.replace(/[₹,\s]/g, '');
+            if (priceStr.includes('Cr')) {
+              return parseFloat(priceStr.replace('Cr', '')) * 10000000;
+            } else if (priceStr.includes('L')) {
+              return parseFloat(priceStr.replace('L', '')) * 100000;
+            }
+            return parseFloat(priceStr) || 0;
+          };
+          return getPriceValue2(b.price) - getPriceValue2(a.price);
+        case "title-az":
+          return a.title.localeCompare(b.title);
+        case "title-za":
+          return b.title.localeCompare(a.title);
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  }, [properties, searchTerm, locationFilter, priceFilter, typeFilter, sortBy]);
 
   
 
@@ -180,7 +219,19 @@ const PropertiesPage = () => {
           </h2>
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4" />
-            <span className="text-sm text-muted-foreground">Sort by: Newest</span>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                <SelectItem value="price-high">Price: High to Low</SelectItem>
+                <SelectItem value="title-az">Title: A-Z</SelectItem>
+                <SelectItem value="title-za">Title: Z-A</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

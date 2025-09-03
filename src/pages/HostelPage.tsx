@@ -30,11 +30,12 @@ const HostelPage = () => {
   const [locationFilter, setLocationFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   const hostels = getPropertiesByCategory("hostel");
 
   const filteredHostels = useMemo(() => {
-    return hostels.filter(hostel => {
+    let filtered = hostels.filter(hostel => {
       const matchesSearch = hostel.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            hostel.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLocation = !locationFilter || locationFilter === "all" || hostel.location.toLowerCase().includes(locationFilter.toLowerCase());
@@ -54,7 +55,31 @@ const HostelPage = () => {
       
       return matchesSearch && matchesLocation && matchesType && matchesPrice;
     });
-  }, [hostels, searchTerm, locationFilter, priceFilter, typeFilter]);
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      switch(sortBy) {
+        case "newest":
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case "oldest":
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "price-low":
+          const priceA = parseFloat(a.price.replace(/[₹,\s/month]/g, '')) || 0;
+          const priceB = parseFloat(b.price.replace(/[₹,\s/month]/g, '')) || 0;
+          return priceA - priceB;
+        case "price-high":
+          const priceA2 = parseFloat(a.price.replace(/[₹,\s/month]/g, '')) || 0;
+          const priceB2 = parseFloat(b.price.replace(/[₹,\s/month]/g, '')) || 0;
+          return priceB2 - priceA2;
+        case "title-az":
+          return a.title.localeCompare(b.title);
+        case "title-za":
+          return b.title.localeCompare(a.title);
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  }, [hostels, searchTerm, locationFilter, priceFilter, typeFilter, sortBy]);
 
   const handleViewDetails = (property: any) => {
     if (!user) {
@@ -164,7 +189,19 @@ const HostelPage = () => {
           </h2>
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4" />
-            <span className="text-sm text-muted-foreground">Sort by: Newest</span>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                <SelectItem value="price-high">Price: High to Low</SelectItem>
+                <SelectItem value="title-az">Title: A-Z</SelectItem>
+                <SelectItem value="title-za">Title: Z-A</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
