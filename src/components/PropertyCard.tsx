@@ -44,16 +44,13 @@ const PropertyCard = ({ property, onViewDetails, onDownloadBrochure, user }: Pro
   const handleViewDetails = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Prevent multiple dialogs
-    if (showSubscriptionDialog) return;
-    
     if (!user || !user.plan) {
       setShowSubscriptionDialog(true);
       return;
     }
     
     onViewDetails(property);
-  }, [user, showSubscriptionDialog, onViewDetails, property]);
+  }, [user, onViewDetails, property]);
 
   const handleDownloadBrochure = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
